@@ -1,4 +1,4 @@
-#' backtestPortfolio: XXXX
+#' backtestPortfolio: Backtesting of a Portfolio Over Multiple Datasets
 #'
 #' Backtest of a portfolio design with real data taken randomly from different
 #' markets and selecting randomly a subset of stocks for proper assessments.

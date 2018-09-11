@@ -135,9 +135,7 @@ library(backtestPortfolio)
 help(package = &quot;backtestPortfolio&quot;)
 package?backtestPortfolio
 ?backtestPortfolio
-
-# Citing this work
-citation(&quot;backtestPortfolio&quot;)</code></pre>
+?prices1</code></pre>
 </div>
 <div id="usage-of-backtestportfolio" class="section level2">
 <h2>Usage of <code>backtestPortfolio()</code></h2>
@@ -145,8 +143,30 @@ citation(&quot;backtestPortfolio&quot;)</code></pre>
 <pre class="r"><code>library(backtestPortfolio)
 library(xts)
 data(prices1)</code></pre>
-<p>The data <code>prices1</code> contains the log-prices of a randomly selected sample of <span class="math inline">\(N=30\)</span> stocks from the S&amp;P 500 (the package also contains four other sets or randomly selected data, namely, <code>prices2</code>, <code>prices3</code>, <code>prices4</code>, and <code>prices5</code>).</p>
-<pre class="r"><code>head(prices1)</code></pre>
+<p>The data <code>prices1</code> contains the log-prices of a randomly selected sample of <span class="math inline">\(N=50\)</span> stocks from the S&amp;P 500 (the package also contains four other sets or randomly selected data, namely, <code>prices2</code>, <code>prices3</code>, <code>prices4</code>, and <code>prices5</code>).</p>
+<pre class="r"><code>str(prices1)
+#&gt; An 'xts' object on 2010-01-04/2010-12-31 containing:
+#&gt;   Data: num [1:252, 1:50] 0.01008 0.00684 -0.02322 -0.00667 0.01109 ...
+#&gt;  - attr(*, &quot;dimnames&quot;)=List of 2
+#&gt;   ..$ : NULL
+#&gt;   ..$ : chr [1:50] &quot;EXPD UW Equity&quot; &quot;CELG UW Equity&quot; &quot;LLY UN Equity&quot; &quot;PPL UN Equity&quot; ...
+#&gt;   Indexed by objects of class: [Date] TZ: UTC
+#&gt;   xts Attributes:  
+#&gt;  NULL
+colnames(prices1)
+#&gt;  [1] &quot;EXPD UW Equity&quot; &quot;CELG UW Equity&quot; &quot;LLY UN Equity&quot;  &quot;PPL UN Equity&quot; 
+#&gt;  [5] &quot;HOG UN Equity&quot;  &quot;CNX UN Equity&quot;  &quot;MDT UN Equity&quot;  &quot;DO UN Equity&quot;  
+#&gt;  [9] &quot;PCLN UW Equity&quot; &quot;BAC UN Equity&quot;  &quot;MYL UW Equity&quot;  &quot;MCO UN Equity&quot; 
+#&gt; [13] &quot;OXY UN Equity&quot;  &quot;DOW UN Equity&quot;  &quot;UNP UN Equity&quot;  &quot;EOG UN Equity&quot; 
+#&gt; [17] &quot;XRAY UW Equity&quot; &quot;TJX UN Equity&quot;  &quot;CSX UN Equity&quot;  &quot;PDCO UW Equity&quot;
+#&gt; [21] &quot;PNW UN Equity&quot;  &quot;FLS UN Equity&quot;  &quot;BMY UN Equity&quot;  &quot;LNC UN Equity&quot; 
+#&gt; [25] &quot;VTR UN Equity&quot;  &quot;FMC UN Equity&quot;  &quot;RHT UN Equity&quot;  &quot;XLNX UW Equity&quot;
+#&gt; [29] &quot;TRV UN Equity&quot;  &quot;MCK UN Equity&quot;  &quot;CTSH UW Equity&quot; &quot;WYNN UW Equity&quot;
+#&gt; [33] &quot;AIV UN Equity&quot;  &quot;CBG UN Equity&quot;  &quot;BRCM UW Equity&quot; &quot;CHRW UW Equity&quot;
+#&gt; [37] &quot;DNB UN Equity&quot;  &quot;EFX UN Equity&quot;  &quot;RHI UN Equity&quot;  &quot;TIF UN Equity&quot; 
+#&gt; [41] &quot;HIG UN Equity&quot;  &quot;CPB UN Equity&quot;  &quot;TMO UN Equity&quot;  &quot;CAT UN Equity&quot; 
+#&gt; [45] &quot;EQT UN Equity&quot;  &quot;LEN UN Equity&quot;  &quot;LH UN Equity&quot;   &quot;MJN UN Equity&quot; 
+#&gt; [49] &quot;AKAM UW Equity&quot; &quot;CBS UN Equity&quot;</code></pre>
 <p>Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector <code>w</code>:</p>
 <pre class="r"><code>naivePortfolioDesign &lt;- function(prices) {
   # load all the required libraries

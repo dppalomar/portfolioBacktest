@@ -2,7 +2,7 @@
 #'
 #' @docType data
 #'
-#' @usage data(prices1)
+#' @usage data(prices3)
 #'
 #' @format An \code{xts} object with the prices.
 #'
@@ -10,4 +10,4 @@
 #'
 #' @keywords datasets
 #'
-"prices1"
+"prices3"

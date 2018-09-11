@@ -49,19 +49,20 @@ package?backtestPortfolio
 
 ## Usage of `backtestPortfolio()`
 We start by loading the package and some market data from the underlying assets of the S&P 500:
-```{r, message = FALSE, eval=FALSE}
+```{r, message = FALSE}
 library(backtestPortfolio)
 library(xts)
 data(prices1)
 ```
-The data `prices1` contains the log-prices of a randomly selected sample of $N=30$ stocks from the
+The data `prices1` contains the log-prices of a randomly selected sample of $N=50$ stocks from the
 S&P 500 (the package also contains four other sets or randomly selected data, namely, `prices2`, `prices3`, `prices4`, and `prices5`).
-```{r, eval=FALSE}
-head(prices1)
+```{r}
+str(prices1)
+colnames(prices1)
 ```
 
 Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector `w`:
-```{r, eval=FALSE}
+```{r}
 naivePortfolioDesign <- function(prices) {
   # load all the required libraries
   library(CVXR)
@@ -82,7 +83,7 @@ naivePortfolioDesign <- function(prices) {
 }
 ```
 
-We are then ready to use the function `backtestPortfolio()`:
+We are then ready to use the function `backtestPortfolio()` which will execute the portfolio design function on a rolling-based window:
 ```{r, eval=FALSE}
 res <- backtestPortfolio(naivePortfolioDesign, prices1)
 print(res)
