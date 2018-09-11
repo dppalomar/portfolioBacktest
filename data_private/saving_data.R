@@ -1,8 +1,7 @@
 library(backtestPortfolio)
 library(xts)
 
-
-load("R_buildignore/INDEX_2010.RData")
+load("data_private/stocks_SP500_2010.RData")
 N <- ncol(INDEX_2010$X)
 prices1 <- INDEX_2010$X[, sample(N, 50)]
 prices2 <- INDEX_2010$X[, sample(N, 50)]
