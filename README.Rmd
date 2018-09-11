@@ -58,6 +58,7 @@ The data `prices1` contains the log-prices of a randomly selected sample of $N=5
 S&P 500 (the package also contains four other sets or randomly selected data, namely, `prices2`, `prices3`, `prices4`, and `prices5`).
 ```{r}
 str(prices1)
+
 colnames(prices1)
 ```
 
