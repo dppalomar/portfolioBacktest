@@ -9,11 +9,6 @@ prices <- list()
 
 load("data_private/stocks_SP500_1999_2005.RData")
 X <- data_1999_2005$X
-load("data_private/stocks_SP500_2006_2012.RData")
-X <- data_2006_2012$X
-load("data_private/stocks_SP500_2010_2015.RData")
-X <- data_2010_2015$X
-
 N <- ncol(X)
 T <- nrow(X)
 for(i in 1:10) {
@@ -21,6 +16,23 @@ for(i in 1:10) {
   prices <- c(prices, list(X[t_start:(t_start+T_sample-1), sample(N, 50)]))
 }
 
+load("data_private/stocks_SP500_2006_2012.RData")
+X <- data_2006_2012$X
+N <- ncol(X)
+T <- nrow(X)
+for(i in 1:10) {
+  t_start <- sample(T-T_sample+1, 1)
+  prices <- c(prices, list(X[t_start:(t_start+T_sample-1), sample(N, 50)]))
+}
+
+load("data_private/stocks_SP500_2010_2015.RData")
+X <- data_2010_2015$X
+N <- ncol(X)
+T <- nrow(X)
+for(i in 1:10) {
+  t_start <- sample(T-T_sample+1, 1)
+  prices <- c(prices, list(X[t_start:(t_start+T_sample-1), sample(N, 50)]))
+}
 
 object.size(prices)
 save(prices, file="data/prices.RData")
