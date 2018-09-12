@@ -1,19 +1,29 @@
 library(backtestPortfolio)
 library(xts)
 
-load("data_private/stocks_SP500_2010.RData")
-N <- ncol(INDEX_2010$X)
-prices1 <- INDEX_2010$X[, sample(N, 50)]
-prices2 <- INDEX_2010$X[, sample(N, 50)]
-prices3 <- INDEX_2010$X[, sample(N, 50)]
-prices4 <- INDEX_2010$X[, sample(N, 50)]
-prices5 <- INDEX_2010$X[, sample(N, 50)]
-object.size(prices1)
-save(prices1, file="data/prices1.RData")
-save(prices2, file="data/prices2.RData")
-save(prices3, file="data/prices3.RData")
-save(prices4, file="data/prices4.RData")
-save(prices5, file="data/prices5.RData")
+# dimensions of samples
+N_sample <- 50
+T_sample <- 2*252  #2 years of data
+
+prices <- list()
+
+load("data_private/stocks_SP500_1999_2005.RData")
+X <- data_1999_2005$X
+load("data_private/stocks_SP500_2006_2012.RData")
+X <- data_2006_2012$X
+load("data_private/stocks_SP500_2010_2015.RData")
+X <- data_2010_2015$X
+
+N <- ncol(X)
+T <- nrow(X)
+for(i in 1:10) {
+  t_start <- sample(T-T_sample+1, 1)
+  prices <- c(prices, list(X[t_start:(t_start+T_sample-1), sample(N, 50)]))
+}
+
+
+object.size(prices)
+save(prices, file="data/prices.RData")
 
 
 

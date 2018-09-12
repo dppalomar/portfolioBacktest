@@ -16,7 +16,7 @@ library(backtestPortfolio)
 help(package = "backtestPortfolio")
 package?backtestPortfolio
 ?backtestPortfolio
-?prices1
+?prices
 ```
 
 Usage of `backtestPortfolio()`
@@ -27,44 +27,52 @@ We start by loading the package and some market data from the underlying assets 
 ``` r
 library(backtestPortfolio)
 library(xts)
-data(prices1)
+data(prices)
 ```
 
-The data `prices1` contains the log-prices of a randomly selected sample of *N* = 50 stocks from the S&P 500 (the package also contains four other sets or randomly selected data, namely, `prices2`, `prices3`, `prices4`, and `prices5`).
+The list `prices` contains random selections of *N* = 50 stocks for periods of two years from the S&P 500.
 
 ``` r
-str(prices1)
-#> An 'xts' object on 2010-01-04/2010-12-31 containing:
-#>   Data: num [1:252, 1:50] 0.01008 0.00684 -0.02322 -0.00667 0.01109 ...
+length(prices)
+#> [1] 30
+str(prices[[1]])
+#> An 'xts' object on 1999-05-05/2001-05-02 containing:
+#>   Data: num [1:504, 1:50] 0.0769 -0.0653 0.0146 0.0305 -0.0218 ...
 #>  - attr(*, "dimnames")=List of 2
 #>   ..$ : NULL
-#>   ..$ : chr [1:50] "EXPD UW Equity" "CELG UW Equity" "LLY UN Equity" "PPL UN Equity" ...
+#>   ..$ : chr [1:50] "MU UN Equity" "C UN Equity" "CTB UN Equity" "ROH UN Equity" ...
 #>   Indexed by objects of class: [Date] TZ: UTC
 #>   xts Attributes:  
 #>  NULL
-colnames(prices1)
-#>  [1] "EXPD UW Equity" "CELG UW Equity" "LLY UN Equity"  "PPL UN Equity" 
-#>  [5] "HOG UN Equity"  "CNX UN Equity"  "MDT UN Equity"  "DO UN Equity"  
-#>  [9] "PCLN UW Equity" "BAC UN Equity"  "MYL UW Equity"  "MCO UN Equity" 
-#> [13] "OXY UN Equity"  "DOW UN Equity"  "UNP UN Equity"  "EOG UN Equity" 
-#> [17] "XRAY UW Equity" "TJX UN Equity"  "CSX UN Equity"  "PDCO UW Equity"
-#> [21] "PNW UN Equity"  "FLS UN Equity"  "BMY UN Equity"  "LNC UN Equity" 
-#> [25] "VTR UN Equity"  "FMC UN Equity"  "RHT UN Equity"  "XLNX UW Equity"
-#> [29] "TRV UN Equity"  "MCK UN Equity"  "CTSH UW Equity" "WYNN UW Equity"
-#> [33] "AIV UN Equity"  "CBG UN Equity"  "BRCM UW Equity" "CHRW UW Equity"
-#> [37] "DNB UN Equity"  "EFX UN Equity"  "RHI UN Equity"  "TIF UN Equity" 
-#> [41] "HIG UN Equity"  "CPB UN Equity"  "TMO UN Equity"  "CAT UN Equity" 
-#> [45] "EQT UN Equity"  "LEN UN Equity"  "LH UN Equity"   "MJN UN Equity" 
-#> [49] "AKAM UW Equity" "CBS UN Equity"
+
+colnames(prices[[1]])
+#>  [1] "MU UN Equity"       "C UN Equity"        "CTB UN Equity"     
+#>  [4] "ROH UN Equity"      "DOW UN Equity"      "3026360Q UN Equity"
+#>  [7] "TWX UN Equity"      "EXC UN Equity"      "ADM UN Equity"     
+#> [10] "CI UN Equity"       "PH UN Equity"       "AAPL UQ Equity"    
+#> [13] "RX UN Equity"       "3403545Q UN Equity" "XEL UN Equity"     
+#> [16] "LNC UN Equity"      "ROK UN Equity"      "GLW UN Equity"     
+#> [19] "AEP UN Equity"      "MCO UN Equity"      "SHW UN Equity"     
+#> [22] "BF/B UN Equity"     "COP UN Equity"      "WHR UN Equity"     
+#> [25] "KR UN Equity"       "CIN UN Equity"      "BMS UN Equity"     
+#> [28] "HRB UN Equity"      "0544749D UN Equity" "PTC UQ Equity"     
+#> [31] "HON UN Equity"      "PLL UN Equity"      "SO UN Equity"      
+#> [34] "HIG UN Equity"      "1288652D US Equity" "ETR UN Equity"     
+#> [37] "EMC UN Equity"      "COF UN Equity"      "MAS UN Equity"     
+#> [40] "LU UN Equity"       "LOW UN Equity"      "WFC UN Equity"     
+#> [43] "DJ UN Equity"       "FCX UN Equity"      "NOVL UQ Equity"    
+#> [46] "BOL UN Equity"      "K UN Equity"        "RSHCQ UN Equity"   
+#> [49] "MAR UN Equity"      "PEP UN Equity"
 ```
 
 Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector `w`:
 
 ``` r
+# load all the required libraries for the portfolio design
+library(CVXR)
+library(xts)
+
 naivePortfolioDesign <- function(prices) {
-  # load all the required libraries
-  library(CVXR)
-  
   # compute log returns
   X <- diff(log(prices))[-1]
   
@@ -81,10 +89,10 @@ naivePortfolioDesign <- function(prices) {
 }
 ```
 
-We are then ready to use the function `backtestPortfolio()` which will execute the portfolio design function on a rolling-based window:
+We are then ready to use the function `backtestPortfolio()` that will execute the portfolio design function on a rolling-window basis:
 
 ``` r
-res <- backtestPortfolio(naivePortfolioDesign, prices1)
+res <- backtestPortfolio(naivePortfolioDesign, prices[[1]])
 print(res)
 ```
 
@@ -92,5 +100,4 @@ Links
 -----
 
 Package: [GitHub](https://github.com/dppalomar/backtestPortfolio).
-
 README file: [GitHub-readme](https://rawgit.com/dppalomar/backtestPortfolio/master/README.html).

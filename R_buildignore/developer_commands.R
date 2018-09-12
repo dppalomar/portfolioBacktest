@@ -10,7 +10,7 @@ library(backtestPortfolio)
 help(package = "backtestPortfolio")
 package?backtestPortfolio
 ?backtestPortfolio
-?prices1
+?prices
 
 
 ##
@@ -26,4 +26,4 @@ library(backtestPortfolio)
 # Documentation
 devtools::document()  #to generate all documentation via roxygen
 ?backtestPortfolio
-?prices1
+?prices

@@ -135,43 +135,51 @@ library(backtestPortfolio)
 help(package = &quot;backtestPortfolio&quot;)
 package?backtestPortfolio
 ?backtestPortfolio
-?prices1</code></pre>
+?prices</code></pre>
 </div>
 <div id="usage-of-backtestportfolio" class="section level2">
 <h2>Usage of <code>backtestPortfolio()</code></h2>
 <p>We start by loading the package and some market data from the underlying assets of the S&amp;P 500:</p>
 <pre class="r"><code>library(backtestPortfolio)
 library(xts)
-data(prices1)</code></pre>
-<p>The data <code>prices1</code> contains the log-prices of a randomly selected sample of <span class="math inline">\(N=50\)</span> stocks from the S&amp;P 500 (the package also contains four other sets or randomly selected data, namely, <code>prices2</code>, <code>prices3</code>, <code>prices4</code>, and <code>prices5</code>).</p>
-<pre class="r"><code>str(prices1)
-#&gt; An 'xts' object on 2010-01-04/2010-12-31 containing:
-#&gt;   Data: num [1:252, 1:50] 0.01008 0.00684 -0.02322 -0.00667 0.01109 ...
+data(prices)</code></pre>
+<p>The list <code>prices</code> contains random selections of <span class="math inline">\(N=50\)</span> stocks for periods of two years from the S&amp;P 500.</p>
+<pre class="r"><code>length(prices)
+#&gt; [1] 30
+str(prices[[1]])
+#&gt; An 'xts' object on 1999-05-05/2001-05-02 containing:
+#&gt;   Data: num [1:504, 1:50] 0.0769 -0.0653 0.0146 0.0305 -0.0218 ...
 #&gt;  - attr(*, &quot;dimnames&quot;)=List of 2
 #&gt;   ..$ : NULL
-#&gt;   ..$ : chr [1:50] &quot;EXPD UW Equity&quot; &quot;CELG UW Equity&quot; &quot;LLY UN Equity&quot; &quot;PPL UN Equity&quot; ...
+#&gt;   ..$ : chr [1:50] &quot;MU UN Equity&quot; &quot;C UN Equity&quot; &quot;CTB UN Equity&quot; &quot;ROH UN Equity&quot; ...
 #&gt;   Indexed by objects of class: [Date] TZ: UTC
 #&gt;   xts Attributes:  
 #&gt;  NULL
-colnames(prices1)
-#&gt;  [1] &quot;EXPD UW Equity&quot; &quot;CELG UW Equity&quot; &quot;LLY UN Equity&quot;  &quot;PPL UN Equity&quot; 
-#&gt;  [5] &quot;HOG UN Equity&quot;  &quot;CNX UN Equity&quot;  &quot;MDT UN Equity&quot;  &quot;DO UN Equity&quot;  
-#&gt;  [9] &quot;PCLN UW Equity&quot; &quot;BAC UN Equity&quot;  &quot;MYL UW Equity&quot;  &quot;MCO UN Equity&quot; 
-#&gt; [13] &quot;OXY UN Equity&quot;  &quot;DOW UN Equity&quot;  &quot;UNP UN Equity&quot;  &quot;EOG UN Equity&quot; 
-#&gt; [17] &quot;XRAY UW Equity&quot; &quot;TJX UN Equity&quot;  &quot;CSX UN Equity&quot;  &quot;PDCO UW Equity&quot;
-#&gt; [21] &quot;PNW UN Equity&quot;  &quot;FLS UN Equity&quot;  &quot;BMY UN Equity&quot;  &quot;LNC UN Equity&quot; 
-#&gt; [25] &quot;VTR UN Equity&quot;  &quot;FMC UN Equity&quot;  &quot;RHT UN Equity&quot;  &quot;XLNX UW Equity&quot;
-#&gt; [29] &quot;TRV UN Equity&quot;  &quot;MCK UN Equity&quot;  &quot;CTSH UW Equity&quot; &quot;WYNN UW Equity&quot;
-#&gt; [33] &quot;AIV UN Equity&quot;  &quot;CBG UN Equity&quot;  &quot;BRCM UW Equity&quot; &quot;CHRW UW Equity&quot;
-#&gt; [37] &quot;DNB UN Equity&quot;  &quot;EFX UN Equity&quot;  &quot;RHI UN Equity&quot;  &quot;TIF UN Equity&quot; 
-#&gt; [41] &quot;HIG UN Equity&quot;  &quot;CPB UN Equity&quot;  &quot;TMO UN Equity&quot;  &quot;CAT UN Equity&quot; 
-#&gt; [45] &quot;EQT UN Equity&quot;  &quot;LEN UN Equity&quot;  &quot;LH UN Equity&quot;   &quot;MJN UN Equity&quot; 
-#&gt; [49] &quot;AKAM UW Equity&quot; &quot;CBS UN Equity&quot;</code></pre>
+
+colnames(prices[[1]])
+#&gt;  [1] &quot;MU UN Equity&quot;       &quot;C UN Equity&quot;        &quot;CTB UN Equity&quot;     
+#&gt;  [4] &quot;ROH UN Equity&quot;      &quot;DOW UN Equity&quot;      &quot;3026360Q UN Equity&quot;
+#&gt;  [7] &quot;TWX UN Equity&quot;      &quot;EXC UN Equity&quot;      &quot;ADM UN Equity&quot;     
+#&gt; [10] &quot;CI UN Equity&quot;       &quot;PH UN Equity&quot;       &quot;AAPL UQ Equity&quot;    
+#&gt; [13] &quot;RX UN Equity&quot;       &quot;3403545Q UN Equity&quot; &quot;XEL UN Equity&quot;     
+#&gt; [16] &quot;LNC UN Equity&quot;      &quot;ROK UN Equity&quot;      &quot;GLW UN Equity&quot;     
+#&gt; [19] &quot;AEP UN Equity&quot;      &quot;MCO UN Equity&quot;      &quot;SHW UN Equity&quot;     
+#&gt; [22] &quot;BF/B UN Equity&quot;     &quot;COP UN Equity&quot;      &quot;WHR UN Equity&quot;     
+#&gt; [25] &quot;KR UN Equity&quot;       &quot;CIN UN Equity&quot;      &quot;BMS UN Equity&quot;     
+#&gt; [28] &quot;HRB UN Equity&quot;      &quot;0544749D UN Equity&quot; &quot;PTC UQ Equity&quot;     
+#&gt; [31] &quot;HON UN Equity&quot;      &quot;PLL UN Equity&quot;      &quot;SO UN Equity&quot;      
+#&gt; [34] &quot;HIG UN Equity&quot;      &quot;1288652D US Equity&quot; &quot;ETR UN Equity&quot;     
+#&gt; [37] &quot;EMC UN Equity&quot;      &quot;COF UN Equity&quot;      &quot;MAS UN Equity&quot;     
+#&gt; [40] &quot;LU UN Equity&quot;       &quot;LOW UN Equity&quot;      &quot;WFC UN Equity&quot;     
+#&gt; [43] &quot;DJ UN Equity&quot;       &quot;FCX UN Equity&quot;      &quot;NOVL UQ Equity&quot;    
+#&gt; [46] &quot;BOL UN Equity&quot;      &quot;K UN Equity&quot;        &quot;RSHCQ UN Equity&quot;   
+#&gt; [49] &quot;MAR UN Equity&quot;      &quot;PEP UN Equity&quot;</code></pre>
 <p>Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector <code>w</code>:</p>
-<pre class="r"><code>naivePortfolioDesign &lt;- function(prices) {
-  # load all the required libraries
-  library(CVXR)
-  
+<pre class="r"><code># load all the required libraries for the portfolio design
+library(CVXR)
+library(xts)
+
+naivePortfolioDesign &lt;- function(prices) {
   # compute log returns
   X &lt;- diff(log(prices))[-1]
   
@@ -186,14 +194,14 @@ colnames(prices1)
   result &lt;- solve(prob)
   return(as.vector(result$getValue(w)))
 }</code></pre>
-<p>We are then ready to use the function <code>backtestPortfolio()</code>:</p>
-<pre class="r"><code>res &lt;- backtestPortfolio(naivePortfolioDesign, prices1)
+<p>We are then ready to use the function <code>backtestPortfolio()</code> that will execute the portfolio design function on a rolling-window basis:</p>
+<pre class="r"><code>res &lt;- backtestPortfolio(naivePortfolioDesign, prices[[1]])
 print(res)</code></pre>
 </div>
 <div id="links" class="section level2">
 <h2>Links</h2>
-<p>Package: <a href="https://github.com/dppalomar/backtestPortfolio">GitHub</a>.</p>
-<p>README file: <a href="https://rawgit.com/dppalomar/backtestPortfolio/master/README.html">GitHub-readme</a>.</p>
+<p>Package: <a href="https://github.com/dppalomar/backtestPortfolio">GitHub</a>.<br />
+README file: <a href="https://rawgit.com/dppalomar/backtestPortfolio/master/README.html">GitHub-readme</a>.</p>
 </div>
 </div>
 
