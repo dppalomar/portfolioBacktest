@@ -175,27 +175,16 @@ colnames(prices[[1]])
 #&gt; [46] &quot;BOL UN Equity&quot;      &quot;K UN Equity&quot;        &quot;RSHCQ UN Equity&quot;   
 #&gt; [49] &quot;MAR UN Equity&quot;      &quot;PEP UN Equity&quot;</code></pre>
 <p>Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector <code>w</code>:</p>
-<pre class="r"><code># load all the required libraries for the portfolio design
-library(CVXR)
-library(xts)
-
-naivePortfolioDesign &lt;- function(prices) {
-  # compute log returns
-  X &lt;- diff(log(prices))[-1]
-  
-  # compute mean vector and SCM
-  mu &lt;- colMeans(X)
-  Sigma &lt;- cov(X)
-  
-  # design mean-variance portfolio
-  w &lt;- Variable(nrow(Sigma))
-  prob &lt;- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma)),
-                  constraints = list(w &gt;= 0, sum(w) == 1))
-  result &lt;- solve(prob)
-  return(as.vector(result$getValue(w)))
+<pre class="r"><code>portfolio_fun &lt;- function(prices) {
+  X &lt;- diff(log(prices))[-1]  # compute log returns
+  Sigma &lt;- cov(X)  # compute SCM
+  # design GMVP
+  w &lt;- solve(Sigma, rep(1, nrow(Sigma)))
+  w &lt;- w/sum(w)
+  return(w)
 }</code></pre>
 <p>We are then ready to use the function <code>backtestPortfolio()</code> that will execute the portfolio design function on a rolling-window basis:</p>
-<pre class="r"><code>res &lt;- backtestPortfolio(naivePortfolioDesign, prices[[1]])
+<pre class="r"><code>res &lt;- backtestPortfolio(portfolio_fun, prices[[1]])
 print(res)</code></pre>
 </div>
 <div id="links" class="section level2">

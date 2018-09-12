@@ -1,13 +1,28 @@
+---
+output:
+  html_document:
+    variant: markdown_github
+    keep_md: true
+  md_document:
+    variant: markdown_github
+---
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-backtestPortfolio
-=================
 
-Backtest of a portfolio design with real data taken randomly from different markets and selecting randomly a subset of stocks for proper assessments. It also allows to backtest multiple portfolio designs and rank them based on a number of criteria including expected return, Sharpe ratio, drawdown, etc.
 
-Installation
-------------
 
-``` r
+# backtestPortfolio
+
+Backtest of a portfolio design with real data taken randomly from different
+markets and selecting randomly a subset of stocks for proper assessments.
+It also allows to backtest multiple portfolio designs and rank them based
+on a number of criteria including expected return, Sharpe ratio, drawdown,
+etc.
+
+
+## Installation
+
+```r
 # install.packages("devtools")
 devtools::install_github("dppalomar/backtestPortfolio")
 
@@ -19,20 +34,19 @@ package?backtestPortfolio
 ?prices
 ```
 
-Usage of `backtestPortfolio()`
-------------------------------
 
+
+## Usage of `backtestPortfolio()`
 We start by loading the package and some market data from the underlying assets of the S&P 500:
 
-``` r
+```r
 library(backtestPortfolio)
 library(xts)
 data(prices)
 ```
+The list `prices` contains random selections of $N=50$ stocks for periods of two years from the S&P 500.
 
-The list `prices` contains random selections of *N* = 50 stocks for periods of two years from the S&P 500.
-
-``` r
+```r
 length(prices)
 #> [1] 30
 str(prices[[1]])
@@ -67,37 +81,26 @@ colnames(prices[[1]])
 
 Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector `w`:
 
-``` r
-# load all the required libraries for the portfolio design
-library(CVXR)
-library(xts)
-
-naivePortfolioDesign <- function(prices) {
-  # compute log returns
-  X <- diff(log(prices))[-1]
-  
-  # compute mean vector and SCM
-  mu <- colMeans(X)
-  Sigma <- cov(X)
-  
-  # design mean-variance portfolio
-  w <- Variable(nrow(Sigma))
-  prob <- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma)),
-                  constraints = list(w >= 0, sum(w) == 1))
-  result <- solve(prob)
-  return(as.vector(result$getValue(w)))
+```r
+portfolio_fun <- function(prices) {
+  X <- diff(log(prices))[-1]  # compute log returns
+  Sigma <- cov(X)  # compute SCM
+  # design GMVP
+  w <- solve(Sigma, rep(1, nrow(Sigma)))
+  w <- w/sum(w)
+  return(w)
 }
 ```
 
 We are then ready to use the function `backtestPortfolio()` that will execute the portfolio design function on a rolling-window basis:
 
-``` r
-res <- backtestPortfolio(naivePortfolioDesign, prices[[1]])
+```r
+res <- backtestPortfolio(portfolio_fun, prices[[1]])
 print(res)
 ```
 
-Links
------
 
-Package: [GitHub](https://github.com/dppalomar/backtestPortfolio).
+
+## Links
+Package: [GitHub](https://github.com/dppalomar/backtestPortfolio).  
 README file: [GitHub-readme](https://rawgit.com/dppalomar/backtestPortfolio/master/README.html).

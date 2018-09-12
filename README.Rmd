@@ -1,10 +1,10 @@
 ---
 output:
-  md_document:
-    variant: markdown_github
   html_document:
     variant: markdown_github
     keep_md: true
+  md_document:
+    variant: markdown_github
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -64,28 +64,19 @@ colnames(prices[[1]])
 
 Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector `w`:
 ```{r, message=FALSE}
-library(CVXR)
-
-naivePortfolioDesign <- function(prices) {
-  # compute log returns
-  X <- diff(log(prices))[-1]
-  
-  # compute mean vector and SCM
-  mu <- colMeans(X)
-  Sigma <- cov(X)
-  
-  # design mean-variance portfolio
-  w <- Variable(nrow(Sigma))
-  prob <- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma)),
-                  constraints = list(w >= 0, sum(w) == 1))
-  result <- solve(prob)
-  return(as.vector(result$getValue(w)))
+portfolio_fun <- function(prices) {
+  X <- diff(log(prices))[-1]  # compute log returns
+  Sigma <- cov(X)  # compute SCM
+  # design GMVP
+  w <- solve(Sigma, rep(1, nrow(Sigma)))
+  w <- w/sum(w)
+  return(w)
 }
 ```
 
 We are then ready to use the function `backtestPortfolio()` that will execute the portfolio design function on a rolling-window basis:
 ```{r, eval=FALSE}
-res <- backtestPortfolio(naivePortfolioDesign, prices[[1]])
+res <- backtestPortfolio(portfolio_fun, prices[[1]])
 print(res)
 ```
 
