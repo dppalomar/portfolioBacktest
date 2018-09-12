@@ -3,8 +3,8 @@
 \docType{data}
 \name{prices}
 \alias{prices}
-\title{Set of random selections of 50 stocks from the S&P 500}
-\format{A list of \code{xts} objects with the random selection of 50 stock price during random periods of two years.}
+\title{Set of random selections of 50 stocks from the S&P 500 during periods of two years}
+\format{A list of \code{xts} objects with the prices of random selections of 50 stocks from the S&P 500 during periods of two years.}
 \source{
 \href{https://finance.yahoo.com}{Yahoo! Finance}
 }
@@ -12,6 +12,6 @@
 data(prices)
 }
 \description{
-Set of random selections of 50 stocks from the S&P 500
+Set of random selections of 50 stocks from the S&P 500 during periods of two years
 }
 \keyword{datasets}

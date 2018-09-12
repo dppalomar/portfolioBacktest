@@ -64,9 +64,7 @@ colnames(prices[[1]])
 
 Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector `w`:
 ```{r, message=FALSE}
-# load all the required libraries for the portfolio design
 library(CVXR)
-library(xts)
 
 naivePortfolioDesign <- function(prices) {
   # compute log returns

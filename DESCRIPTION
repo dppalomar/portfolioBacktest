@@ -20,19 +20,16 @@ Authors@R: c(
 Maintainer: Daniel P. Palomar <daniel.p.palomar@gmail.com>
 URL: https://github.com/dppalomar/backtestPortfolio,
 BugReports: https://github.com/dppalomar/backtestPortfolio/issues
-Depends:
+Depends: 
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: 
+Imports:
+    xts
 RoxygenNote: 6.0.1
 Suggests:
-    xts,
+VignetteBuilder:
     knitr,
-    rmarkdown,
-    bookdown,
-    prettydoc
-VignetteBuilder: 
-    knitr,
+    rmarkdown,    
     bookdown,
     prettydoc

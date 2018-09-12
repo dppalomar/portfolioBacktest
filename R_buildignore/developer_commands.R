@@ -17,7 +17,7 @@ package?backtestPortfolio
 ## Developer commands (http://r-pkgs.had.co.nz/)
 ##
 devtools::load_all()  #or Ctrl-Shift-L
-#devtools::use_package("mvtnorm")
+#devtools::use_package("xts")
 devtools::install()
 library(backtestPortfolio)
 #devtools::build()  # to generate the installation file
