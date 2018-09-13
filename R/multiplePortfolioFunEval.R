@@ -28,9 +28,9 @@ multiplePortfolioFunEval <- function(path, prices,
   # save the package and variables list
   packages_default <- search()
   var_fun_default <- ls()
-  print("---------------Default Packages---------------")
-  print(packages_default)
-  print("----------------------------------------------")
+  cat("---------------Default Packages---------------\n")
+  cat(paste(packages_default, "\n"))
+  cat("----------------------------------------------\n")
   # some functions evaluation here
   for (i in 1:length(files)) {
     
@@ -39,13 +39,13 @@ multiplePortfolioFunEval <- function(path, prices,
     tmp <- unlist(strsplit(file_name_cleaned, "-"))
     stud_names <- c(stud_names, paste(tmp[1], tmp[2], collapse = " "))
     stud_IDs <- c(stud_IDs, tmp[3])
-    print(paste0(Sys.time()," - Execute code from ", stud_names[i], " (", stud_IDs[i], ")"))
+    cat(paste0(Sys.time()," - Execute code from ", stud_names[i], " (", stud_IDs[i], ")\n"))
     
     # mirror list of present variables and functions
     var_fun_default <- ls()
     
     # evaluate code
-    success_flag <- TRUE
+    warning_flag <- error_flag <- FALSE
     start.time <- Sys.time() # timing the backtest evaluation time
     res = tryCatch({
       # source file
@@ -60,21 +60,24 @@ multiplePortfolioFunEval <- function(path, prices,
                                 freq_optim = freq_optim, 
                                 freq_rebalance = freq_rebalance)
     }, warning = function(w) {
-      success_flag <- FALSE
-      warning_info[[i]] <- w
+      warning_flag <<- TRUE
+      warning_info[[i]] <<- w
       print(w)
     }, error = function(e) {
-      success_flag <- FALSE
+      error_flag <<- TRUE
+      error_info[[i]] <<- e
       print(e)
-      error_info[[i]] <- e
     }, finally = {
     })
     end.time <- Sys.time()
     eval_time <- c(eval_time, as.numeric(end.time - start.time))
     
     # deal with result, use midean
-    if (success_flag) print("No errors! No warnings!")
-    try(portfolio_perform[[i]] <- apply(res$performance, 1, median))
+    if (!warning_flag && !error_flag) {
+      cat("No errors! No warnings!\n")
+      try(portfolio_perform[[i]] <- apply(res$performance, 1, median))
+    }
+    
     
     
     # detach the newly loaded packages
