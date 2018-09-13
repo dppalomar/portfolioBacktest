@@ -34,7 +34,8 @@
 #' res <- backtestPortfolio(portfolio_fun, prices[[1]])
 #' print(res)
 #'
-#' @import xts, PerformanceAnalytics
+#' @import xts
+#'         PerformanceAnalytics
 #' @export
 backtestPortfolio <- function(portfolio_fun, prices,
                               shortselling = FALSE, leverage = 1,
@@ -133,7 +134,8 @@ backtestPortfolio <- function(portfolio_fun, prices,
 #' res <- backtestPortfolio(portfolio_fun, prices[1:5])
 #' print(res)
 #'
-#' @import xts, PerformanceAnalytics
+#' @import xts
+#'         PerformanceAnalytics
 #' @export
 multipleBacktestPortfolio <- function(portfolio_fun, prices,
                               shortselling = FALSE, leverage = 1,

@@ -27,7 +27,7 @@ LazyData: true
 Imports:
     xts,
     PerformanceAnalytics
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 Suggests:
 VignetteBuilder:
     knitr,

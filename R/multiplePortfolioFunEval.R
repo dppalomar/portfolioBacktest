@@ -14,7 +14,8 @@
 #' \item{\code{TBD}  }{m-by-1 vector corresponding to eigenvalues.}
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
-#' @import xts, PerformanceAnalytics
+#' @import xts
+#'         PerformanceAnalytics
 #' @export
 multiplePortfolioFunEval <- function(path, prices,
                               shortselling = FALSE, leverage = 1,
@@ -115,7 +116,8 @@ detach_packages <- function(items) {
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
-#' @import readtext, stringi
+#' @import readtext 
+#'         stringi
 #' @export
 checkUninstalledPackages <- function(path) {
   req_pkgs <- c()
