@@ -1,6 +1,6 @@
-#' Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices
+#' @title Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices
 #'
-#' Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
+#' @description Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
 #'
 #' @param portfolio_fun function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.
 #' @param prices \code{xts} containing the stock prices for the backtesting.
@@ -34,7 +34,7 @@
 #' res <- backtestPortfolio(portfolio_fun, prices[[1]])
 #' print(res)
 #'
-#' @import xts
+#' @import xts, PerformanceAnalytics
 #' @export
 backtestPortfolio <- function(portfolio_fun, prices,
                               shortselling = FALSE, leverage = 1,
@@ -87,11 +87,53 @@ backtestPortfolio <- function(portfolio_fun, prices,
     # $error: this could be a number indicating the type of error: 0 is no error, 1 is whatever, 2 is whatever
     # $message: this could contain some string message if there was some error (to help the user understand the error) or NULL otherwise
     #
+  criteria <- c("sharpe ratio (annu.)", "max drawdown", "expected return (annu.)", "volatility (annu.)")
+  performance <- c(SharpeRatio.annualized(rets), maxDrawdown(rets), Return.annualized(rets), StdDev.annualized(rets))
+  names(performance) <- criteria
+  
   return(list("returns" = rets,
-              "cumPnL" = wealth_geom_BnH_trn))
+              "cumPnL" = wealth_geom_BnH_trn,
+              "performance" = performance))
 }
 
 
+#' @title Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices
+#'
+#' @description Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
+#'
+#' @param portfolio_fun function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.
+#' @param prices a list of \code{xts} containing the stock prices for the backtesting.
+#' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
+#' @param leverage amount of leverage (default is 1, so no leverage).
+#' @param T_sliding_window length of the sliding window.
+#' @param freq_optim how often the portfolio is to be reoptimized.
+#' @param freq_rebalance how often the portfolio is to be rebalanded.
+#' @return A list containing the performance in the following elements:
+#' \item{\code{TBD}  }{m-by-m matrix, columns corresponding to eigenvectors.}
+#' \item{\code{TBD}  }{m-by-1 vector corresponding to eigenvalues.}
+#' @author Daniel P. Palomar and Rui Zhou
+#' @examples
+#' library(backtestPortfolio)
+#' library(xts)
+#'
+#' # load data
+#' data(prices)
+#'
+#' # define portfolio function
+#' portfolio_fun <- function(prices) {
+#'   X <- diff(log(prices))[-1]  # compute log returns
+#'   Sigma <- cov(X)  # compute SCM
+#'   # design GMVP
+#'   w <- solve(Sigma, rep(1, nrow(Sigma)))
+#'   w <- w/sum(w)
+#'   return(w)
+#' }
+#' 
+#' # perform backtesting
+#' res <- backtestPortfolio(portfolio_fun, prices[1:5])
+#' print(res)
+#'
+#' @import xts, PerformanceAnalytics
 #' @export
 multipleBacktestPortfolio <- function(portfolio_fun, prices,
                               shortselling = FALSE, leverage = 1,
@@ -105,6 +147,26 @@ multipleBacktestPortfolio <- function(portfolio_fun, prices,
   
   # BTW, eventually I want to merge multipleBacktestPortfolio and backtestPortfolio into just one function called backtestPortfolio
   # but let's do that later. I will have time this weekend and Monday.
+  if (!is.list(prices)) stop("prices have to be list")
+  rets <- cumPnL <- performance <- list()
+  
+  for (i in 1:length(prices)) {
+    result <- backtestPortfolio(portfolio_fun = portfolio_fun, 
+                                prices = prices[[i]],
+                                shortselling = shortselling,
+                                leverage = leverage,
+                                T_sliding_window = T_sliding_window,
+                                freq_optim = freq_optim,
+                                freq_rebalance = freq_rebalance)
+    rets[[i]] <- result$return
+    cumPnL[[i]] <- result$cumPnL
+    performance[[i]] <- result$performance
+  }
+  performance <- sapply(performance, cbind)
+  rownames(performance) <- names(result$performance)
+  return(list("returns" = rets,
+              "cumPnL" = cumPnL,
+              "performance" = performance))
 }
 
 
