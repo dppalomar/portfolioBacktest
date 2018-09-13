@@ -4,13 +4,17 @@
 \alias{backtestPortfolio}
 \title{Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices}
 \usage{
-backtestPortfolio(portfolio_fun, prices, T_sliding_window = 6 * 21,
-  freq_optim = 5, freq_rebalance = freq_optim)
+backtestPortfolio(portfolio_fun, prices, shortselling = FALSE, leverage = 1,
+  T_sliding_window = 6 * 21, freq_optim = 5, freq_rebalance = freq_optim)
 }
 \arguments{
 \item{portfolio_fun}{function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.}
 
 \item{prices}{\code{xts} containing the stock prices for the backtesting.}
+
+\item{shortselling}{whether shortselling is allowed or not (default \code{FALSE}).}
+
+\item{leverage}{amount of leverage (default is 1, so no leverage).}
 
 \item{T_sliding_window}{length of the sliding window.}
 
@@ -44,7 +48,7 @@ portfolio_fun <- function(prices) {
 }
 
 # perform backtesting
-res <- backtestPortfolio(naivePortfolioDesign, prices[[1]])
+res <- backtestPortfolio(portfolio_fun, prices[[1]])
 print(res)
 
 }
