@@ -1,10 +1,10 @@
-#' Set of random selections of 50 stocks from the S&P 500 during periods of two years
+#' Set of random selections of 50 stocks from the HSI, NKY, SHZ, UKC, S&P 500 during periods of two years
 #'
 #' @docType data
 #'
 #' @usage data(prices)
 #'
-#' @format A list of \code{xts} objects with the prices of random selections of 50 stocks from the S&P 500 during periods of two years.
+#' @format A list of \code{xts} objects with the prices of random selections of 50 stocks from the HSI, NKY, SHZ, UKC, S&P 500 during periods of two years.
 #'
 #' @source \href{https://finance.yahoo.com}{Yahoo! Finance}
 #'
