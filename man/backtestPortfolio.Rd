@@ -11,7 +11,7 @@ backtestPortfolio(portfolio_fun, prices, shortselling = FALSE,
 \arguments{
 \item{portfolio_fun}{function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.}
 
-\item{prices}{\code{xts} containing the stock prices for the backtesting.}
+\item{prices}{a list of \code{xts} containing the stock prices for the backtesting.}
 
 \item{shortselling}{whether shortselling is allowed or not (default \code{FALSE}).}
 
@@ -49,7 +49,7 @@ portfolio_fun <- function(prices) {
 }
 
 # perform backtesting
-res <- backtestPortfolio(portfolio_fun, prices[[1]])
+res <- backtestPortfolio(portfolio_fun, prices[1:5])
 print(res)
 
 }

@@ -23,7 +23,7 @@ multiplePortfolioFunEval <- function(path, prices,
   # extract useful informations
   files <- list.files(path)
   stud_names <- stud_IDs <- eval_time <- c()
-  portfolio_perform <- warning_info <- error_info <- list()
+  portfolio_perform <- error_message <- list()
   
   # save the package and variables list
   packages_default <- search()
@@ -44,38 +44,35 @@ multiplePortfolioFunEval <- function(path, prices,
     # mirror list of present variables and functions
     var_fun_default <- ls()
     
-    # evaluate code
-    warning_flag <- error_flag <- FALSE
-    start.time <- Sys.time() # timing the backtest evaluation time
-    res = tryCatch({
-      # source file
-      suppressMessages(source(paste0(path, "/", file), local = TRUE))
-      
-      # do evaluation
-      multipleBacktestPortfolio(portfolio_fun = portfolio_fun, 
-                                prices = prices,
-                                shortselling = shortselling, 
-                                leverage = leverage, 
-                                T_sliding_window = T_sliding_window, 
-                                freq_optim = freq_optim, 
-                                freq_rebalance = freq_rebalance)
-    }, warning = function(w) {
-      warning_flag <<- TRUE
-      warning_info[[i]] <<- w
-      print(w)
-    }, error = function(e) {
-      error_flag <<- TRUE
-      error_info[[i]] <<- e
-      print(e)
-    }, finally = {
-    })
+    # !!! take care of the error happening in source
+    suppressMessages(source(paste0(path, "/", file), local = TRUE))
+    
+    # timing the backtest evaluation time
+    start.time <- Sys.time() 
+    
+    # excute function (must be robust enough so that no error should happen)
+    res = backtestPortfolio(portfolio_fun = portfolio_fun, 
+                            prices = prices,
+                            shortselling = shortselling, 
+                            leverage = leverage, 
+                            T_sliding_window = T_sliding_window, 
+                            freq_optim = freq_optim, 
+                            freq_rebalance = freq_rebalance)
+    
+    # record time
     end.time <- Sys.time()
     eval_time <- c(eval_time, as.numeric(end.time - start.time))
     
-    # deal with result, use midean
-    if (!warning_flag && !error_flag) {
-      cat("No errors! No warnings!\n")
-      try(portfolio_perform[[i]] <- apply(res$performance, 1, median))
+    # extract result
+    mask_error <- unlist(res$error)
+    n_fail <- sum(mask_error)
+    n_pass <- length(prices) - n_fail
+    cat(paste("Pass : ", toString(n_pass), "Fail :", toString(n_fail), " \n"))
+    if (n_fail < length(prices)) {
+      try(portfolio_perform[[i]] <- apply(res$performance[, !mask_error], 1, median))
+    } else {
+      error_message[[i]] <- res$error_message
+      portfolio_perform[[i]] <- NA
     }
     
     
@@ -96,8 +93,7 @@ multiplePortfolioFunEval <- function(path, prices,
     "stud_IDs" = stud_IDs,
     "performance" = portfolio_perform,
     "eval_time" = eval_time,
-    "warnings" = warning_info,
-    "errors" = error_info
+    "error_message" = error_message
   ))
 }
 

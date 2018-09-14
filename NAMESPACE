@@ -2,7 +2,6 @@
 
 export(backtestPortfolio)
 export(checkUninstalledPackages)
-export(multipleBacktestPortfolio)
 export(multiplePortfolioFunEval)
 import(PerformanceAnalytics)
 import(readtext)

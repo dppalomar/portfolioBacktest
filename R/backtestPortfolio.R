@@ -36,8 +36,7 @@
 #'
 #' @import xts
 #'         PerformanceAnalytics
-#' @export
-backtestPortfolio <- function(portfolio_fun, prices,
+singleBacktestPortfolio <- function(portfolio_fun, prices,
                               shortselling = FALSE, leverage = 1,
                               T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
   ######## error control  #########
@@ -57,12 +56,21 @@ backtestPortfolio <- function(portfolio_fun, prices,
   rebalancing_indices <- seq(from = T_sliding_window, to = T, by = freq_rebalance)
   
   # compute w
+  error <- FALSE
+  error_message <- NULL
   w <- xts(matrix(NA, length(rebalancing_indices), N), order.by = index(prices)[rebalancing_indices])
   colnames(w) <- colnames(prices)
   for (i in 1:length(rebalancing_indices)) {
     idx_prices <- rebalancing_indices[i]
     prices_window <- prices[(idx_prices-T_sliding_window+1):idx_prices, ]
-    w[i, ] <- do.call(portfolio_fun, list(prices_window))
+    tryCatch({w[i, ] <- do.call(portfolio_fun, list(prices_window))},
+             warning = function(w) { error <<- TRUE; error_message <<- w$message},
+             error = function(e) {error <<- TRUE; error_message <<- e$message})
+    if (error) return(list("returns" = NA,
+                           "cumPnL" = NA,
+                           "performance" = rep(NA, 4),
+                           "error" = error,
+                           "error_message" = error_message))
     # make sure portfolio is feasible
     # Daniel: TBD
   }
@@ -77,24 +85,14 @@ backtestPortfolio <- function(portfolio_fun, prices,
   
   # compute various performance measures
     # Daniel: think of turnover and ROI
-    # Rui: 
-    #
-    # I would return a list with the following elements:
-    # $returns: this is a one-column xts with the daily returns
-    # $cumPnL: this is a one-column xts with the daily cumPnL
-    # $performance: this could be a named vector with each element containing stuff like
-    #               Sharpe ratio, max drawdown, expected return, volatility, etc. 
-    #               You can use PerformanceAnalytics to compute those better, so that the code is short and clean.
-    # $error: this could be a number indicating the type of error: 0 is no error, 1 is whatever, 2 is whatever
-    # $message: this could contain some string message if there was some error (to help the user understand the error) or NULL otherwise
-    #
-  criteria <- c("sharpe ratio (annu.)", "max drawdown", "expected return (annu.)", "volatility (annu.)")
   performance <- c(SharpeRatio.annualized(rets), maxDrawdown(rets), Return.annualized(rets), StdDev.annualized(rets))
-  names(performance) <- criteria
+  names(performance) <- c("sharpe ratio (annu.)", "max drawdown", "expected return (annu.)", "volatility (annu.)")
   
   return(list("returns" = rets,
               "cumPnL" = wealth_geom_BnH_trn,
-              "performance" = performance))
+              "performance" = performance,
+              "error" = error,
+              "error_message" = error_message))
 }
 
 
@@ -137,7 +135,7 @@ backtestPortfolio <- function(portfolio_fun, prices,
 #' @import xts
 #'         PerformanceAnalytics
 #' @export
-multipleBacktestPortfolio <- function(portfolio_fun, prices,
+backtestPortfolio <- function(portfolio_fun, prices,
                               shortselling = FALSE, leverage = 1,
                               T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
   # Rui: this one receives in prices a list of xts and loops over them calling backtestPortfolio
@@ -149,26 +147,37 @@ multipleBacktestPortfolio <- function(portfolio_fun, prices,
   
   # BTW, eventually I want to merge multipleBacktestPortfolio and backtestPortfolio into just one function called backtestPortfolio
   # but let's do that later. I will have time this weekend and Monday.
-  if (!is.list(prices)) stop("prices have to be list")
-  rets <- cumPnL <- performance <- list()
+  if (!is.list(prices)) return(singleBacktestPortfolio(portfolio_fun = portfolio_fun,
+                                                       prices = prices,
+                                                       shortselling = shortselling,
+                                                       leverage = leverage,
+                                                       T_sliding_window = T_sliding_window,
+                                                       freq_optim = freq_optim,
+                                                       freq_rebalance = freq_rebalance))
+  
+  rets <- cumPnL <- performance <- error <- error_message <- list()
   
   for (i in 1:length(prices)) {
-    result <- backtestPortfolio(portfolio_fun = portfolio_fun, 
-                                prices = prices[[i]],
-                                shortselling = shortselling,
-                                leverage = leverage,
-                                T_sliding_window = T_sliding_window,
-                                freq_optim = freq_optim,
-                                freq_rebalance = freq_rebalance)
+    result <- singleBacktestPortfolio(portfolio_fun = portfolio_fun,
+                                      prices = prices[[i]],
+                                      shortselling = shortselling,
+                                      leverage = leverage,
+                                      T_sliding_window = T_sliding_window,
+                                      freq_optim = freq_optim,
+                                      freq_rebalance = freq_rebalance)
     rets[[i]] <- result$return
     cumPnL[[i]] <- result$cumPnL
     performance[[i]] <- result$performance
+    error[[i]] <- result$error
+    error_message[[i]] <- result$error_message
   }
   performance <- sapply(performance, cbind)
   rownames(performance) <- names(result$performance)
   return(list("returns" = rets,
               "cumPnL" = cumPnL,
-              "performance" = performance))
+              "performance" = performance,
+              "error" = error,
+              "error_message" = error_message))
 }
 
 

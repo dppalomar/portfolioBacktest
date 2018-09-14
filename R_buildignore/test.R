@@ -34,7 +34,7 @@ portfolio_fun <- function(prices) {
 
 # perform backtesting
 res <- backtestPortfolio(portfolio_fun, prices[[1]])
-mul_res <- multipleBacktestPortfolio(portfolio_fun, prices[1:2])
+mul_res <- backtestPortfolio(portfolio_fun, prices[1:3])
 
 # performance
 names(res)
