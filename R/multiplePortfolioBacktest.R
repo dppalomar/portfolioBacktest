@@ -17,13 +17,13 @@
 #' @import xts
 #'         PerformanceAnalytics
 #' @export
-multiplePortfolioBacktest <- function(path, prices,
-                                      shortselling = FALSE, leverage = 1,
-                                      T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
+multiplePortfolioBacktest <- function(path, prices, return_all = FALSE, ...) {
   # extract useful informations
   files <- list.files(path)
-  stud_names <- stud_IDs <- eval_time <- c()
-  portfolio_perform <- error_message <- list()
+  stud_names <- stud_IDs <- time_average <- failure_ratio <- c()
+  error_message <- list()
+  portfolios_perform <- matrix(NA, length(files), 4)
+  if (return_all) results_container <- list()
   
   # save the package and variables list
   packages_default <- search()
@@ -44,37 +44,20 @@ multiplePortfolioBacktest <- function(path, prices,
     # mirror list of present variables and functions
     var_fun_default <- ls()
     
-    # !!! take care of the error happening in source
-    suppressMessages(source(paste0(path, "/", file), local = TRUE))
     
-    # timing the backtest evaluation time
-    start.time <- Sys.time() 
-    
-    # excute function
-    res <- backtestPortfolio(portfolio_fun = portfolio_fun, 
-                            prices = prices,
-                            shortselling = shortselling, 
-                            leverage = leverage, 
-                            T_sliding_window = T_sliding_window, 
-                            freq_optim = freq_optim, 
-                            freq_rebalance = freq_rebalance)
-    
-    # record time
-    end.time <- Sys.time()
-    eval_time <- c(eval_time, as.numeric(end.time - start.time))
-    
-    # extract result
-    mask_error <- unlist(res$error)
-    n_fail <- sum(mask_error)
-    n_pass <- length(prices) - n_fail
-    cat(paste("Pass : ", toString(n_pass), "Fail :", toString(n_fail), " \n"))
-    if (n_fail < length(prices)) {
-      try(portfolio_perform[[i]] <- apply(res$performance[, !mask_error], 1, median))
-    } else {
+    tryCatch({
+      suppressMessages(source(paste0(path, "/", file), local = TRUE))
+      res <- backtestPortfolio(portfolio_fun = portfolio_fun, prices = prices, ...)
+      portfolios_perform[i, ] <- res$performance_summary
+      time_average[i] <- res$time_average
+      failure_ratio[i] <- res$failure_ratio
       error_message[[i]] <- res$error_message
-      portfolio_perform[[i]] <- NA
-    }
-    
+      if (return_all) results_container[[i]] <- res
+    }, warning = function(w){
+      error_message[[i]] <<- w$message
+    }, error = function(e){
+      error_message[[i]] <<- e$message
+    })
     
     
     # detach the newly loaded packages
@@ -91,7 +74,7 @@ multiplePortfolioBacktest <- function(path, prices,
   return(list(
     "stud_names" = stud_names,
     "stud_IDs" = stud_IDs,
-    "performance" = portfolio_perform,
+    "performance" = portfolios_perform,
     "eval_time" = eval_time,
     "error_message" = error_message
   ))
@@ -115,10 +98,9 @@ detach_packages <- function(items) {
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
-#' @import readtext 
-#'         stringi
-#' @export
 checkUninstalledPackages <- function(path) {
+  if (!require("readtext")) stop("Package \"readtext\" is required to run this function!")
+  if (!require("stringi")) stop("Package \"stringi\" is required to run this function!")
   req_pkgs <- c()
   files <- list.files(path)
   for (file in files) {

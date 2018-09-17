@@ -21,6 +21,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
   optim_indices <- seq(from = T_sliding_window, to = T, by = freq_optim)
   rebalancing_indices <- seq(from = T_sliding_window, to = T, by = freq_rebalance)
   
+  start_time <- Sys.time() # time the following procedure
   # compute w
   error <- FALSE
   error_message <- NULL
@@ -46,9 +47,12 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
     if (error) return(list("returns" = NA,
                            "cumPnL" = NA,
                            "performance" = rep(NA, 4),
+                           "time" = NA,
                            "error" = error,
                            "error_message" = error_message))
   }
+  
+  time <- as.numeric(Sys.time() - start_time)
   
   # compute returns of portfolio
   R_lin <- PerformanceAnalytics::CalculateReturns(prices[-c(1:(T_sliding_window-1)), ])
@@ -60,11 +64,12 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
   
   # compute various performance measures (in the future, add turnover and ROI)
   performance <- c(SharpeRatio.annualized(rets), maxDrawdown(rets), Return.annualized(rets), StdDev.annualized(rets))
-  names(performance) <- c("sharpe ratio (annu.)", "max drawdown", "expected return (annu.)", "volatility (annu.)")
+  names(performance) <- c("sharpe ratio", "max drawdown", "expected return", "volatility")
   
   return(list("returns" = rets,
               "cumPnL" = wealth_geom_BnH_trn,
               "performance" = performance,
+              "time" = time,
               "error" = error,
               "error_message" = error_message))
 }
@@ -114,39 +119,46 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
 #' mul_res$performance_summary
 #' 
 #' @export
-portfolioBacktest <- function(portfolio_fun, prices,
-                              shortselling = FALSE, leverage = 1,
-                              T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
+portfolioBacktest <- function(portfolio_fun, prices, ...) {
   
-  if (!is.list(prices)) return(singlePortfolioBacktest(portfolio_fun = portfolio_fun,
-                                                       prices = prices,
-                                                       shortselling = shortselling,
-                                                       leverage = leverage,
-                                                       T_sliding_window = T_sliding_window,
-                                                       freq_optim = freq_optim,
-                                                       freq_rebalance = freq_rebalance))
+  # when price is an xts object
+  if (!is.list(prices)) {
+    return(singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, ...))
+  }
   
-  rets <- cumPnL <- performance <- error <- error_message <- list()
+  rets <- cumPnL <- performance <- error_message <- list()
+  time <- error <- c()
   
+  # when price is a list of xts object
   for (i in 1:length(prices)) {
-    result <- singlePortfolioBacktest(portfolio_fun = portfolio_fun,
-                                      prices = prices[[i]],
-                                      shortselling = shortselling,
-                                      leverage = leverage,
-                                      T_sliding_window = T_sliding_window,
-                                      freq_optim = freq_optim,
-                                      freq_rebalance = freq_rebalance)
+    result <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = prices[[i]], ...)
     rets[[i]] <- result$return
     cumPnL[[i]] <- result$cumPnL
     performance[[i]] <- result$performance
-    error[[i]] <- result$error
+    time[i] <- result$time
+    error[i] <- result$error
     error_message[[i]] <- result$error_message
   }
+  
+  # prepare results to be returned
   performance <- sapply(performance, cbind)
   rownames(performance) <- names(result$performance)
+  # summarize performance 
+  failure_ratio <- sum(error) / length(prices)
+  if (failure_ratio < 1) {
+    performance_summary <- apply(performance[, !error], 1, median)
+    time_average <- mean(time[!error])
+  } else {
+    performance_summary <- time_average <- NA
+  }
+
   return(list("returns" = rets,
               "cumPnL" = cumPnL,
               "performance" = performance,
+              "performance_summary" = performance_summary,
+              "time" = time,
+              "time_average" = time_average,
+              "failure_ratio" = failure_ratio,
               "error" = error,
               "error_message" = error_message))
 }
