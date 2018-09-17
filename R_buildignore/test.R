@@ -46,7 +46,7 @@ PerformanceAnalytics::table.AnnualizedReturns(res$returns)
 PerformanceAnalytics::charts.PerformanceSummary(res$returns, wealth.index = TRUE)
 
 # perform multiple backtesting
-mul_res <- portfolioBacktest(portfolio_fun_Markowitz, prices[1:10])
+mul_res <- portfolioBacktest(portfolio_fun_Markowitz, prices[1:3])
 mul_res$performance
 mul_res$performance_summary
 

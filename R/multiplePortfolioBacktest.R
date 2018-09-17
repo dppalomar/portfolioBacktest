@@ -4,6 +4,7 @@
 #'
 #' @param path absolute path for a folder which contains all (and only) functions to be evaluated
 #' @param prices a list of \code{xts} containing the stock prices for the backtesting.
+#' @param return_all logical, indicating whether return all the results
 #' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
 #' @param leverage amount of leverage (default is 1, so no leverage).
 #' @param T_sliding_window length of the sliding window.
@@ -16,7 +17,6 @@
 #' 
 #' @import xts
 #'         PerformanceAnalytics
-#' @export
 multiplePortfolioBacktest <- function(path, prices, return_all = FALSE, ...) {
   # extract useful informations
   files <- list.files(path)
@@ -47,7 +47,7 @@ multiplePortfolioBacktest <- function(path, prices, return_all = FALSE, ...) {
     
     tryCatch({
       suppressMessages(source(paste0(path, "/", file), local = TRUE))
-      res <- backtestPortfolio(portfolio_fun = portfolio_fun, prices = prices, ...)
+      res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, ...)
       portfolios_perform[i, ] <- res$performance_summary
       time_average[i] <- res$time_average
       failure_ratio[i] <- res$failure_ratio
@@ -71,13 +71,16 @@ multiplePortfolioBacktest <- function(path, prices, return_all = FALSE, ...) {
     rm(list = var_fun_det)
   }
   
-  return(list(
-    "stud_names" = stud_names,
-    "stud_IDs" = stud_IDs,
-    "performance" = portfolios_perform,
-    "eval_time" = eval_time,
-    "error_message" = error_message
-  ))
+  rownames(portfolios_perform) <- stud_IDs
+  colnames(portfolios_perform) <- c("sharpe ratio", "max drawdown", "expected return", "volatility")
+  vars_tb_returned <- list("stud_names" = stud_names,
+                           "stud_IDs" = stud_IDs,
+                           "performance" = portfolios_perform,
+                           "time_average" = time_average,
+                           "failure_ratio" = failure_ratio,
+                           "error_message" = error_message)
+  if (return_all) vars_tb_returned$results_container <- results_container
+  return(vars_tb_returned)
 }
 
 

@@ -87,8 +87,15 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
 #' @param freq_optim how often the portfolio is to be reoptimized.
 #' @param freq_rebalance how often the portfolio is to be rebalanded.
 #' @return A list containing the performance in the following elements:
-#' \item{\code{TBD}  }{m-by-m matrix, columns corresponding to eigenvectors.}
-#' \item{\code{TBD}  }{m-by-1 vector corresponding to eigenvalues.}
+#' \item{\code{returns}  }{xts object, the daily return of given portfolio function}
+#' \item{\code{cumPnL}  }{xts object, the cummulative daily return of given portfolio function}
+#' \item{\code{performance}}{matrix, each row is responding to one data example in order}
+#' \item{\code{performance_summary}}{vector, summarizing the performance by its median value}
+#' \item{\code{time}}{vector, recording time for execute the portfolio for one data example}
+#' \item{\code{time_average}}{number, the average of \code{time} but ignoring the NAs}
+#' \item{\code{failure_ratio}}{number, the failure ratio of applying given portfolio function to different data examples}
+#' \item{\code{error}}{logical vector, indicating whether an error happens in data examples}
+#' \item{\code{error_message}}{string list, recording the error message when error happens}
 #' @author Daniel P. Palomar and Rui Zhou
 #' @examples
 #' library(backtestPortfolio)
