@@ -1,38 +1,4 @@
-#' @title Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices
-#'
-#' @description Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
-#'
-#' @param portfolio_fun function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.
-#' @param prices \code{xts} containing the stock prices for the backtesting.
-#' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
-#' @param leverage amount of leverage (default is 1, so no leverage).
-#' @param T_sliding_window length of the sliding window.
-#' @param freq_optim how often the portfolio is to be reoptimized.
-#' @param freq_rebalance how often the portfolio is to be rebalanded.
-#' @return A list containing the performance in the following elements:
-#' \item{\code{TBD}  }{m-by-m matrix, columns corresponding to eigenvectors.}
-#' \item{\code{TBD}  }{m-by-1 vector corresponding to eigenvalues.}
-#' @author Daniel P. Palomar and Rui Zhou
-#' @examples
-#' library(backtestPortfolio)
-#' library(xts)
-#'
-#' # load data
-#' data(prices)
-#'
-#' # define portfolio function
-#' portfolio_fun <- function(prices) {
-#'   X <- diff(log(prices))[-1]  # compute log returns
-#'   Sigma <- cov(X)  # compute SCM
-#'   # design GMVP
-#'   w <- solve(Sigma, rep(1, nrow(Sigma)))
-#'   w <- w/sum(w)
-#'   return(w)
-#' }
-#' 
-#' # perform backtesting
-#' res <- backtestPortfolio(portfolio_fun, prices[[1]])
-#' print(res)
+#' Backtesting on a single xts
 #'
 #' @import xts
 #'         PerformanceAnalytics
@@ -65,26 +31,34 @@ singleBacktestPortfolio <- function(portfolio_fun, prices,
     prices_window <- prices[(idx_prices-T_sliding_window+1):idx_prices, ]
     tryCatch({w[i, ] <- do.call(portfolio_fun, list(prices_window))},
              warning = function(w) { error <<- TRUE; error_message <<- w$message},
-             error = function(e) {error <<- TRUE; error_message <<- e$message})
+             error = function(e) { error <<- TRUE; error_message <<- e$message})
+    # exit in case of error
+    if (!error) {
+      if (sum(abs(w[i, ])) > leverage + 1e-8) {
+        error <- TRUE
+        error_message <- "budget/leverage constraint not satisfied"
+      }
+      if (!shortselling && any(w[i, ] + 1e-8 < 0)) {
+        error <- TRUE
+        error_message <- "shortselling constraint not satisfied"
+      }
+    }
     if (error) return(list("returns" = NA,
                            "cumPnL" = NA,
                            "performance" = rep(NA, 4),
                            "error" = error,
                            "error_message" = error_message))
-    # make sure portfolio is feasible
-    # Daniel: TBD
   }
   
   # compute returns of portfolio
-  R_lin <- PerformanceAnalytics::CalculateReturns(prices)[-1]  #Daniel: fix later, no need to compute the initial T_sliding_window returns
+  R_lin <- PerformanceAnalytics::CalculateReturns(prices[-c(1:(T_sliding_window-1)), ])
   rets <- returnPortfolio(R = R_lin, weights = w)
   
-  # compute cumulative wealth
-  wealth_arith_BnH_trn <- 1 + cumsum(rets)  # initial budget of 1$
-  wealth_geom_BnH_trn <- cumprod(1 + rets)  # initial budget of 1$
+  # compute cumulative wealth (initial budget of 1$)
+  #wealth_arith_BnH_trn <- 1 + cumsum(rets)
+  wealth_geom_BnH_trn <- cumprod(1 + rets)
   
-  # compute various performance measures
-    # Daniel: think of turnover and ROI
+  # compute various performance measures (in the future, add turnover and ROI)
   performance <- c(SharpeRatio.annualized(rets), maxDrawdown(rets), Return.annualized(rets), StdDev.annualized(rets))
   names(performance) <- c("sharpe ratio (annu.)", "max drawdown", "expected return (annu.)", "volatility (annu.)")
   
@@ -128,25 +102,18 @@ singleBacktestPortfolio <- function(portfolio_fun, prices,
 #'   return(w)
 #' }
 #' 
-#' # perform backtesting
-#' res <- backtestPortfolio(portfolio_fun, prices[1:5])
+#' # perform backtesting on one xts
+#' res <- backtestPortfolio(portfolio_fun, prices[[1]])
 #' print(res)
 #'
-#' @import xts
-#'         PerformanceAnalytics
+#' # perform backtesting on a list of xts
+#' res <- backtestPortfolio(portfolio_fun, prices[1:5])
+#' 
 #' @export
 backtestPortfolio <- function(portfolio_fun, prices,
                               shortselling = FALSE, leverage = 1,
                               T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
-  # Rui: this one receives in prices a list of xts and loops over them calling backtestPortfolio
-  # It should returs a list containing something similar to the return of backtestPortfolio:
-  # $returns and $cumPnL now will be a matrix xts with each column corresponding to each call to backtestPortfolio
-  # $performance now will be a matrix where each column will contain each vector returned by each call to backtestPortfolio
-  # $ error now will be a vector
-  # $ message now will be a vector
   
-  # BTW, eventually I want to merge multipleBacktestPortfolio and backtestPortfolio into just one function called backtestPortfolio
-  # but let's do that later. I will have time this weekend and Monday.
   if (!is.list(prices)) return(singleBacktestPortfolio(portfolio_fun = portfolio_fun,
                                                        prices = prices,
                                                        shortselling = shortselling,
@@ -189,14 +156,13 @@ backtestPortfolio <- function(portfolio_fun, prices,
 #            - dates with no rows means no rebalancing (note that the portfolio may then violate some margin constraints...)
 #
 #' @import xts
-# Daniel: think carefully of the effect of shorselling and leverage in this function
 returnPortfolio <- function(R, weights, execution = c("same day", "next day"), name = "portfolio.returns") {
   ######## error control  #########
   if (!is.xts(R) || !is.xts(weights)) stop("This function only accepts xts")
   if (attr(index(R), "class") != "Date") stop("This function only accepts daily data")
   if (!all(index(weights) %in% index(R))) stop("Weight dates do not appear in the returns")
   if (ncol(R) != ncol(weights)) stop("Number of weights does not match the number of assets in the returns")
-  R[is.na(R)] <- 0
+  if (anyNA(R[-1])) stop("Returns contain NAs")
   #################################
   
   # fill in w with NA to match the dates of R and lag appropriately

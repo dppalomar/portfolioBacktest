@@ -18,8 +18,8 @@
 #'         PerformanceAnalytics
 #' @export
 multiplePortfolioFunEval <- function(path, prices,
-                              shortselling = FALSE, leverage = 1,
-                              T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
+                                     shortselling = FALSE, leverage = 1,
+                                     T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
   # extract useful informations
   files <- list.files(path)
   stud_names <- stud_IDs <- eval_time <- c()
@@ -50,8 +50,8 @@ multiplePortfolioFunEval <- function(path, prices,
     # timing the backtest evaluation time
     start.time <- Sys.time() 
     
-    # excute function (must be robust enough so that no error should happen)
-    res = backtestPortfolio(portfolio_fun = portfolio_fun, 
+    # excute function
+    res <- backtestPortfolio(portfolio_fun = portfolio_fun, 
                             prices = prices,
                             shortselling = shortselling, 
                             leverage = leverage, 
