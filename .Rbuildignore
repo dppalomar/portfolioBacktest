@@ -8,3 +8,5 @@
 ^README_files$
 ^R_buildignore$
 ^papers$
+^vignettes/PortfolioBacktest-vignette_cache$
+^vignettes/PortfolioBacktest-vignette_files$

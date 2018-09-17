@@ -1,0 +1,211 @@
+---
+title: "Portfolio Backtesting"
+author: 
+- name: "Daniel P. Palomar and Rui ZHOU"
+  affiliation: "Hong Kong University of Science and Technology (HKUST)"
+date: "`r Sys.Date()`"
+output:
+  bookdown::html_document2:
+    base_format: prettydoc::html_pretty
+    theme: tactile
+    highlight: vignette
+    fig_caption: yes
+    number_sections: no
+    toc: yes
+    toc_depth: 2
+  bookdown::pdf_document2:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+header-includes:
+  \allowdisplaybreaks
+indent: yes
+csl: ieee.csl
+bibliography: refs.bib
+vignette: >
+  %\VignetteIndexEntry{Portfolio Backtesting}
+  %\VignetteKeyword{portfolio, backtest}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r, echo = FALSE}
+library(knitr)
+opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  fig.retina = 2,
+  out.width = "75%",
+  dpi = 96
+)
+knit_hooks$set(pngquant = hook_pngquant)
+#Help on bookdown: https://bookdown.org/yihui/bookdown/
+#rmarkdown::render("vignettes/PortfolioBacktest-vignette.Rmd", "all")
+#rmarkdown::render("vignettes/PortfolioBacktest-vignette.Rmd", "bookdown::html_document2")
+#rmarkdown::render("vignettes/PortfolioBacktest-vignette.Rmd", "bookdown::pdf_document2")
+#tools::compactPDF("vignettes/PortfolioBacktest-vignette.pdf", gs_quality = "ebook")
+```
+
+-----------
+> This vignette illustrates the usage of the package `portfolioBacktest` for automated portfolio backtesting.
+It can be used by a researcher/practitioner to check a set of different portfolios, as well as by a course 
+instructor to evaluate the students in their portfolio design in a fully automated and convenient manner.
+
+# Installation
+The package can currently be installed from [GitHub](https://github.com/dppalomar/portfolioBacktest):
+```{r, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("dppalomar/portfolioBacktest")
+
+# Getting help
+library(portfolioBacktest)
+help(package = "portfolioBacktest")
+package?portfolioBacktest
+?portfolioBacktest
+```
+
+
+# Usage of the package
+## Loading data
+We start by loading the package and some random sets of stock market data:
+```{r, message = FALSE}
+library(xts)
+library(portfolioBacktest)
+data(prices)
+```
+The dataset `prices` is a list of objects `xts` that contains the prices of random sets of stock market data from the S&P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.
+ 
+```{r}
+length(prices)
+str(prices[[1]])
+
+colnames(prices[[1]])
+```
+
+## Backtesting a single portfolio
+We start by defining a simple portfolio design in the form of a function that takes as input the prices and outputs the portfolio vector `w`:
+```{r}
+uniform_portfolio_fun <- function(prices) {
+  N <- ncol(prices)
+  w <- rep(1/N, N)  # satisfies the constraints w>=0 amd sum(w)=1
+  return(w)
+}
+```
+
+Now we are ready to use the function `backtestPortfolio()` that will execute and evaluate the portfolio design function on a rolling-window basis:
+```{r}
+res <- portfolioBacktest(uniform_portfolio_fun, prices[[1]])
+names(res)
+plot(res$cumPnL)
+res$performance
+```
+
+Let's try with a slightly more sophisticated portfolio design, like the global minimum variance portfolio (GMVP):
+```{r}
+GMVP_portfolio_fun <- function(prices) {
+  X <- diff(log(prices))[-1]  # compute log returns
+  Sigma <- cov(X)  # compute SCM
+  # design GMVP
+  w <- solve(Sigma, rep(1, nrow(Sigma)))
+  w <- w/sum(abs(w))  # satisfies sum(w)=1 but not necessarily w>=0
+  return(w)
+}
+res <- portfolioBacktest(GMVP_portfolio_fun, prices[[1]])
+res$error
+res$error_message
+```
+
+Indeed, the GMVP does not satisfy the no-shortselling constraint. We can repeat the backtesting indicating that shortselling is allowed:
+```{r}
+res <- portfolioBacktest(GMVP_portfolio_fun, prices[[1]], shortselling = TRUE)
+res$error
+res$error_message
+res$time
+res$performance
+```
+
+We could be more sophisticated and design a Markowitz mean-variance portfolio satisfying the no-shortselling constraint:
+```{r, message=FALSE}
+library(CVXR)  #install.packages("CVXR")
+
+Markowitz_portfolio_fun <- function(prices) {
+  X <- diff(log(prices))[-1]  # compute log returns
+  mu <- colMeans(X)  # compute mean vector
+  Sigma <- cov(X)  # compute the SCM
+  # design mean-variance portfolio
+  w <- Variable(nrow(Sigma))
+  prob <- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma)),
+                  constraints = list(w >= 0, sum(w) == 1))
+  result <- solve(prob)
+  return(as.vector(result$getValue(w)))
+}
+```
+We can now backtest it:
+```{r, cache=TRUE}
+res <- portfolioBacktest(Markowitz_portfolio_fun, prices[[1]])
+res$error
+res$error_message
+res$time
+res$performance
+```
+
+Backtesting a portfolio on a list of `xts` containing different stock price datasets can be easily done simply by passing a list of `xts` objects:
+```{r, cache=TRUE}
+res <- portfolioBacktest(Markowitz_portfolio_fun, prices[1:5])
+names(res)
+res$time
+res$performance
+```
+In particular, note the additional elements in the returned list:
+```{r, cache=TRUE}
+res$time_average
+res$performance_summary
+res$failure_ratio
+```
+
+
+## Backtesting multiple portfolios [under development]
+Backtesting multiple portfolios is equally simple. It suffices to pass a list of functions to the backtesting function `multiplePortfolioBacktest()`:
+```{r, eval=FALSE}
+res <- multiplePortfolioBacktest(list(uniform_portfolio, GMVP_portfolio_fun), prices[1:5])
+```
+
+
+# Usage for grading students in a course
+If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily. It suffices to ask each student to include in a .R script (named LASTNAMEfirstnameSTUDENTNUMBER.R) his/her portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). Then the instructor can put all those files in a folder and evaluate all of them at once.
+```{r, eval=FALSE}
+res_all_students <- multiplePortfolioBacktest("folder_path_to_student_files", prices[1:5])
+res_all_students$performance_summary
+```
+
+
+## Example of a script file to be submitted by a student
+Consider the student Mickey Mouse with id number 6666. Then the script file should be named `MickeyMouse6666.R` and should contain the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`):
+```{r, eval=FALSE}
+library(CVXR)
+library(someotherlibrary)
+
+auxiliary_function <- function(x) {
+  # here whatever code
+}
+
+portfolio_fun <- function(prices) {
+  X <- diff(log(prices))[-1]  # compute log returns
+  mu <- colMeans(X)  # compute mean vector
+  Sigma <- cov(X)  # compute the SCM
+  # design mean-variance portfolio
+  w <- Variable(nrow(Sigma))
+  prob <- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma)),
+                  constraints = list(w >= 0, sum(w) == 1))
+  result <- solve(prob)
+  return(as.vector(result$getValue(w)))
+}
+```
+
+
+
+
+
+
