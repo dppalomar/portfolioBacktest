@@ -17,9 +17,9 @@
 #' @import xts
 #'         PerformanceAnalytics
 #' @export
-multiplePortfolioFunEval <- function(path, prices,
-                                     shortselling = FALSE, leverage = 1,
-                                     T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
+multiplePortfolioBacktest <- function(path, prices,
+                                      shortselling = FALSE, leverage = 1,
+                                      T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
   # extract useful informations
   files <- list.files(path)
   stud_names <- stud_IDs <- eval_time <- c()

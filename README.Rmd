@@ -23,38 +23,33 @@ opts_chunk$set(
 knit_hooks$set(pngquant = hook_pngquant)
 ```
 
-# backtestPortfolio
-
-Backtest of a portfolio design with real data taken randomly from different
-markets and selecting randomly a subset of stocks for proper assessments.
-It also allows to backtest multiple portfolio designs and rank them based
-on a number of criteria including expected return, Sharpe ratio, drawdown,
-etc.
+# portfolioBacktest
+Backtesting of a portfolio in a sliding-window fashion over a dataset of stock prices. Multiple datasets are allowed (e.g., taken randomly over different markets, different time periods, and different subset of the stock universe). In addition, multiple portfolios can be backtested for a subsequent comparison and ranking on a number of criteria including expected return, volatility, Sharpe ratio, maximum drawdown, turnover rate, return on investment, computational time, etc. The portfolio is defined as a function that takes as input a window of the stock prices and outputs the portfolio weights. This package can be useful for a researcher/practitioner who wants to backtest a set of portfolios over a multitude of datasets over different markets. In addition, it can be particularly useful to evaluate students in a portfolio design course where the grading is based on the performance.
 
 
 ## Installation
 ```{r, eval = FALSE}
 # install.packages("devtools")
-devtools::install_github("dppalomar/backtestPortfolio")
+devtools::install_github("dppalomar/portfolioBacktest")
 
 # Getting help
-library(backtestPortfolio)
-help(package = "backtestPortfolio")
-package?backtestPortfolio
-?backtestPortfolio
+library(portfolioBacktest)
+help(package = "portfolioBacktest")
+package?portfolioBacktest
+?portfolioBacktest
 ?prices
 ```
 
 
-
-## Usage of `backtestPortfolio()`
-We start by loading the package and some market data from the underlying assets of the S&P 500:
+## Usage of `portfolioBacktest()`
+We start by loading the package and some random sets of stock market data:
 ```{r, message = FALSE}
-library(backtestPortfolio)
+library(portfolioBacktest)
 library(xts)
 data(prices)
 ```
-The list `prices` contains random selections of $N=50$ stocks for periods of two years from the S&P 500.
+The list `prices` of objects `xts` contains the prices of random sets of stock market data from the S&P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.
+ 
 ```{r}
 length(prices)
 str(prices[[1]])
@@ -69,15 +64,25 @@ portfolio_fun <- function(prices) {
   Sigma <- cov(X)  # compute SCM
   # design GMVP
   w <- solve(Sigma, rep(1, nrow(Sigma)))
-  w <- w/sum(w)
+  w <- w/sum(abs(w))  # normalized to have ||w||_1=1
   return(w)
 }
 ```
 
-We are then ready to use the function `backtestPortfolio()` that will execute the portfolio design function on a rolling-window basis:
-```{r, eval=FALSE}
-res <- backtestPortfolio(portfolio_fun, prices[[1]])
-print(res)
+We are then ready to use the function `backtestPortfolio()` that will execute and evaluate the portfolio design function on a rolling-window basis:
+```{r}
+res <- backtestPortfolio(portfolio_fun, prices[[1]], shortselling = TRUE)
+names(res)
+plot(res$cumPnL)
+res$performance
+```
+
+We can also backtest over multiple data sets 
+```{r}
+# perform multiple backtesting
+mul_res <- backtestPortfolio(portfolio_fun, prices, shortselling = TRUE)
+mul_res$performance
+mul_res$performance_summary
 ```
 
 

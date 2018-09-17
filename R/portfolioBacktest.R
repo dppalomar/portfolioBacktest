@@ -2,9 +2,9 @@
 #'
 #' @import xts
 #'         PerformanceAnalytics
-singleBacktestPortfolio <- function(portfolio_fun, prices,
-                              shortselling = FALSE, leverage = 1,
-                              T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
+singlePortfolioBacktest <- function(portfolio_fun, prices,
+                                    shortselling = FALSE, leverage = 1,
+                                    T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
   ######## error control  #########
   if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]]")
   if (!is.xts(prices)) stop("prices have to be xts")
@@ -98,23 +98,27 @@ singleBacktestPortfolio <- function(portfolio_fun, prices,
 #'   Sigma <- cov(X)  # compute SCM
 #'   # design GMVP
 #'   w <- solve(Sigma, rep(1, nrow(Sigma)))
-#'   w <- w/sum(w)
+#'   w <- w/sum(abs(w))  # normalized to have ||w||_1=1
 #'   return(w)
 #' }
 #' 
 #' # perform backtesting on one xts
-#' res <- backtestPortfolio(portfolio_fun, prices[[1]])
-#' print(res)
+#' res <- backtestPortfolio(portfolio_fun, prices[[1]], shortselling = TRUE)
+#' names(res)
+#' plot(res$cumPnL)
+#' res$performance
 #'
 #' # perform backtesting on a list of xts
-#' res <- backtestPortfolio(portfolio_fun, prices[1:5])
+#' mul_res <- backtestPortfolio(portfolio_fun, prices, shortselling = TRUE)
+#' mul_res$performance
+#' mul_res$performance_summary
 #' 
 #' @export
-backtestPortfolio <- function(portfolio_fun, prices,
+portfolioBacktest <- function(portfolio_fun, prices,
                               shortselling = FALSE, leverage = 1,
                               T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
   
-  if (!is.list(prices)) return(singleBacktestPortfolio(portfolio_fun = portfolio_fun,
+  if (!is.list(prices)) return(singlePortfolioBacktest(portfolio_fun = portfolio_fun,
                                                        prices = prices,
                                                        shortselling = shortselling,
                                                        leverage = leverage,
@@ -125,7 +129,7 @@ backtestPortfolio <- function(portfolio_fun, prices,
   rets <- cumPnL <- performance <- error <- error_message <- list()
   
   for (i in 1:length(prices)) {
-    result <- singleBacktestPortfolio(portfolio_fun = portfolio_fun,
+    result <- singlePortfolioBacktest(portfolio_fun = portfolio_fun,
                                       prices = prices[[i]],
                                       shortselling = shortselling,
                                       leverage = leverage,

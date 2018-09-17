@@ -4,12 +4,12 @@
 # Local installation
 install.packages(file.choose(), repos = NULL, type="source")
 # Installation from GitHub
-devtools::install_github("dppalomar/backtestPortfolio")
+devtools::install_github("dppalomar/portfolioBacktest")
 # Getting help
-library(backtestPortfolio)
-help(package = "backtestPortfolio")
-package?backtestPortfolio
-?backtestPortfolio
+library(portfolioBacktest)
+help(package = "portfolioBacktest")
+package?portfolioBacktest
+?portfolioBacktest
 ?prices
 
 
@@ -19,11 +19,11 @@ package?backtestPortfolio
 devtools::load_all()  #or Ctrl-Shift-L
 #devtools::use_package("xts")
 devtools::install()
-library(backtestPortfolio)
+library(portfolioBacktest)
 #devtools::build()  # to generate the installation file
 
 
 # Documentation
 devtools::document()  #to generate all documentation via roxygen
-?backtestPortfolio
+?portfolioBacktest
 ?prices

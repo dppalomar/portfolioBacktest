@@ -1,4 +1,4 @@
-library(backtestPortfolio)
+library(portfolioBacktest)
 library(xts)
 library(CVXR)
 
@@ -35,8 +35,8 @@ portfolio_fun_GMVP <- function(prices) {
 
 
 # perform single backtesting
-res <- backtestPortfolio(portfolio_fun_GMVP, prices[[1]], shortselling = TRUE)
-#res <- backtestPortfolio(portfolio_fun_Markowitz, prices[[1]])
+res <- portfolioBacktest(portfolio_fun_GMVP, prices[[1]], shortselling = TRUE)
+#res <- portfolioBacktest(portfolio_fun_Markowitz, prices[[1]])
 names(res)
 plot(res$returns)
 plot(res$cumPnL)
@@ -46,7 +46,7 @@ PerformanceAnalytics::table.AnnualizedReturns(res$returns)
 PerformanceAnalytics::charts.PerformanceSummary(res$returns, wealth.index = TRUE)
 
 # perform multiple backtesting
-mul_res <- backtestPortfolio(portfolio_fun_Markowitz, prices[1:10])
+mul_res <- portfolioBacktest(portfolio_fun_Markowitz, prices[1:10])
 mul_res$performance
 mul_res$performance_summary
 
