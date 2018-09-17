@@ -54,13 +54,13 @@ portfolio_fun <- function(prices) {
 }
 
 # perform backtesting on one xts
-res <- backtestPortfolio(portfolio_fun, prices[[1]], shortselling = TRUE)
+res <- portfolioBacktest(portfolio_fun, prices[[1]], shortselling = TRUE)
 names(res)
 plot(res$cumPnL)
 res$performance
 
 # perform backtesting on a list of xts
-mul_res <- backtestPortfolio(portfolio_fun, prices, shortselling = TRUE)
+mul_res <- portfolioBacktest(portfolio_fun, prices, shortselling = TRUE)
 mul_res$performance
 mul_res$performance_summary
 

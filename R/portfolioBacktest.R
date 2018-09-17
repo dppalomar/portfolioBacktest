@@ -1,5 +1,5 @@
-#' Backtesting on a single xts
-#'
+# Backtesting on a single xts
+#
 #' @import xts
 #'         PerformanceAnalytics
 singlePortfolioBacktest <- function(portfolio_fun, prices,
@@ -35,13 +35,12 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
              error = function(e) { error <<- TRUE; error_message <<- e$message})
     # exit in case of error
     if (!error) {
-      if (sum(abs(w[i, ])) > leverage + 1e-8) {
-        error <- TRUE
-        error_message <- "budget/leverage constraint not satisfied"
-      }
       if (!shortselling && any(w[i, ] + 1e-8 < 0)) {
         error <- TRUE
-        error_message <- "shortselling constraint not satisfied"
+        error_message <- "no-shortselling constraint not satisfied"
+      } else if (sum(abs(w[i, ])) > leverage + 1e-8) {
+        error <- TRUE
+        error_message <- "budget/leverage constraint not satisfied"
       }
     }
     if (error) return(list("returns" = NA,
@@ -115,13 +114,13 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
 #' }
 #' 
 #' # perform backtesting on one xts
-#' res <- backtestPortfolio(portfolio_fun, prices[[1]], shortselling = TRUE)
+#' res <- portfolioBacktest(portfolio_fun, prices[[1]], shortselling = TRUE)
 #' names(res)
 #' plot(res$cumPnL)
 #' res$performance
 #'
 #' # perform backtesting on a list of xts
-#' mul_res <- backtestPortfolio(portfolio_fun, prices, shortselling = TRUE)
+#' mul_res <- portfolioBacktest(portfolio_fun, prices, shortselling = TRUE)
 #' mul_res$performance
 #' mul_res$performance_summary
 #' 
