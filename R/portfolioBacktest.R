@@ -21,7 +21,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
   optim_indices <- seq(from = T_sliding_window, to = T, by = freq_optim)
   rebalancing_indices <- seq(from = T_sliding_window, to = T, by = freq_rebalance)
   
-  start_time <- Sys.time() # time the following procedure
+  start_time <- proc.time()[3] # time the following procedure
   # compute w
   error <- FALSE
   error_message <- NULL
@@ -35,10 +35,10 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
              error = function(e) { error <<- TRUE; error_message <<- e$message})
     # exit in case of error
     if (!error) {
-      if (!shortselling && any(w[i, ] + 1e-8 < 0)) {
+      if (!shortselling && any(w[i, ] + 1e-6 < 0)) {
         error <- TRUE
         error_message <- "no-shortselling constraint not satisfied"
-      } else if (sum(abs(w[i, ])) > leverage + 1e-8) {
+      } else if (sum(abs(w[i, ])) > leverage + 1e-6) {
         error <- TRUE
         error_message <- "budget/leverage constraint not satisfied"
       }
@@ -46,12 +46,12 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
     if (error) return(list("returns" = NA,
                            "cumPnL" = NA,
                            "performance" = rep(NA, 4),
-                           "time" = NA,
+                           "cpu_time" = NA,
                            "error" = error,
                            "error_message" = error_message))
   }
   
-  time <- as.numeric(Sys.time() - start_time)
+  time <- as.numeric(proc.time()[3] - start_time)
   
   # compute returns of portfolio
   R_lin <- PerformanceAnalytics::CalculateReturns(prices[-c(1:(T_sliding_window-1)), ])
@@ -68,7 +68,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
   return(list("returns" = rets,
               "cumPnL" = wealth_geom_BnH_trn,
               "performance" = performance,
-              "time" = time,
+              "cpu_time" = time,
               "error" = error,
               "error_message" = error_message))
 }
@@ -90,8 +90,8 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
 #' \item{\code{cumPnL}  }{xts object (or a list of xts when \code{prices} is a list), the cummulative daily return of given portfolio function}
 #' \item{\code{performance}}{matrix, each row is responding to one data example in order}
 #' \item{\code{performance_summary}}{vector, summarizing the performance by its median value (only returned when argument \code{prices} is a list of xts)}
-#' \item{\code{time}}{vector, recording time for execute the portfolio for one data examples}
-#' \item{\code{time_average}}{number, the average of \code{time} but ignoring the NAs (only returned when argument \code{prices} is a list of xts)}
+#' \item{\code{cpu_time}}{vector, recording time for execute the portfolio for one data examples}
+#' \item{\code{cpu_time_average}}{number, the average of \code{time} but ignoring the NAs (only returned when argument \code{prices} is a list of xts)}
 #' \item{\code{failure_ratio}}{number, the failure ratio of applying given portfolio function to different data examples (only returned when argument \code{prices} is a list of xts)}
 #' \item{\code{error}}{logical vector, indicating whether an error happens in data examples}
 #' \item{\code{error_message}}{string list, recording the error message when error happens}
@@ -141,7 +141,7 @@ portfolioBacktest <- function(portfolio_fun, prices, ...) {
     rets[[i]] <- result$return
     cumPnL[[i]] <- result$cumPnL
     performance[[i]] <- result$performance
-    time[i] <- result$time
+    time[i] <- result$cpu_time
     error[i] <- result$error
     error_message[[i]] <- result$error_message
   }
@@ -152,7 +152,7 @@ portfolioBacktest <- function(portfolio_fun, prices, ...) {
   # summarize performance 
   failure_ratio <- sum(error) / length(prices)
   if (failure_ratio < 1) {
-    performance_summary <- apply(performance[, !error], 1, median)
+    performance_summary <- apply(cbind(performance[, !error]), 1, median)
     names(performance_summary) <- paste(names(performance_summary), "(median)")
     time_average <- mean(time[!error])
   } else {
@@ -163,8 +163,8 @@ portfolioBacktest <- function(portfolio_fun, prices, ...) {
               "cumPnL" = cumPnL,
               "performance" = performance,
               "performance_summary" = performance_summary,
-              "time" = time,
-              "time_average" = time_average,
+              "cpu_time" = time,
+              "cpu_time_average" = time_average,
               "failure_ratio" = failure_ratio,
               "error" = error,
               "error_message" = error_message))

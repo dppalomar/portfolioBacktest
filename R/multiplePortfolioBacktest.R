@@ -2,7 +2,7 @@
 #'
 #' @description Evaluate multiple portfolio functions written in format form
 #'
-#' @param path absolute path for a folder which contains all (and only) functions to be evaluated
+#' @param folder_path path for a folder which contains all (and only) functions to be evaluated
 #' @param prices a list of \code{xts} containing the stock prices for the backtesting.
 #' @param return_all logical, indicating whether return all the results
 #' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
@@ -11,15 +11,19 @@
 #' @param freq_optim how often the portfolio is to be reoptimized.
 #' @param freq_rebalance how often the portfolio is to be rebalanded.
 #' @return A list containing the performance in the following elements:
-#' \item{\code{TBD}  }{m-by-m matrix, columns corresponding to eigenvectors.}
-#' \item{\code{TBD}  }{m-by-1 vector corresponding to eigenvalues.}
+#' \item{\code{stud_names}  }{string vector, recording the student names extracted from files' name.}
+#' \item{\code{stud_IDs}  }{string vector, recording the student IDs extracted from files' name.}
+#' \item{\code{performance_summary}}{matrix, indicating each student's performance summary in each row}
+#' \item{\code{time_average}}{vector, recording the average execution time for successful application of portfolio functions}
+#' \item{\code{failure_ratio}}{vector, recording the failure ratio of applying given portfolio function to different data examples}
+#' \item{\code{error_message}}{string list, recording the error message when error happens}
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
 #' @import xts
 #'         PerformanceAnalytics
-multiplePortfolioBacktest <- function(path, prices, return_all = FALSE, ...) {
+multiplePortfolioBacktest <- function(folder_path, prices, return_all = FALSE, ...) {
   # extract useful informations
-  files <- list.files(path)
+  files <- list.files(folder_path)
   stud_names <- stud_IDs <- time_average <- failure_ratio <- c()
   error_message <- list()
   portfolios_perform <- matrix(NA, length(files), 4)
@@ -28,9 +32,9 @@ multiplePortfolioBacktest <- function(path, prices, return_all = FALSE, ...) {
   # save the package and variables list
   packages_default <- search()
   var_fun_default <- ls()
-  cat("---------------Default Packages---------------\n")
-  cat(paste(packages_default, "\n"))
-  cat("----------------------------------------------\n")
+  # cat("---------------Default Packages---------------\n")
+  # cat(paste(packages_default, "\n"))
+  # cat("----------------------------------------------\n")
   # some functions evaluation here
   for (i in 1:length(files)) {
     
@@ -46,10 +50,10 @@ multiplePortfolioBacktest <- function(path, prices, return_all = FALSE, ...) {
     
     
     tryCatch({
-      suppressMessages(source(paste0(path, "/", file), local = TRUE))
+      suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
       res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, ...)
       portfolios_perform[i, ] <- res$performance_summary
-      time_average[i] <- res$time_average
+      time_average[i] <- res$cpu_time_average
       failure_ratio[i] <- res$failure_ratio
       error_message[[i]] <- res$error_message
       if (return_all) results_container[[i]] <- res
@@ -72,11 +76,13 @@ multiplePortfolioBacktest <- function(path, prices, return_all = FALSE, ...) {
   }
   
   rownames(portfolios_perform) <- stud_IDs
-  colnames(portfolios_perform) <- c("sharpe ratio", "max drawdown", "expected return", "volatility")
+  colnames(portfolios_perform) <- paste(c("sharpe ratio", "max drawdown", "expected return", "volatility"), " (median)")
+  names(time_average) <- stud_IDs
+  names(failure_ratio) <- stud_IDs
   vars_tb_returned <- list("stud_names" = stud_names,
                            "stud_IDs" = stud_IDs,
-                           "performance" = portfolios_perform,
-                           "time_average" = time_average,
+                           "performance_summary" = portfolios_perform,
+                           "cpu_time_average" = time_average,
                            "failure_ratio" = failure_ratio,
                            "error_message" = error_message)
   if (return_all) vars_tb_returned$results_container <- results_container
@@ -97,17 +103,17 @@ detach_packages <- function(items) {
 #'
 #' @description Checke uninstalled packages of portfolio functions written in format form
 #'
-#' @param path Absolute path for a folder which contains all (and only) functions to be evaluated
+#' @param folder_path Path for a folder which contains all (and only) functions to be evaluated
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
-checkUninstalledPackages <- function(path) {
+checkUninstalledPackages <- function(folder_path) {
   if (!require("readtext")) stop("Package \"readtext\" is required to run this function!")
   if (!require("stringi")) stop("Package \"stringi\" is required to run this function!")
   req_pkgs <- c()
-  files <- list.files(path)
+  files <- list.files(folder_path)
   for (file in files) {
-    suppressWarnings(codes <- readtext(paste0(path, "/", file)))
+    suppressWarnings(codes <- readtext(paste0(folder_path, "/", file)))
     pkgs <- stri_extract_all(codes$text, regex = "library\\(.*?\\)", simplify = TRUE)
     req_pkgs <- c(req_pkgs, as.vector(pkgs))
   }

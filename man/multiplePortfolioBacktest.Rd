@@ -4,10 +4,10 @@
 \alias{multiplePortfolioBacktest}
 \title{Evaluating multiple portfolio functions defined by customer}
 \usage{
-multiplePortfolioBacktest(path, prices, return_all = FALSE, ...)
+multiplePortfolioBacktest(folder_path, prices, return_all = FALSE, ...)
 }
 \arguments{
-\item{path}{absolute path for a folder which contains all (and only) functions to be evaluated}
+\item{folder_path}{path for a folder which contains all (and only) functions to be evaluated}
 
 \item{prices}{a list of \code{xts} containing the stock prices for the backtesting.}
 
@@ -25,8 +25,12 @@ multiplePortfolioBacktest(path, prices, return_all = FALSE, ...)
 }
 \value{
 A list containing the performance in the following elements:
-\item{\code{TBD}  }{m-by-m matrix, columns corresponding to eigenvectors.}
-\item{\code{TBD}  }{m-by-1 vector corresponding to eigenvalues.}
+\item{\code{stud_names}  }{string vector, recording the student names extracted from files' name.}
+\item{\code{stud_IDs}  }{string vector, recording the student IDs extracted from files' name.}
+\item{\code{performance_summary}}{matrix, indicating each student's performance summary in each row}
+\item{\code{time_average}}{vector, recording the average execution time for successful application of portfolio functions}
+\item{\code{failure_ratio}}{vector, recording the failure ratio of applying given portfolio function to different data examples}
+\item{\code{error_message}}{string list, recording the error message when error happens}
 }
 \description{
 Evaluate multiple portfolio functions written in format form

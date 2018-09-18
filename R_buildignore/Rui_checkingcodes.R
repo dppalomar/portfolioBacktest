@@ -10,4 +10,4 @@ data(prices)
 my_path <- "d:/Users/rzhouae/Documents/R/Git/backtestPortfolio/R_buildignore/students fuction"
 my_mac_path <- "/Users/zhourui/Documents/R/GitProjects/backtestPortfolio/R_buildignore/students fuction/"
 
-res <- portfolioBacktest:::multiplePortfolioBacktest(path = my_mac_path, prices = prices[1:3], freq_optim = 100)
+res <- portfolioBacktest:::multiplePortfolioBacktest(folder_path = my_mac_path, prices = prices[1:3], freq_optim = 100)

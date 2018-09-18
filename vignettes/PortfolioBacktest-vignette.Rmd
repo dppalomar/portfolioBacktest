@@ -122,7 +122,7 @@ Indeed, the GMVP does not satisfy the no-shortselling constraint. We can repeat 
 res <- portfolioBacktest(GMVP_portfolio_fun, prices[[1]], shortselling = TRUE)
 res$error
 res$error_message
-res$time
+res$cpu_time
 res$performance
 ```
 
@@ -147,7 +147,7 @@ We can now backtest it:
 res <- portfolioBacktest(Markowitz_portfolio_fun, prices[[1]])
 res$error
 res$error_message
-res$time
+res$cpu_time
 res$performance
 ```
 
@@ -155,12 +155,12 @@ Backtesting a portfolio on a list of `xts` containing different stock price data
 ```{r, cache=TRUE}
 res <- portfolioBacktest(Markowitz_portfolio_fun, prices[1:5])
 names(res)
-res$time
+res$cpu_time
 res$performance
 ```
 In particular, note the additional elements in the returned list:
 ```{r, cache=TRUE}
-res$time_average
+res$cpu_time_average
 res$performance_summary
 res$failure_ratio
 ```
@@ -169,20 +169,22 @@ res$failure_ratio
 ## Backtesting multiple portfolios [under development]
 Backtesting multiple portfolios is equally simple. It suffices to pass a list of functions to the backtesting function `multiplePortfolioBacktest()`:
 ```{r, eval=FALSE}
-res <- multiplePortfolioBacktest(list(uniform_portfolio, GMVP_portfolio_fun), prices[1:5])
+res <- portfolioBacktest:::multiplePortfolioBacktest(list(uniform_portfolio, GMVP_portfolio_fun), prices[1:5])
 ```
 
 
 # Usage for grading students in a course
 If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily. It suffices to ask each student to include in a .R script (named LASTNAMEfirstnameSTUDENTNUMBER.R) his/her portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). Then the instructor can put all those files in a folder and evaluate all of them at once.
-```{r, eval=FALSE}
-res_all_students <- multiplePortfolioBacktest("folder_path_to_student_files", prices[1:5])
+```{r}
+res_all_students <- portfolioBacktest:::multiplePortfolioBacktest("student functions/", prices[1:3])
 res_all_students$performance_summary
+res_all_students$cpu_time_average
+res_all_students$failure_ratio
 ```
 
 
 ## Example of a script file to be submitted by a student
-Consider the student Mickey Mouse with id number 6666. Then the script file should be named `MickeyMouse6666.R` and should contain the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`):
+Consider the student Mickey Mouse with id number 6666 for first week. Then the script file should be named `Mickey-Mouse-6666-week1.R` and should contain the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`):
 ```{r, eval=FALSE}
 library(CVXR)
 library(someotherlibrary)
