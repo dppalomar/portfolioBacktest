@@ -4,14 +4,17 @@
 \alias{multiplePortfolioBacktest}
 \title{Evaluating multiple portfolio functions defined by customer}
 \usage{
-multiplePortfolioBacktest(folder_path, prices, return_all = FALSE, ...)
+multiplePortfolioBacktest(folder_path, prices, return_all = FALSE,
+  return_portfolio = FALSE, ...)
 }
 \arguments{
 \item{folder_path}{path for a folder which contains all (and only) functions to be evaluated}
 
 \item{prices}{a list of \code{xts} containing the stock prices for the backtesting.}
 
-\item{return_all}{logical, indicating whether return all the results}
+\item{return_all}{logical, indicating whether return all the results.}
+
+\item{return_portfolio}{logical value, whether return portfolios.}
 
 \item{shortselling}{whether shortselling is allowed or not (default \code{FALSE}).}
 
@@ -19,9 +22,9 @@ multiplePortfolioBacktest(folder_path, prices, return_all = FALSE, ...)
 
 \item{T_rolling_window}{length of the rolling window.}
 
-\item{freq_optim}{how often the portfolio is to be reoptimized.}
+\item{optimize_every}{how often the portfolio is to be optimized.}
 
-\item{freq_rebalance}{how often the portfolio is to be rebalanded.}
+\item{rebalance_every}{how often the portfolio is to be rebalanced.}
 }
 \value{
 A list containing the performance in the following elements:

@@ -4,12 +4,13 @@
 #'
 #' @param folder_path path for a folder which contains all (and only) functions to be evaluated
 #' @param prices a list of \code{xts} containing the stock prices for the backtesting.
-#' @param return_all logical, indicating whether return all the results
+#' @param return_all logical, indicating whether return all the results.
+#' @param return_portfolio logical value, whether return portfolios.
 #' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
 #' @param leverage amount of leverage (default is 1, so no leverage).
 #' @param T_rolling_window length of the rolling window.
-#' @param freq_optim how often the portfolio is to be reoptimized.
-#' @param freq_rebalance how often the portfolio is to be rebalanded.
+#' @param optimize_every how often the portfolio is to be optimized.
+#' @param rebalance_every how often the portfolio is to be rebalanced.
 #' @return A list containing the performance in the following elements:
 #' \item{\code{stud_names}  }{string vector, recording the student names extracted from files' name.}
 #' \item{\code{stud_IDs}  }{string vector, recording the student IDs extracted from files' name.}
@@ -22,7 +23,7 @@
 #' @import xts
 #'         PerformanceAnalytics
 #' @export
-multiplePortfolioBacktest <- function(folder_path, prices, return_all = FALSE, ...) {
+multiplePortfolioBacktest <- function(folder_path, prices, return_all = FALSE, return_portfolio = FALSE, ...) {
   # extract useful informations
   files <- list.files(folder_path)
   stud_names <- stud_IDs <- time_average <- failure_ratio <- c()
@@ -41,7 +42,7 @@ multiplePortfolioBacktest <- function(folder_path, prices, return_all = FALSE, .
     
     file <- files[i]
     file_name_cleaned <- gsub("\\s+", "", file)
-    tmp <- unlist(strsplit(file_name_cleaned, "-"))
+    tmp <- unlist(strsplit(file_name_cleaned, "-|\\."))
     stud_names <- c(stud_names, paste(tmp[1], tmp[2], collapse = " "))
     stud_IDs <- c(stud_IDs, tmp[3])
     cat(paste0(Sys.time()," - Execute code from ", stud_names[i], " (", stud_IDs[i], ")\n"))
@@ -52,7 +53,7 @@ multiplePortfolioBacktest <- function(folder_path, prices, return_all = FALSE, .
     
     tryCatch({
       suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
-      res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, ...)
+      res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, return_portfolio = return_portfolio, ...)
       portfolios_perform[i, ] <- res$performance_summary
       time_average[i] <- res$cpu_time_average
       failure_ratio[i] <- res$failure_ratio
