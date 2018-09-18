@@ -167,8 +167,8 @@ res$failure_ratio
 
 
 ## Backtesting multiple portfolios [under development]
-Backtesting multiple portfolios is equally simple. It suffices to pass a list of functions to the backtesting function `multiplePortfolioBacktest()`. TBD.
-```{r, echo=FALSE, eval=FALSE}
+Backtesting multiple portfolios is equally simple. It suffices to pass a list of functions to the backtesting function `multiplePortfolioBacktest()` [to be completed]:
+```{r, eval=FALSE}
 res <- multiplePortfolioBacktest(list(uniform_portfolio, GMVP_portfolio_fun), prices[1:5])
 ```
 
@@ -182,7 +182,7 @@ res_all_students$cpu_time_average
 res_all_students$failure_ratio
 ```
 
-Now we can rank the different portfolios/students based on a weighted combination of the performance measures:
+Now we can rank the different portfolios/students based on a weighted combination of the performance measures [to be completed]:
 ```{r, eval=FALSE}
 final_ranking <- portfolioRank(res_all_students)
 final_ranking

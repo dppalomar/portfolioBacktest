@@ -1,23 +1,13 @@
----
-output:
-  html_document:
-    variant: markdown_github
-    keep_md: true
-  md_document:
-    variant: markdown_github
----
-
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+portfolioBacktest
+=================
 
-
-
-# portfolioBacktest
 Backtesting of a portfolio in a rolling-window fashion over a dataset of stock prices. Multiple datasets are allowed (e.g., taken randomly over different markets, different time periods, and different subset of the stock universe). In addition, multiple portfolios can be backtested for a subsequent comparison and ranking on a number of criteria including expected return, volatility, Sharpe ratio, maximum drawdown, turnover rate, return on investment, computational time, etc. The portfolio is defined as a function that takes as input a window of the stock prices and outputs the portfolio weights. This package can be useful for a researcher/practitioner who wants to backtest a set of portfolios over a multitude of datasets over different markets. In addition, it can be particularly useful to evaluate students in a portfolio design course where the grading is based on the performance.
 
+Installation
+------------
 
-## Installation
-
-```r
+``` r
 # install.packages("devtools")
 devtools::install_github("dppalomar/portfolioBacktest")
 
@@ -28,19 +18,20 @@ package?portfolioBacktest
 ?portfolioBacktest
 ```
 
+Usage of `portfolioBacktest()`
+------------------------------
 
-## Usage of `portfolioBacktest()`
 We start by loading the package and some random sets of stock market data:
 
-```r
+``` r
 library(xts)
 library(portfolioBacktest)
 data(prices)
 ```
-The dataset `prices` is a list of objects `xts` that contains the prices of random sets of stock market data from the S&P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.
- 
 
-```r
+The dataset `prices` is a list of objects `xts` that contains the prices of random sets of stock market data from the S&P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.
+
+``` r
 length(prices)
 #> [1] 50
 str(prices[[1]])
@@ -71,7 +62,7 @@ colnames(prices[[1]])
 
 Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector `w`:
 
-```r
+``` r
 portfolio_fun <- function(prices) {
   X <- diff(log(prices))[-1]  # compute log returns
   Sigma <- cov(X)  # compute SCM
@@ -84,7 +75,7 @@ portfolio_fun <- function(prices) {
 
 We are then ready to use the function `backtestPortfolio()` that will execute and evaluate the portfolio design function on a rolling-window basis:
 
-```r
+``` r
 res <- portfolioBacktest(portfolio_fun, prices[[1]], shortselling = TRUE)
 names(res)
 #> [1] "returns"       "cumPnL"        "performance"   "cpu_time"     
@@ -94,19 +85,19 @@ plot(res$cumPnL)
 
 <img src="man/figures/README-unnamed-chunk-6-1.png" width="75%" style="display: block; margin: auto;" />
 
-```r
+``` r
 res$performance
 #>    sharpe ratio    max drawdown expected return      volatility 
 #>      1.48278986      0.02248487      0.06149754      0.04147421
 ```
 
-We can also backtest over multiple data sets 
+We can also backtest over multiple data sets
 
-```r
+``` r
 # perform multiple backtesting
 mul_res <- portfolioBacktest(portfolio_fun, prices[1:5], shortselling = TRUE)
 mul_res$performance
-#>                       [,1]       [,2]       [,3]       [,4]       [,5]
+#>                  dataset 1  dataset 2  dataset 3  dataset 4  dataset 5
 #> sharpe ratio    1.48278986 0.34314748 1.17388393 1.39310171 2.08764820
 #> max drawdown    0.02248487 0.07102024 0.02481580 0.03196293 0.02448805
 #> expected return 0.06149754 0.01306820 0.04379241 0.15265783 0.07007169
@@ -118,9 +109,9 @@ mul_res$performance_summary
 #>               0.03808334
 ```
 
+Links
+-----
 
-## Links
-Package: [GitHub](https://github.com/dppalomar/portfolioBacktest).  
-README file: [GitHub-readme](https://rawgit.com/dppalomar/portfolioBacktest/master/README.html).  
+Package: [GitHub](https://github.com/dppalomar/portfolioBacktest).
+README file: [GitHub-readme](https://rawgit.com/dppalomar/portfolioBacktest/master/README.html).
 Vignette: [GitHub-html-vignette](https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest-vignette.html) and [GitHub-pdf-vignette](https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest-vignette.pdf).
-

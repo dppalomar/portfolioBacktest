@@ -90,9 +90,6 @@ img {
 .tabbed-pane {
   padding-top: 12px;
 }
-.html-widget {
-  margin-bottom: 20px;
-}
 button.code-folding-btn:focus {
   outline: none;
 }
@@ -195,7 +192,7 @@ plot(res$cumPnL)</code></pre>
 <pre class="r"><code># perform multiple backtesting
 mul_res &lt;- portfolioBacktest(portfolio_fun, prices[1:5], shortselling = TRUE)
 mul_res$performance
-#&gt;                       [,1]       [,2]       [,3]       [,4]       [,5]
+#&gt;                  dataset 1  dataset 2  dataset 3  dataset 4  dataset 5
 #&gt; sharpe ratio    1.48278986 0.34314748 1.17388393 1.39310171 2.08764820
 #&gt; max drawdown    0.02248487 0.07102024 0.02481580 0.03196293 0.02448805
 #&gt; expected return 0.06149754 0.01306820 0.04379241 0.15265783 0.07007169
