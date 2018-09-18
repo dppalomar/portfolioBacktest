@@ -1,5 +1,6 @@
 library(CVXR)
 
+# GMVP
 portfolio_fun <- function(data) {
   Sigma <- cov(data)
   w <- Variable(nrow(Sigma))
@@ -8,3 +9,4 @@ portfolio_fun <- function(data) {
   result <- solve(prob)
   return(as.vector(result$getValue(w)))
 }
+
