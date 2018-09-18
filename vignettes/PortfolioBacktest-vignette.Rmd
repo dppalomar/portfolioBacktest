@@ -175,14 +175,16 @@ res <- multiplePortfolioBacktest(list(uniform_portfolio, GMVP_portfolio_fun), pr
 
 # Usage for grading students in a course
 If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily. It suffices to ask each student to include in a .R script (named LASTNAMEfirstnameSTUDENTNUMBER.R) his/her portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). Then the instructor can put all those files in a folder and evaluate all of them at once.
-```{r, eval=FALSE}
-res_all_students <- multiplePortfolioBacktest("folder_path_to_student_files", prices[1:5])
+```{r}
+res_all_students <- portfolioBacktest:::multiplePortfolioBacktest("student functions/", prices[1:3])
 res_all_students$performance_summary
+res_all_students$time_average
+res_all_students$failure_ratio
 ```
 
 
 ## Example of a script file to be submitted by a student
-Consider the student Mickey Mouse with id number 6666. Then the script file should be named `MickeyMouse6666.R` and should contain the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`):
+Consider the student Mickey Mouse with id number 6666. Then the script file should be named `Mickey-Mouse-6666.R` and should contain the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`):
 ```{r, eval=FALSE}
 library(CVXR)
 library(someotherlibrary)
