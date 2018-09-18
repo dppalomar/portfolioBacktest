@@ -4,22 +4,22 @@
 #'         PerformanceAnalytics
 singlePortfolioBacktest <- function(portfolio_fun, prices,
                                     shortselling = FALSE, leverage = 1,
-                                    T_sliding_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
+                                    T_rolling_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
   ######## error control  #########
   if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]]")
   if (!is.xts(prices)) stop("prices have to be xts")
   N <- ncol(prices)
   T <- nrow(prices)
-  if (T_sliding_window >= T) stop("T is not large enough for the given sliding window length")
+  if (T_rolling_window >= T) stop("T is not large enough for the given sliding window length")
   if (freq_optim > freq_rebalance) stop("You cannot reoptimize more frequently that you rebalance")
   if (anyNA(prices)) stop("prices contain NAs")
   if (!is.function(portfolio_fun)) stop("portfolio_fun is not a function")
   #################################
   
   # indices
-  #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= T_sliding_window)]
-  optim_indices <- seq(from = T_sliding_window, to = T, by = freq_optim)
-  rebalancing_indices <- seq(from = T_sliding_window, to = T, by = freq_rebalance)
+  #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= T_rolling_window)]
+  optim_indices <- seq(from = T_rolling_window, to = T, by = freq_optim)
+  rebalancing_indices <- seq(from = T_rolling_window, to = T, by = freq_rebalance)
   
   start_time <- proc.time()[3] # time the following procedure
   # compute w
@@ -29,7 +29,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
   colnames(w) <- colnames(prices)
   for (i in 1:length(rebalancing_indices)) {
     idx_prices <- rebalancing_indices[i]
-    prices_window <- prices[(idx_prices-T_sliding_window+1):idx_prices, ]
+    prices_window <- prices[(idx_prices-T_rolling_window+1):idx_prices, ]
     tryCatch({w[i, ] <- do.call(portfolio_fun, list(prices_window))},
              warning = function(w) { error <<- TRUE; error_message <<- w$message},
              error = function(e) { error <<- TRUE; error_message <<- e$message})
@@ -54,7 +54,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
   time <- as.numeric(proc.time()[3] - start_time)
   
   # compute returns of portfolio
-  R_lin <- PerformanceAnalytics::CalculateReturns(prices[-c(1:(T_sliding_window-1)), ])
+  R_lin <- PerformanceAnalytics::CalculateReturns(prices[-c(1:(T_rolling_window-1)), ])
   rets <- returnPortfolio(R = R_lin, weights = w)
   
   # compute cumulative wealth (initial budget of 1$)
@@ -82,7 +82,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
 #' @param prices an xts object (or a list of \code{xts}) containing the stock prices for the backtesting.
 #' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
 #' @param leverage amount of leverage (default is 1, so no leverage).
-#' @param T_sliding_window length of the sliding window.
+#' @param T_rolling_window length of the rolling window.
 #' @param freq_optim how often the portfolio is to be reoptimized.
 #' @param freq_rebalance how often the portfolio is to be rebalanced.
 #' @return A list containing the performance in the following elements:

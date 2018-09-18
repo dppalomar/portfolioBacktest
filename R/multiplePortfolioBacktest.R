@@ -7,7 +7,7 @@
 #' @param return_all logical, indicating whether return all the results
 #' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
 #' @param leverage amount of leverage (default is 1, so no leverage).
-#' @param T_sliding_window length of the sliding window.
+#' @param T_rolling_window length of the rolling window.
 #' @param freq_optim how often the portfolio is to be reoptimized.
 #' @param freq_rebalance how often the portfolio is to be rebalanded.
 #' @return A list containing the performance in the following elements:

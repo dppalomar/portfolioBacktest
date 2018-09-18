@@ -1,7 +1,7 @@
 Package: portfolioBacktest
 Title: Backtesting of a Portfolio Over Multiple Datasets
 Version: 0.1.0
-Description: Backtesting of a portfolio in a sliding-window fashion over a 
+Description: Backtesting of a portfolio in a rolling-window fashion over a 
     dataset of stock prices. Multiple datasets are allowed (e.g., taken 
     randomly over different markets, different time periods, and different
     subset of the stock universe). In addition, multiple portfolios can be
