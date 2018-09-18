@@ -9,7 +9,7 @@ portfolioBacktest(portfolio_fun, prices, ...)
 \arguments{
 \item{portfolio_fun}{function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.}
 
-\item{prices}{a list of \code{xts} containing the stock prices for the backtesting.}
+\item{prices}{an \code{xts} or a list of \code{xts} containing the stock prices for the backtesting.}
 
 \item{shortselling}{whether shortselling is allowed or not (default \code{FALSE}).}
 
@@ -19,10 +19,10 @@ portfolioBacktest(portfolio_fun, prices, ...)
 
 \item{freq_optim}{how often the portfolio is to be reoptimized.}
 
-\item{freq_rebalance}{how often the portfolio is to be rebalanded.}
+\item{freq_rebalance}{how often the portfolio is to be rebalanced.}
 }
 \value{
-A list containing the performance in the following elements:
+A list containing the performance with the following elements:
 \item{\code{returns}  }{xts object, the daily return of given portfolio function}
 \item{\code{cumPnL}  }{xts object, the cummulative daily return of given portfolio function}
 \item{\code{performance}}{matrix, each row is responding to one data example in order}
@@ -37,8 +37,8 @@ A list containing the performance in the following elements:
 Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
 }
 \examples{
-library(backtestPortfolio)
 library(xts)
+library(backtestPortfolio)
 
 # load data
 data(prices)

@@ -79,13 +79,13 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
 #' @description Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
 #'
 #' @param portfolio_fun function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.
-#' @param prices a list of \code{xts} containing the stock prices for the backtesting.
+#' @param prices an \code{xts} or a list of \code{xts} containing the stock prices for the backtesting.
 #' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
 #' @param leverage amount of leverage (default is 1, so no leverage).
 #' @param T_sliding_window length of the sliding window.
 #' @param freq_optim how often the portfolio is to be reoptimized.
-#' @param freq_rebalance how often the portfolio is to be rebalanded.
-#' @return A list containing the performance in the following elements:
+#' @param freq_rebalance how often the portfolio is to be rebalanced.
+#' @return A list containing the performance with the following elements:
 #' \item{\code{returns}  }{xts object, the daily return of given portfolio function}
 #' \item{\code{cumPnL}  }{xts object, the cummulative daily return of given portfolio function}
 #' \item{\code{performance}}{matrix, each row is responding to one data example in order}
@@ -97,8 +97,8 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
 #' \item{\code{error_message}}{string list, recording the error message when error happens}
 #' @author Daniel P. Palomar and Rui Zhou
 #' @examples
-#' library(backtestPortfolio)
 #' library(xts)
+#' library(backtestPortfolio)
 #'
 #' # load data
 #' data(prices)
