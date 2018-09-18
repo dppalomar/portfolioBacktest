@@ -53,7 +53,7 @@ multiplePortfolioBacktest <- function(folder_path, prices, return_all = FALSE, .
       suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
       res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, ...)
       portfolios_perform[i, ] <- res$performance_summary
-      time_average[i] <- res$time_average
+      time_average[i] <- res$cpu_time_average
       failure_ratio[i] <- res$failure_ratio
       error_message[[i]] <- res$error_message
       if (return_all) results_container[[i]] <- res
@@ -82,7 +82,7 @@ multiplePortfolioBacktest <- function(folder_path, prices, return_all = FALSE, .
   vars_tb_returned <- list("stud_names" = stud_names,
                            "stud_IDs" = stud_IDs,
                            "performance_summary" = portfolios_perform,
-                           "time_average" = time_average,
+                           "cpu_time_average" = time_average,
                            "failure_ratio" = failure_ratio,
                            "error_message" = error_message)
   if (return_all) vars_tb_returned$results_container <- results_container

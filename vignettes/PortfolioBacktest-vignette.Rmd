@@ -122,7 +122,7 @@ Indeed, the GMVP does not satisfy the no-shortselling constraint. We can repeat 
 res <- portfolioBacktest(GMVP_portfolio_fun, prices[[1]], shortselling = TRUE)
 res$error
 res$error_message
-res$time
+res$cpu_time
 res$performance
 ```
 
@@ -147,7 +147,7 @@ We can now backtest it:
 res <- portfolioBacktest(Markowitz_portfolio_fun, prices[[1]])
 res$error
 res$error_message
-res$time
+res$cpu_time
 res$performance
 ```
 
@@ -155,12 +155,12 @@ Backtesting a portfolio on a list of `xts` containing different stock price data
 ```{r, cache=TRUE}
 res <- portfolioBacktest(Markowitz_portfolio_fun, prices[1:5])
 names(res)
-res$time
+res$cpu_time
 res$performance
 ```
 In particular, note the additional elements in the returned list:
 ```{r, cache=TRUE}
-res$time_average
+res$cpu_time_average
 res$performance_summary
 res$failure_ratio
 ```
@@ -169,7 +169,7 @@ res$failure_ratio
 ## Backtesting multiple portfolios [under development]
 Backtesting multiple portfolios is equally simple. It suffices to pass a list of functions to the backtesting function `multiplePortfolioBacktest()`:
 ```{r, eval=FALSE}
-res <- multiplePortfolioBacktest(list(uniform_portfolio, GMVP_portfolio_fun), prices[1:5])
+res <- portfolioBacktest:::multiplePortfolioBacktest(list(uniform_portfolio, GMVP_portfolio_fun), prices[1:5])
 ```
 
 
@@ -178,7 +178,7 @@ If an instructor wants to evaluate the students of a course in their portfolio d
 ```{r}
 res_all_students <- portfolioBacktest:::multiplePortfolioBacktest("student functions/", prices[1:3])
 res_all_students$performance_summary
-res_all_students$time_average
+res_all_students$cpu_time_average
 res_all_students$failure_ratio
 ```
 
