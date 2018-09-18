@@ -17,9 +17,9 @@ portfolioBacktest(portfolio_fun, prices, ...)
 
 \item{T_rolling_window}{length of the rolling window.}
 
-\item{freq_optim}{how often the portfolio is to be reoptimized.}
+\item{optimize_every}{how often the portfolio is to be optimized.}
 
-\item{freq_rebalance}{how often the portfolio is to be rebalanced.}
+\item{rebalance_every}{how often the portfolio is to be rebalanced.}
 }
 \value{
 A list containing the performance in the following elements:

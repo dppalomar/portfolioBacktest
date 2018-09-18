@@ -4,22 +4,22 @@
 #'         PerformanceAnalytics
 singlePortfolioBacktest <- function(portfolio_fun, prices,
                                     shortselling = FALSE, leverage = 1,
-                                    T_rolling_window = 6*21, freq_optim = 5, freq_rebalance = freq_optim) {
+                                    T_rolling_window = 6*21, optimize_every = 5, rebalance_every = optimize_every) {
   ######## error control  #########
   if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]]")
   if (!is.xts(prices)) stop("prices have to be xts")
   N <- ncol(prices)
   T <- nrow(prices)
   if (T_rolling_window >= T) stop("T is not large enough for the given sliding window length")
-  if (freq_optim > freq_rebalance) stop("You cannot reoptimize more frequently that you rebalance")
+  if (optimize_every > rebalance_every) stop("You cannot reoptimize more frequently that you rebalance")
   if (anyNA(prices)) stop("prices contain NAs")
   if (!is.function(portfolio_fun)) stop("portfolio_fun is not a function")
   #################################
   
   # indices
   #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= T_rolling_window)]
-  optim_indices <- seq(from = T_rolling_window, to = T, by = freq_optim)
-  rebalancing_indices <- seq(from = T_rolling_window, to = T, by = freq_rebalance)
+  optim_indices <- seq(from = T_rolling_window, to = T, by = optimize_every)
+  rebalancing_indices <- seq(from = T_rolling_window, to = T, by = rebalance_every)
   
   start_time <- proc.time()[3] # time the following procedure
   # compute w
@@ -37,10 +37,11 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
     if (!error) {
       if (!shortselling && any(w[i, ] + 1e-6 < 0)) {
         error <- TRUE
-        error_message <- "no-shortselling constraint not satisfied"
-      } else if (sum(abs(w[i, ])) > leverage + 1e-6) {
+        error_message <- c(error_message, "No-shortselling constraint not satisfied.")
+      }
+      if (sum(abs(w[i, ])) > leverage + 1e-6) {
         error <- TRUE
-        error_message <- "budget/leverage constraint not satisfied"
+        error_message <- c(error_message, "Leverage constraint not satisfied.")
       }
     }
     if (error) return(list("returns" = NA,
@@ -83,8 +84,8 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
 #' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
 #' @param leverage amount of leverage (default is 1, so no leverage).
 #' @param T_rolling_window length of the rolling window.
-#' @param freq_optim how often the portfolio is to be reoptimized.
-#' @param freq_rebalance how often the portfolio is to be rebalanced.
+#' @param optimize_every how often the portfolio is to be optimized.
+#' @param rebalance_every how often the portfolio is to be rebalanced.
 #' @return A list containing the performance in the following elements:
 #' \item{\code{returns}  }{xts object (or a list of xts when \code{prices} is a list), the daily return of given portfolio function}
 #' \item{\code{cumPnL}  }{xts object (or a list of xts when \code{prices} is a list), the cummulative daily return of given portfolio function}
@@ -128,9 +129,8 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
 portfolioBacktest <- function(portfolio_fun, prices, ...) {
   
   # when price is an xts object
-  if (!is.list(prices)) {
+  if (!is.list(prices))
     return(singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, ...))
-  }
   
   rets <- cumPnL <- performance <- error_message <- list()
   time <- error <- c()
@@ -155,9 +155,8 @@ portfolioBacktest <- function(portfolio_fun, prices, ...) {
     performance_summary <- apply(cbind(performance[, !error]), 1, median)
     names(performance_summary) <- paste(names(performance_summary), "(median)")
     time_average <- mean(time[!error])
-  } else {
+  } else
     performance_summary <- time_average <- NA
-  }
 
   return(list("returns" = rets,
               "cumPnL" = cumPnL,

@@ -1,5 +1,5 @@
-library(portfolioBacktest)
 library(xts)
+library(portfolioBacktest)
 library(CVXR)
 
 # load data
@@ -22,7 +22,7 @@ portfolio_fun_Markowitz <- function(prices) {
   return(as.vector(result$getValue(w)))
 }
 
-portfolio_fun_GMVP <- function(prices) {
+portfolio_fun_GMVP_norm <- function(prices) {
   X <- diff(log(prices))[-1]  # compute log returns
   Sigma <- cov(X)  # compute SCM
   # design GMVP
@@ -31,13 +31,28 @@ portfolio_fun_GMVP <- function(prices) {
   return(w)
 }
 
-
-
+portfolio_fun_GMVP <- function(prices) {
+  X <- diff(log(prices))[-1]  # compute log returns
+  Sigma <- cov(X)  # compute SCM
+  # design GMVP
+  w <- solve(Sigma, rep(1, nrow(Sigma)))
+  w <- w/sum(w)  # normalized to have sum(w)=1
+  return(w)
+}
 
 # perform single backtesting
-res <- portfolioBacktest(portfolio_fun_GMVP, prices[[1]], shortselling = TRUE)
-#res <- portfolioBacktest(portfolio_fun_Markowitz, prices[[1]])
+res <- portfolioBacktest(portfolio_fun_GMVP, prices[[1]])
 names(res)
+res$error
+res$error_message
+
+res <- portfolioBacktest(portfolio_fun_GMVP_norm, prices[[1]])
+res$error_message
+
+res <- portfolioBacktest(portfolio_fun_GMVP_norm, prices[[1]], shortselling = TRUE)
+res$error
+
+res <- portfolioBacktest(portfolio_fun_Markowitz, prices[[1]])
 plot(res$returns)
 plot(res$cumPnL)
 PerformanceAnalytics::chart.CumReturns(res$returns, geometric = FALSE, wealth.index = TRUE)

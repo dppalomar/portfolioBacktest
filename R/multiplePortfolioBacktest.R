@@ -21,6 +21,7 @@
 #' 
 #' @import xts
 #'         PerformanceAnalytics
+#' @export
 multiplePortfolioBacktest <- function(folder_path, prices, return_all = FALSE, ...) {
   # extract useful informations
   files <- list.files(folder_path)
