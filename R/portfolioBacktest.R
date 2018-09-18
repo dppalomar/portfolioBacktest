@@ -79,20 +79,20 @@ singlePortfolioBacktest <- function(portfolio_fun, prices,
 #' @description Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
 #'
 #' @param portfolio_fun function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.
-#' @param prices an \code{xts} or a list of \code{xts} containing the stock prices for the backtesting.
+#' @param prices an xts object (or a list of \code{xts}) containing the stock prices for the backtesting.
 #' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
 #' @param leverage amount of leverage (default is 1, so no leverage).
 #' @param T_sliding_window length of the sliding window.
 #' @param freq_optim how often the portfolio is to be reoptimized.
 #' @param freq_rebalance how often the portfolio is to be rebalanced.
-#' @return A list containing the performance with the following elements:
-#' \item{\code{returns}  }{xts object, the daily return of given portfolio function}
-#' \item{\code{cumPnL}  }{xts object, the cummulative daily return of given portfolio function}
+#' @return A list containing the performance in the following elements:
+#' \item{\code{returns}  }{xts object (or a list of xts when \code{prices} is a list), the daily return of given portfolio function}
+#' \item{\code{cumPnL}  }{xts object (or a list of xts when \code{prices} is a list), the cummulative daily return of given portfolio function}
 #' \item{\code{performance}}{matrix, each row is responding to one data example in order}
-#' \item{\code{performance_summary}}{vector, summarizing the performance by its median value}
-#' \item{\code{time}}{vector, recording time for execute the portfolio for one data example}
-#' \item{\code{time_average}}{number, the average of \code{time} but ignoring the NAs}
-#' \item{\code{failure_ratio}}{number, the failure ratio of applying given portfolio function to different data examples}
+#' \item{\code{performance_summary}}{vector, summarizing the performance by its median value (only returned when argument \code{prices} is a list of xts)}
+#' \item{\code{time}}{vector, recording time for execute the portfolio for one data examples}
+#' \item{\code{time_average}}{number, the average of \code{time} but ignoring the NAs (only returned when argument \code{prices} is a list of xts)}
+#' \item{\code{failure_ratio}}{number, the failure ratio of applying given portfolio function to different data examples (only returned when argument \code{prices} is a list of xts)}
 #' \item{\code{error}}{logical vector, indicating whether an error happens in data examples}
 #' \item{\code{error_message}}{string list, recording the error message when error happens}
 #' @author Daniel P. Palomar and Rui Zhou
@@ -153,6 +153,7 @@ portfolioBacktest <- function(portfolio_fun, prices, ...) {
   failure_ratio <- sum(error) / length(prices)
   if (failure_ratio < 1) {
     performance_summary <- apply(performance[, !error], 1, median)
+    names(performance_summary) <- paste(names(performance_summary), "(median)")
     time_average <- mean(time[!error])
   } else {
     performance_summary <- time_average <- NA
