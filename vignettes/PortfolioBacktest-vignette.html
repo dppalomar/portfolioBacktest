@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2018-09-17" />
+<meta name="date" content="2018-09-18" />
 
 <title>Portfolio Backtesting</title>
 
@@ -73,7 +73,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h1 class="title toc-ignore">Portfolio Backtesting</h1>
 <h3 class="author">Daniel P. Palomar and Rui ZHOU</h3>
 <address class="author_afil">
-Hong Kong University of Science and Technology (HKUST)<br><h3 class="date">2018-09-17</h3>
+Hong Kong University of Science and Technology (HKUST)<br><h3 class="date">2018-09-18</h3>
 </header>
 
 <hr>
@@ -107,8 +107,7 @@ devtools<span class="op">::</span><span class="kw">install_github</span>(<span c
 <span class="kw">library</span>(portfolioBacktest)
 <span class="kw">help</span>(<span class="dt">package =</span> <span class="st">&quot;portfolioBacktest&quot;</span>)
 package?portfolioBacktest
-?portfolioBacktest
-?prices</code></pre></div>
+?portfolioBacktest</code></pre></div>
 </div>
 <div id="usage-of-the-package" class="section level1">
 <h1>Usage of the package</h1>
@@ -184,7 +183,7 @@ res<span class="op">$</span>error
 res<span class="op">$</span>error_message
 <span class="co">#&gt; NULL</span>
 res<span class="op">$</span>time
-<span class="co">#&gt; [1] 0.3250039</span>
+<span class="co">#&gt; [1] 0.06646299</span>
 res<span class="op">$</span>performance
 <span class="co">#&gt;    sharpe ratio    max drawdown expected return      volatility </span>
 <span class="co">#&gt;     0.239021301     0.033779114     0.009339336     0.039073239</span></code></pre></div>
@@ -209,7 +208,7 @@ res<span class="op">$</span>error
 res<span class="op">$</span>error_message
 <span class="co">#&gt; NULL</span>
 res<span class="op">$</span>time
-<span class="co">#&gt; [1] 12.82929</span>
+<span class="co">#&gt; [1] 15.04912</span>
 res<span class="op">$</span>performance
 <span class="co">#&gt;    sharpe ratio    max drawdown expected return      volatility </span>
 <span class="co">#&gt;      0.03089353      0.34340691      0.01110835      0.35956869</span></code></pre></div>
@@ -220,7 +219,7 @@ res<span class="op">$</span>performance
 <span class="co">#&gt; [4] &quot;performance_summary&quot; &quot;time&quot;                &quot;time_average&quot;       </span>
 <span class="co">#&gt; [7] &quot;failure_ratio&quot;       &quot;error&quot;               &quot;error_message&quot;</span>
 res<span class="op">$</span>time
-<span class="co">#&gt; [1] 13.04807 12.59069 12.50301 12.46359 12.32668</span>
+<span class="co">#&gt; [1] 14.81807 14.45992 14.14044 14.34398 14.56155</span>
 res<span class="op">$</span>performance
 <span class="co">#&gt;                       [,1]       [,2]      [,3]      [,4]      [,5]</span>
 <span class="co">#&gt; sharpe ratio    0.03089353 0.07929971 0.8842131 0.9202345 1.3350479</span>
@@ -229,10 +228,12 @@ res<span class="op">$</span>performance
 <span class="co">#&gt; volatility      0.35956869 0.37363505 0.3899270 0.3860240 0.3720501</span></code></pre></div>
 <p>In particular, note the additional elements in the returned list:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res<span class="op">$</span>time_average
-<span class="co">#&gt; [1] 12.58641</span>
+<span class="co">#&gt; [1] 14.46479</span>
 res<span class="op">$</span>performance_summary
-<span class="co">#&gt;    sharpe ratio    max drawdown expected return      volatility </span>
-<span class="co">#&gt;       0.8842131       0.3434069       0.3447786       0.3736351</span>
+<span class="co">#&gt;    sharpe ratio (median)    max drawdown (median) expected return (median) </span>
+<span class="co">#&gt;                0.8842131                0.3434069                0.3447786 </span>
+<span class="co">#&gt;      volatility (median) </span>
+<span class="co">#&gt;                0.3736351</span>
 res<span class="op">$</span>failure_ratio
 <span class="co">#&gt; [1] 0</span></code></pre></div>
 </div>
@@ -245,11 +246,28 @@ res<span class="op">$</span>failure_ratio
 <div id="usage-for-grading-students-in-a-course" class="section level1">
 <h1>Usage for grading students in a course</h1>
 <p>If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily. It suffices to ask each student to include in a .R script (named LASTNAMEfirstnameSTUDENTNUMBER.R) his/her portfolio function called exactly <code>portfolio_fun()</code> as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with <code>library()</code>). Then the instructor can put all those files in a folder and evaluate all of them at once.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res_all_students &lt;-<span class="st"> </span><span class="kw">multiplePortfolioBacktest</span>(<span class="st">&quot;folder_path_to_student_files&quot;</span>, prices[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>])
-res_all_students<span class="op">$</span>performance_summary</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res_all_students &lt;-<span class="st"> </span>portfolioBacktest<span class="op">:::</span><span class="kw">multiplePortfolioBacktest</span>(<span class="st">&quot;student functions/&quot;</span>, prices[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>])
+<span class="co">#&gt; 2018-09-18 09:07:31 - Execute code from Firstname1 Surname1 (00000001)</span>
+<span class="co">#&gt; 2018-09-18 09:07:42 - Execute code from Firstname2 Surname2 (00000002)</span>
+<span class="co">#&gt; 2018-09-18 09:08:22 - Execute code from Firstname3 Surname3 (00000003)</span>
+res_all_students<span class="op">$</span>performance_summary
+<span class="co">#&gt;          sharpe ratio  (median) max drawdown  (median)</span>
+<span class="co">#&gt; 00000001               1.481645              0.1985666</span>
+<span class="co">#&gt; 00000002                     NA                     NA</span>
+<span class="co">#&gt; 00000003               2.023511              0.1393870</span>
+<span class="co">#&gt;          expected return  (median) volatility  (median)</span>
+<span class="co">#&gt; 00000001                 0.2756240            0.2477949</span>
+<span class="co">#&gt; 00000002                        NA                   NA</span>
+<span class="co">#&gt; 00000003                 0.3561531            0.1660787</span>
+res_all_students<span class="op">$</span>time_average
+<span class="co">#&gt; 00000001 00000002 00000003 </span>
+<span class="co">#&gt; 3.544071       NA 3.746919</span>
+res_all_students<span class="op">$</span>failure_ratio
+<span class="co">#&gt; 00000001 00000002 00000003 </span>
+<span class="co">#&gt;        0       NA        0</span></code></pre></div>
 <div id="example-of-a-script-file-to-be-submitted-by-a-student" class="section level2">
 <h2>Example of a script file to be submitted by a student</h2>
-<p>Consider the student Mickey Mouse with id number 6666. Then the script file should be named <code>MickeyMouse6666.R</code> and should contain the portfolio function called exactly <code>portfolio_fun()</code> as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with <code>library()</code>):</p>
+<p>Consider the student Mickey Mouse with id number 6666. Then the script file should be named <code>Mickey-Mouse-6666.R</code> and should contain the portfolio function called exactly <code>portfolio_fun()</code> as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with <code>library()</code>):</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(CVXR)
 <span class="kw">library</span>(someotherlibrary)
 
