@@ -17,7 +17,7 @@ multiplePortfolioBacktest(folder_path, prices, return_all = FALSE, ...)
 
 \item{leverage}{amount of leverage (default is 1, so no leverage).}
 
-\item{T_sliding_window}{length of the sliding window.}
+\item{T_rolling_window}{length of the rolling window.}
 
 \item{freq_optim}{how often the portfolio is to be reoptimized.}
 
