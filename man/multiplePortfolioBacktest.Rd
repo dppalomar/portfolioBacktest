@@ -4,11 +4,13 @@
 \alias{multiplePortfolioBacktest}
 \title{Evaluating multiple portfolio functions defined by customer}
 \usage{
-multiplePortfolioBacktest(folder_path, prices, return_all = FALSE,
-  return_portfolio = FALSE, ...)
+multiplePortfolioBacktest(folder_path = NULL,
+  portfolio_fun_list = NULL, prices, return_all = FALSE, ...)
 }
 \arguments{
 \item{folder_path}{path for a folder which contains all (and only) functions to be evaluated}
+
+\item{portfolio_fun_list}{a list of portfolio functions, valid when \code{folder_path} is not passed}
 
 \item{prices}{a list of \code{xts} containing the stock prices for the backtesting.}
 
