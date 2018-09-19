@@ -140,18 +140,21 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
 #' mul_res$performance_summary
 #' 
 #' @export
-portfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FALSE, ...) {
+portfolioBacktest <- function(portfolio_fun, prices, ...) {
   
   # when price is an xts object
   if (!is.list(prices))
-    return(singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, return_portfolio = return_portfolio, ...))
+    return(singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, ...))
   
   rets <- cumPnL <- performance <- error_message <- portfolio <- list()
   time <- error <- c()
   
+  # check if need return portfolio
+  return_portfolio <- isTRUE(list(...)$return_portfolio)
+  
   # when price is a list of xts object
   for (i in 1:length(prices)) {
-    result <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = prices[[i]], return_portfolio = return_portfolio, ...)
+    result <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = prices[[i]], ...)
     rets[[i]] <- result$return
     cumPnL[[i]] <- result$cumPnL
     performance[[i]] <- result$performance

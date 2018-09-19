@@ -4,7 +4,7 @@
 \alias{portfolioBacktest}
 \title{Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices}
 \usage{
-portfolioBacktest(portfolio_fun, prices, return_portfolio = FALSE, ...)
+portfolioBacktest(portfolio_fun, prices, ...)
 }
 \arguments{
 \item{portfolio_fun}{function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.}
