@@ -3,6 +3,7 @@
 #' @description Evaluate multiple portfolio functions written in format form
 #'
 #' @param folder_path path for a folder which contains all (and only) functions to be evaluated
+#' @param portfolio_fun_list a list of portfolio functions, valid when \code{folder_path} is not passed
 #' @param prices a list of \code{xts} containing the stock prices for the backtesting.
 #' @param return_all logical, indicating whether return all the results.
 #' @param return_portfolio logical value, whether return portfolios.
@@ -23,10 +24,18 @@
 #' @import xts
 #'         PerformanceAnalytics
 #' @export
-multiplePortfolioBacktest <- function(folder_path, prices, return_all = FALSE, return_portfolio = FALSE, ...) {
-  # extract useful informations
+multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = NULL, prices, return_all = FALSE, ...) {
+  
+  if (is.null(folder_path) && is.null(portfolio_fun_list)) stop("The \"folder_path\" and \"portfolio_fun_list\" can not both be NULL")
+  # when pass a list of function
+  if (!is.null(portfolio_fun_list)) 
+    return(multiplePortfoioBacktestPassFunctions(portfolio_function_list, prices, return_all, ...))
+  
+  # extract useful informations and init all
   files <- list.files(folder_path)
-  stud_names <- stud_IDs <- time_average <- failure_ratio <- c()
+  stud_names <- stud_IDs <- c()
+  time_average <- rep(NA, length(files))
+  failure_ratio <- rep(1, length(files))
   error_message <- list()
   portfolios_perform <- matrix(NA, length(files), 4)
   if (return_all) results_container <- list()
@@ -34,9 +43,7 @@ multiplePortfolioBacktest <- function(folder_path, prices, return_all = FALSE, r
   # save the package and variables list
   packages_default <- search()
   var_fun_default <- ls()
-  # cat("---------------Default Packages---------------\n")
-  # cat(paste(packages_default, "\n"))
-  # cat("----------------------------------------------\n")
+  
   # some functions evaluation here
   for (i in 1:length(files)) {
     
@@ -53,7 +60,7 @@ multiplePortfolioBacktest <- function(folder_path, prices, return_all = FALSE, r
     
     tryCatch({
       suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
-      res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, return_portfolio = return_portfolio, ...)
+      res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, ...)
       portfolios_perform[i, ] <- res$performance_summary
       time_average[i] <- res$cpu_time_average
       failure_ratio[i] <- res$failure_ratio
@@ -77,20 +84,61 @@ multiplePortfolioBacktest <- function(folder_path, prices, return_all = FALSE, r
     rm(list = var_fun_det)
   }
   
-  rownames(portfolios_perform) <- stud_IDs
+  rownames(portfolios_perform) <- names(time_average) <- names(failure_ratio) <- names(error_message) <- stud_IDs
   colnames(portfolios_perform) <- paste(c("sharpe ratio", "max drawdown", "expected return", "volatility"), " (median)")
-  names(time_average) <- stud_IDs
-  names(failure_ratio) <- stud_IDs
+
   vars_tb_returned <- list("stud_names" = stud_names,
                            "stud_IDs" = stud_IDs,
                            "performance_summary" = portfolios_perform,
                            "cpu_time_average" = time_average,
                            "failure_ratio" = failure_ratio,
                            "error_message" = error_message)
-  if (return_all) vars_tb_returned$results_container <- results_container
+  if (return_all) {
+    names(results_container) <- stud_IDs
+    vars_tb_returned$results_container <- results_container
+  }
   return(vars_tb_returned)
 }
 
+multiplePortfoioBacktestPassFunctions <- function(portfolio_function_list, prices, return_all, ...) {
+  
+  if (!is.list(portfolio_function_list)) stop("argument \"portfolio_function_list\" must be a list")
+  
+  n_function <- length(portfolio_function_list) 
+  if (is.null(names(portfolio_function_list))) func_names <- paste0("func", 1:n_function)
+  else func_names <- names(portfolio_function_list)
+  
+  cpu_time_average <- rep(NA, n_function)
+  failure_ratio <- rep(1, n_function)
+  error_message <- list()
+  performance_summary <- matrix(NA, n_function, 4)
+  if (return_all) results_container <- list()
+  
+  names(cpu_time_average) <- names(failure_ratio) <-  rownames(performance_summary) <- func_names
+  colnames(performance_summary) <- paste(c("sharpe ratio", "max drawdown", "expected return", "volatility"), " (median)")
+  
+  for (i in 1:n_function) {
+    # report status
+    cat(paste0(Sys.time()," - Execute ", func_names[i], "\n"))
+    res <- portfolioBacktest(portfolio_fun = portfolio_function_list[[i]], prices = prices, ...)
+    performance_summary[i, ] <- res$performance_summary
+    cpu_time_average[i] <- res$cpu_time_average
+    failure_ratio[i] <- res$failure_ratio
+    error_message[[i]] <- res$error_message
+    if (return_all) results_container[[i]] <- res
+  }
+  
+  names(error_message) <- func_names
+  vars_tb_returned <- list("performance_summary" = performance_summary,
+                           "cpu_time_average" = cpu_time_average,
+                           "failure_ratio" = failure_ratio,
+                           "error_message" = error_message)
+  if (return_all) {
+    names(results_container) <- func_names
+    vars_tb_returned$results_container <- results_container
+  }
+  return(vars_tb_returned)
+}
 
 detach_packages <- function(items) {
   for (item in items) {
