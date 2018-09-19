@@ -52,11 +52,18 @@ res$error_message
 res <- portfolioBacktest(portfolio_fun_GMVP_norm, prices[[1]], shortselling = TRUE)
 res$error
 
+res <- portfolioBacktest(portfolio_fun_Markowitz, prices[[1]], return_portfolio = TRUE,
+                         T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+res$performance
+res$cpu_time
+str(res$portfolio)
+res$portfolio[, 48:50]
+
 res <- portfolioBacktest(portfolio_fun_Markowitz, prices[[1]])
+res$performance
 plot(res$returns)
 plot(res$cumPnL)
 PerformanceAnalytics::chart.CumReturns(res$returns, geometric = FALSE, wealth.index = TRUE)
-res$performance
 PerformanceAnalytics::table.AnnualizedReturns(res$returns)
 PerformanceAnalytics::charts.PerformanceSummary(res$returns, wealth.index = TRUE)
 

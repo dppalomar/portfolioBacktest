@@ -4,35 +4,40 @@
 #'         PerformanceAnalytics
 singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FALSE,
                                     shortselling = FALSE, leverage = 1,
-                                    T_rolling_window = 6*21, optimize_every = 5, rebalance_every = optimize_every) {
+                                    T_rolling_window = 252, optimize_every = 21, rebalance_every = optimize_every) {
   ######## error control  #########
   if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]]")
   if (!is.xts(prices)) stop("prices have to be xts")
   N <- ncol(prices)
   T <- nrow(prices)
   if (T_rolling_window >= T) stop("T is not large enough for the given sliding window length")
-  if (optimize_every > rebalance_every) stop("You cannot reoptimize more frequently that you rebalance")
+  if (optimize_every%%rebalance_every != 0) stop("The reoptimization period has to be a multiple of the rebalancing period")
   if (anyNA(prices)) stop("prices contain NAs")
   if (!is.function(portfolio_fun)) stop("portfolio_fun is not a function")
   #################################
   
   # indices
   #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= T_rolling_window)]
-  optim_indices <- seq(from = T_rolling_window, to = T, by = optimize_every)
-  rebalancing_indices <- seq(from = T_rolling_window, to = T, by = rebalance_every)
+  optimize_indices <- seq(from = T_rolling_window, to = T, by = optimize_every)
+  rebalance_indices <- seq(from = T_rolling_window, to = T, by = rebalance_every)
+  if (any(!(optimize_indices %in% rebalance_indices))) stop("The reoptimization indices have to be a subset of the rebalancing indices")
   
   start_time <- proc.time()[3] # time the following procedure
   # compute w
   error <- FALSE
   error_message <- NULL
-  w <- xts(matrix(NA, length(rebalancing_indices), N), order.by = index(prices)[rebalancing_indices])
+  w <- xts(matrix(NA, length(rebalance_indices), N), order.by = index(prices)[rebalance_indices])
   colnames(w) <- colnames(prices)
-  for (i in 1:length(rebalancing_indices)) {
-    idx_prices <- rebalancing_indices[i]
-    prices_window <- prices[(idx_prices-T_rolling_window+1):idx_prices, ]
-    tryCatch({w[i, ] <- do.call(portfolio_fun, list(prices_window))},
-             warning = function(w) { error <<- TRUE; error_message <<- w$message},
-             error = function(e) { error <<- TRUE; error_message <<- e$message})
+  for (i in 1:length(rebalance_indices)) {
+    idx_prices <- rebalance_indices[i]
+    if (idx_prices %in% optimize_indices) {  # reoptimize
+      prices_window <- prices[(idx_prices-T_rolling_window+1):idx_prices, ]
+      tryCatch({w[i, ] <- do.call(portfolio_fun, list(prices_window))},
+               warning = function(w) { error <<- TRUE; error_message <<- w$message},
+               error = function(e) { error <<- TRUE; error_message <<- e$message})
+    } else  # just rebalance without reoptimizing
+      w[i, ] <- w[i-1, ]
+      
     # exit in case of error
     if (!error) {
       if (!shortselling && any(w[i, ] + 1e-6 < 0)) {
@@ -79,6 +84,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
   if (return_portfolio) var_tb_returned$portfolio <- w
   return(var_tb_returned)
 }
+
 
 
 #' @title Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices
