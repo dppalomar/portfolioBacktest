@@ -4,7 +4,7 @@
 #'         PerformanceAnalytics
 singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FALSE,
                                     shortselling = FALSE, leverage = 1,
-                                    T_rolling_window = 252, optimize_every = 21, rebalance_every = optimize_every) {
+                                    T_rolling_window = 252, optimize_every = 20, rebalance_every = optimize_every) {
   ######## error control  #########
   if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]]")
   if (!is.xts(prices)) stop("prices have to be xts")
