@@ -7,6 +7,7 @@
 ^README_cache$
 ^README_files$
 ^R_buildignore$
+^data_private
 ^papers$
 ^vignettes/PortfolioBacktest-vignette_cache$
 ^vignettes/PortfolioBacktest-vignette_files$
