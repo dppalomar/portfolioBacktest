@@ -8,9 +8,9 @@ data(prices)
 
 # perform backtesting
 my_path <- "d:/Users/rzhouae/Documents/R/Git/portfolioBacktest/R_buildignore/student-functions/"
-my_mac_path <- "/Users/zhourui/Documents/R/GitProjects/backtestPortfolio/R_buildignore/students fuction/"
+my_mac_path <- "/Users/zhourui/Documents/R/GitProjects/portfolioBacktest/R_buildignore/student-functions/"
 
-res <- multiplePortfolioBacktest(folder_path = my_path, prices = prices[1:3], optimize_every = 100)
+res <- multiplePortfolioBacktest(folder_path = my_mac_path, prices = prices[1:3], optimize_every = 100)
 
 
 library(portfolioBacktest)
