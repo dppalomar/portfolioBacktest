@@ -1,8 +1,8 @@
 ---
 title: "Portfolio Backtesting"
-author: 
-- name: "Daniel P. Palomar and Rui ZHOU"
-  affiliation: "Hong Kong University of Science and Technology (HKUST)"
+author: |
+  | Daniel P. Palomar and Rui ZHOU
+  | Hong Kong University of Science and Technology (HKUST)
 date: "`r Sys.Date()`"
 output:
   bookdown::html_document2:
@@ -166,10 +166,12 @@ res$failure_ratio
 ```
 
 
-## Backtesting multiple portfolios [under development]
-Backtesting multiple portfolios is equally simple. It suffices to pass a list of functions to the backtesting function `multiplePortfolioBacktest()` [to be completed]:
+## Backtesting multiple portfolios
+Backtesting multiple portfolios is equally simple. It suffices to pass a list of functions to the backtesting function `multiplePortfolioBacktest()`:
 ```{r}
-res <- multiplePortfolioBacktest(portfolio_fun_list = list(uniform_portfolio_fun, GMVP_portfolio_fun), prices =  prices[1:5], shortselling = TRUE)
+res <- multiplePortfolioBacktest(portfolio_fun_list = list(uniform_portfolio_fun, 
+                                                           GMVP_portfolio_fun), 
+                                 prices =  prices[1:5], shortselling = TRUE)
 res
 ```
 
@@ -177,16 +179,17 @@ res
 # Usage for grading students in a course
 If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily. It suffices to ask each student to submit a .R script (named `LASTNAME-firstname-STUDENTNUMBER-XXXX.R`) containing the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). Then the instructor can put all those files in a folder and evaluate all of them at once.
 ```{r, cache=TRUE}
-res_all_students <- multiplePortfolioBacktest(folder_path = "folder_path", prices =  prices[1:3])
+res_all_students <- multiplePortfolioBacktest(folder_path = "folder_path", 
+                                              prices =  prices[1:3])
 res_all_students$performance_summary
 res_all_students$cpu_time_average
 res_all_students$failure_ratio
 ```
 
-Now we can rank the different portfolios/students based on a weighted combination of the performance measures [to be completed]:
-```{r, eval=FALSE}
-final_ranking <- portfolioRank(res_all_students)
-final_ranking
+Now we can rank the different portfolios/students based on a weighted combination of the percentile of the scores of the performance measures:
+```{r}
+leatherboard <- portfolioLeatherboard(res_all_students)
+leatherboard
 ```
 
 
