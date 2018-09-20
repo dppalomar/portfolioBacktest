@@ -88,7 +88,7 @@ plot(res$cumPnL)
 ``` r
 res$performance
 #>    sharpe ratio    max drawdown expected return      volatility 
-#>      1.48278986      0.02248487      0.06149754      0.04147421
+#>      0.90688642      0.02956825      0.04228335      0.04662475
 ```
 
 We can also backtest over multiple data sets
@@ -98,15 +98,15 @@ We can also backtest over multiple data sets
 mul_res <- portfolioBacktest(portfolio_fun, prices[1:5], shortselling = TRUE)
 mul_res$performance
 #>                  dataset 1  dataset 2  dataset 3  dataset 4  dataset 5
-#> sharpe ratio    1.48278986 0.34314748 1.17388393 1.39310171 2.08764820
-#> max drawdown    0.02248487 0.07102024 0.02481580 0.03196293 0.02448805
-#> expected return 0.06149754 0.01306820 0.04379241 0.15265783 0.07007169
-#> volatility      0.04147421 0.03808334 0.03730557 0.10958125 0.03356489
+#> sharpe ratio    0.90688642 0.27460669 0.92214292 1.50478540 1.21084101
+#> max drawdown    0.02956825 0.03029658 0.03314320 0.03096982 0.02255325
+#> expected return 0.04228335 0.01046984 0.04261875 0.18965447 0.04153513
+#> volatility      0.04662475 0.03812668 0.04621708 0.12603423 0.03430271
 mul_res$performance_summary
 #>    sharpe ratio (median)    max drawdown (median) expected return (median) 
-#>               1.39310171               0.02481580               0.06149754 
+#>               0.92214292               0.03029658               0.04228335 
 #>      volatility (median) 
-#>               0.03808334
+#>               0.04621708
 ```
 
 Links
