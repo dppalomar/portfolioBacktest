@@ -34,7 +34,7 @@ portfolioLeaderboard <- function(res = NA, weights = c(1, 1, 1, 7)) {
   # add names
   index_vaild_sorted <- (1:length(mask_valid))[mask_valid][index_sorting]
   index_sorted <- c(index_vaild_sorted, (1:length(mask_valid))[-index_vaild_sorted])
-  colnames(leaderboard) <- c("sharpe ratio", "max drawdown", "cpu time", "failure ratio", "final score")
+  colnames(leaderboard) <- c("sharpe ratio score", "max drawdown score", "cpu time score", "failure ratio score", "final score")
   if (!is.null(res$stud_IDs)){
     stud_info <- cbind(res$stud_names[index_sorted], res$stud_IDs[index_sorted])
     rownames(leaderboard) <- stud_info[, 2]
