@@ -12,10 +12,8 @@
 #' 
 #' @export
 portfolioLeaderboard <- function(res = NA, weights = c(1, 1, 1, 7)) {
-  if (is.na(res)) stop("must pass the argument \"res\"")
   if (length(weights) != 4) stop("argument \"weights\" must have 4 elements")
   
-  browser()
   # sort the vaild scores
   weights <- 100 * weights / (sum(weights))
   mask_valid <- res$failure_ratio != 1
