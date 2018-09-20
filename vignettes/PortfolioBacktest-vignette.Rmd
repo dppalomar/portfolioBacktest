@@ -187,7 +187,7 @@ res_all_students$failure_ratio
 ```
 
 Now we can rank the different portfolios/students based on a weighted combination of the percentile of the scores of the performance measures:
-```{r}
+```{r, fig.height=2}
 leaderboard <- portfolioLeaderboard(res_all_students)
 
 # show leaderboard
