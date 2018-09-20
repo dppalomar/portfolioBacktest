@@ -29,7 +29,7 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
   if (is.null(folder_path) && is.null(portfolio_fun_list)) stop("The \"folder_path\" and \"portfolio_fun_list\" can not both be NULL")
   # when pass a list of function
   if (!is.null(portfolio_fun_list)) 
-    return(multiplePortfoioBacktestPassFunctions(portfolio_function_list, prices, return_all, ...))
+    return(multiplePortfoioBacktestPassFunctions(portfolio_fun_list, prices, return_all, ...))
   
   # extract useful informations and init all
   files <- list.files(folder_path)

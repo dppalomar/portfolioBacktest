@@ -169,14 +169,15 @@ res$failure_ratio
 ## Backtesting multiple portfolios [under development]
 Backtesting multiple portfolios is equally simple. It suffices to pass a list of functions to the backtesting function `multiplePortfolioBacktest()` [to be completed]:
 ```{r}
-res <- multiplePortfolioBacktest(list(uniform_portfolio_fun, GMVP_portfolio_fun), prices[1:5])
+res <- multiplePortfolioBacktest(portfolio_fun_list = list(uniform_portfolio_fun, GMVP_portfolio_fun), prices =  prices[1:5], shortselling = TRUE)
+res
 ```
 
 
 # Usage for grading students in a course
 If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily. It suffices to ask each student to submit a .R script (named `LASTNAME-firstname-STUDENTNUMBER-XXXX.R`) containing the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). Then the instructor can put all those files in a folder and evaluate all of them at once.
 ```{r, cache=TRUE}
-res_all_students <- multiplePortfolioBacktest("folder_path", prices[1:3])
+res_all_students <- multiplePortfolioBacktest(folder_path = "folder_path", prices =  prices[1:3])
 res_all_students$performance_summary
 res_all_students$cpu_time_average
 res_all_students$failure_ratio
