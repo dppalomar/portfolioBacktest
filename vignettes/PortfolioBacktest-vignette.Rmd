@@ -192,7 +192,7 @@ leaderboard <- portfolioLeaderboard(res_all_students)
 
 # show leaderboard
 library(gridExtra)
-grid.table(formatC(leaderboard$leaderboard, digits = 3))
+grid.table(leaderboard$leaderboard)
 ```
 
 
