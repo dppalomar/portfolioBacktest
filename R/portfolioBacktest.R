@@ -37,7 +37,12 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
                error = function(e) { error <<- TRUE; error_message <<- e$message})
     } else  # just rebalance without reoptimizing
       w[i, ] <- w[i-1, ]
-      
+    
+    if (anyNA(w[i, ])) {
+      error = TRUE
+      error_message = "Returned portfolio contains NA"
+    }
+    
     # exit in case of error
     if (!error) {
       if (!shortselling && any(w[i, ] + 1e-6 < 0)) {
