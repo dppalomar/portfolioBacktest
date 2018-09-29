@@ -24,12 +24,12 @@
 #' @import xts
 #'         PerformanceAnalytics
 #' @export
-multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = NULL, prices, return_all = FALSE, ...) {
+multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = NULL, prices__, return_all = FALSE, ...) {
   
   if (is.null(folder_path) && is.null(portfolio_fun_list)) stop("The \"folder_path\" and \"portfolio_fun_list\" can not both be NULL")
   # when pass a list of function
   if (!is.null(portfolio_fun_list)) 
-    return(multiplePortfoioBacktestPassFunctions(portfolio_fun_list, prices, return_all, ...))
+    return(multiplePortfoioBacktestPassFunctions(portfolio_fun_list, prices__, return_all, ...))
   
   # extract useful informations and init all
   files <- list.files(folder_path)
@@ -60,7 +60,11 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
     
     tryCatch({
       suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
-      res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, ...)
+      # check if non-function variable is loaded
+      if (checkNonFuncVar(setdiff(ls(), var_fun_default), env = environment()))
+        stop("Non function variables are not allowed to be loaded")
+      
+      res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices__, ...)
       portfolios_perform[i, ] <- res$performance_summary
       time_average[i] <- res$cpu_time_average
       failure_ratio[i] <- res$failure_ratio
@@ -84,6 +88,7 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
     rm(list = var_fun_det)
   }
   
+  error_message <- c(error_message, as.list(rep(NA, length(stud_IDs)-length(error_message))))
   rownames(portfolios_perform) <- names(time_average) <- names(failure_ratio) <- names(error_message) <- stud_IDs
   colnames(portfolios_perform) <- paste(c("sharpe ratio", "max drawdown", "expected return", "volatility"), " (median)")
 
@@ -94,6 +99,7 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
                            "failure_ratio" = failure_ratio,
                            "error_message" = error_message)
   if (return_all) {
+    results_container <- c(results_container, as.list(rep(NA, length(stud_IDs)-length(results_container))))
     names(results_container) <- stud_IDs
     vars_tb_returned$results_container <- results_container
   }
@@ -148,6 +154,14 @@ detach_packages <- function(items) {
   }
 }
 
+checkNonFuncVar <- function(vars, env) {
+  if (length(vars) == 0) return(FALSE)
+  for (var in vars) {
+    if (!is.function(get(var, envir = env))) return(TRUE)
+  }
+  return(FALSE)
+}
+
 
 #' @title Checking uninstalled packages written in the portfolio functions defined by customer
 #'
@@ -157,18 +171,24 @@ detach_packages <- function(items) {
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
-checkUninstalledPackages <- function(folder_path) {
+checkUninstalledPackages <- function(folder_path, show_detail = FALSE) {
   if (!require("readtext")) stop("Package \"readtext\" is required to run this function!")
   if (!require("stringi")) stop("Package \"stringi\" is required to run this function!")
-  req_pkgs <- c()
+  uninstalled_pkgs_all <- c()
   files <- list.files(folder_path)
   for (file in files) {
     suppressWarnings(codes <- readtext(paste0(folder_path, "/", file)))
     pkgs <- stri_extract_all(codes$text, regex = "library\\(.*?\\)", simplify = TRUE)
-    req_pkgs <- c(req_pkgs, as.vector(pkgs))
+    if (is.na(pkgs[1])) next
+    pkgs <- as.vector(pkgs)
+    pkgs <- sub(".*\\(", "", pkgs)
+    pkgs <- sub(")", "", pkgs)
+    uninstalled_pkgs<- pkgs[! pkgs %in% rownames(installed.packages())]
+    uninstalled_pkgs_all <- c(uninstalled_pkgs_all, uninstalled_pkgs)
+    
+    if (show_detail) 
+      if (length(as.vector(uninstalled_pkgs)) != 0)
+        cat("find uninstalled packages", uninstalled_pkgs, "in", file, "\n")
   }
-  req_pkgs <- sub(".*\\(", "", req_pkgs)
-  req_pkgs <- sub(")", "", req_pkgs)
-  uninstalled_pkgs<- req_pkgs[! req_pkgs %in% rownames(installed.packages())]
-  return(unique(uninstalled_pkgs))
+  return(unique(uninstalled_pkgs_all))
 }
