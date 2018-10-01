@@ -32,7 +32,7 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
     return(multiplePortfoioBacktestPassFunctions(portfolio_fun_list, prices__, return_all, ...))
   
   # extract useful informations and init all
-  files <- list.files(folder_path)
+  files <- list.files(folder_path, pattern = "\\.R$")
   stud_names <- stud_IDs <- c()
   time_average <- rep(NA, length(files))
   failure_ratio <- rep(1, length(files))
