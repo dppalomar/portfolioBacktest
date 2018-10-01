@@ -33,15 +33,27 @@ portfolioLeaderboard <- function(res = NA, weights = c(1, 1, 1, 7)) {
   index_vaild_sorted <- (1:length(mask_valid))[mask_valid][index_sorting]
   index_sorted <- c(index_vaild_sorted, (1:length(mask_valid))[-index_vaild_sorted])
   colnames(leaderboard) <- c("sharpe ratio score", "max drawdown score", "cpu time score", "failure ratio score", "final score")
+  
+  # also show original performance
+  error_summary <- sapply(sapply(res$error_message, unlist), unique)[index_sorted]
+  leaderboard_performance <- cbind(res$performance_summary[index_sorted, 1:2],
+                                   res$cpu_time_average[index_sorted],
+                                   res$failure_ratio[index_sorted])
+  colnames(leaderboard_performance) <- c("sharpe ratio (median)", "max drawdown (median)", "average cpu time", "failure ratio")
   if (!is.null(res$stud_IDs)){
     stud_info <- cbind(res$stud_names[index_sorted], res$stud_IDs[index_sorted])
-    rownames(leaderboard) <- stud_info[, 2]
+    rownames(leaderboard)<- rownames(leaderboard_performance) <- stud_info[, 2]
     return(list(
       "stud_info" = stud_info,
-      "leaderboard" = leaderboard))
+      "leaderboard_scores" = leaderboard,
+      "leaderboard_performance" = leaderboard_performance,
+      "error_summary" = error_summary))
   } else {
     rownames(leaderboard) <- names(res$error)
-    return(list("leaderboard" = leaderboard))
+    return(list(
+      "leaderboard" = leaderboard,
+      "leaderboard_performance" = leaderboard_performance,
+      "error_summary" = error_summary))
   }
 }
 
