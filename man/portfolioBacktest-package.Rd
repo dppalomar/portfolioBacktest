@@ -15,8 +15,11 @@ portfolioBacktest: Backtesting of a Portfolio Over Multiple Datasets
 \section{Help}{
 
 For a quick help see the README file:
-\href{https://rawgit.com/dppalomar/portfolioBacktest/master/README.html}{GitHub-README} and
-\href{https://cran.r-project.org/web/packages/portfolioBacktest/README.html}{CRAN-README}.
+\href{https://rawgit.com/dppalomar/portfolioBacktest/master/README.html}{GitHub-README}.
+
+For more details see the vignette:
+\href{https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest-vignette.html}{GitHub-html-vignette},
+\href{https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest-vignette.pdf}{GitHub-pdf-vignette}.
 }
 
 \author{

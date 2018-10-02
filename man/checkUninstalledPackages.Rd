@@ -4,7 +4,7 @@
 \alias{checkUninstalledPackages}
 \title{Checking uninstalled packages written in the portfolio functions defined by customer}
 \usage{
-checkUninstalledPackages(folder_path)
+checkUninstalledPackages(folder_path, show_detail = FALSE)
 }
 \arguments{
 \item{folder_path}{Path for a folder which contains all (and only) functions to be evaluated}
