@@ -40,7 +40,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
     
     if (anyNA(w[i, ])) {
       error = TRUE
-      error_message = "Returned portfolio contains NA."
+      error_message <- c(error_message, "Returned portfolio contains NA.")
     }
     
     # exit in case of error
