@@ -62,7 +62,7 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
       suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
       # check if non-function variable is loaded
       if (checkNonFuncVar(setdiff(ls(), var_fun_default), env = environment()))
-        stop("Non function variables are not allowed to be loaded")
+        stop("Non function variables are not allowed to be loaded.")
       
       res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices__, ...)
       portfolios_perform[i, ] <- res$performance_summary

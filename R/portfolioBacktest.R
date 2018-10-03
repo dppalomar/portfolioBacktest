@@ -241,4 +241,3 @@ returnPortfolio <- function(R, weights, execution = c("same day", "next day"), n
   }
   return(ret[rebalance_indices[1]:nrow(ret), ])
 }
-
