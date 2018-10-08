@@ -90,6 +90,9 @@ img {
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
 }
@@ -141,7 +144,8 @@ package?portfolioBacktest
 <p>We start by loading the package and some random sets of stock market data:</p>
 <pre class="r"><code>library(xts)
 library(portfolioBacktest)
-data(prices)</code></pre>
+data(prices)  # you may want to specify data(prices, package = &quot;portfolioBacktest&quot;) 
+              # in case there is any conflict with the package PerformanceAnalytics</code></pre>
 <p>The dataset <code>prices</code> is a list of objects <code>xts</code> that contains the prices of random sets of stock market data from the S&amp;P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.</p>
 <pre class="r"><code>length(prices)
 #&gt; [1] 50

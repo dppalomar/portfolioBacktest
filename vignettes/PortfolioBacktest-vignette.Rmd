@@ -73,7 +73,8 @@ We start by loading the package and some random sets of stock market data:
 ```{r, message = FALSE}
 library(xts)
 library(portfolioBacktest)
-data(prices)
+data(prices)  # you may want to specify data(prices, package = "portfolioBacktest") 
+              # in case there is any conflict with the package PerformanceAnalytics
 ```
 The dataset `prices` is a list of objects `xts` that contains the prices of random sets of stock market data from the S&P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.
  
