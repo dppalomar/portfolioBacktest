@@ -193,7 +193,7 @@ leaderboard <- portfolioLeaderboard(res_all_students)
 
 # show leaderboard
 library(gridExtra)
-grid.table(leaderboard$leaderboard)
+grid.table(leaderboard$leaderboard_scores)
 ```
 
 
