@@ -12,7 +12,7 @@
 #' @param T_rolling_window length of the rolling window.
 #' @param optimize_every how often the portfolio is to be optimized.
 #' @param rebalance_every how often the portfolio is to be rebalanced.
-#' @param time_limit time limit for executing portfolio function on a single data set
+#' @param cpu_time_limit time limit for executing portfolio function on a single data set
 #' @return A list containing the performance in the following elements:
 #' \item{\code{stud_names}  }{string vector, recording the student names extracted from files' name.}
 #' \item{\code{stud_IDs}  }{string vector, recording the student IDs extracted from files' name.}
