@@ -27,7 +27,8 @@ License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
-    PerformanceAnalytics
+    PerformanceAnalytics,
+    R.utils
 RoxygenNote: 6.1.0
 Suggests:
     readtext,

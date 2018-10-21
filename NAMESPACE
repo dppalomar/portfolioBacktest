@@ -3,5 +3,4 @@
 export(multiplePortfolioBacktest)
 export(portfolioBacktest)
 export(portfolioLeaderboard)
-import(PerformanceAnalytics)
 import(xts)
