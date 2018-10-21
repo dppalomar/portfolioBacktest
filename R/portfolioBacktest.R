@@ -58,7 +58,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
     if (error) {
       var_tb_returned <- list("returns" = NA,
                               "cumPnL" = NA,
-                              "performance" = rep(NA, 4),
+                              "performance" = rep(NA, 5),
                               "cpu_time" = NA,
                               "error" = error,
                               "error_message" = error_message)
