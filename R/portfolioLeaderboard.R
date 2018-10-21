@@ -17,7 +17,7 @@ portfolioLeaderboard <- function(res = NA, weights = list()) {
   if (all(unlist(weights) == 0)) stop("cannot set all weights be zero")
 
   weights_default <- list(sharpe_ratio = 0, max_drawdown = 0, expected_return = 0, 
-                          volatility = 0, cpu_time = 0, failure_rate = 0)
+                          volatility = 0, ROT = 0, cpu_time = 0, failure_rate = 0)
   weights_comb <- modifyList(weights_default, weights)
   if (length(weights_comb) != length(weights_default)) stop("contain invalid elements in \"weights\"")
   
@@ -31,6 +31,7 @@ portfolioLeaderboard <- function(res = NA, weights = list()) {
                   rank_percentile(-res$performance_summary[mask_valid, 2]),
                   rank_percentile( res$performance_summary[mask_valid, 3]),
                   rank_percentile(-res$performance_summary[mask_valid, 4]),
+                  rank_percentile( res$performance_summary[mask_valid, 5]),
                   rank_percentile(-res$cpu_time_average[mask_valid]),
                   rank_percentile(-res$failure_ratio[mask_valid]))
   final_score <- scores %*% weights_rescaled
@@ -44,14 +45,14 @@ portfolioLeaderboard <- function(res = NA, weights = list()) {
   # add names
   index_vaild_sorted <- (1:length(mask_valid))[mask_valid][index_sorting]
   index_sorted <- c(index_vaild_sorted, (1:length(mask_valid))[-index_vaild_sorted])
-  colnames(leaderboard) <- c("sharpe ratio score", "max drawdown score", "expected return score", "cpu time score", "volatility score", "failure ratio score", "final score")
+  colnames(leaderboard) <- c("sharpe ratio score", "max drawdown score", "expected return score", "volatility score", "ROT score", "cpu time score",  "failure ratio score", "final score")
   
   # also show original performance
   error_summary <- sapply(sapply(res$error_message, unlist), unique)[index_sorted]
   leaderboard_performance <- cbind(res$performance_summary,
                                    res$cpu_time_average,
                                    res$failure_ratio)[index_sorted, ]
-  colnames(leaderboard_performance) <- c("sharpe ratio (median)", "max drawdown (median)", "expected return (median)", "volatility (median)", "average cpu time", "failure ratio")
+  colnames(leaderboard_performance) <- c("sharpe ratio (median)", "max drawdown (median)", "expected return (median)", "volatility (median)", "ROT (median)", "average cpu time", "failure ratio")
   if (!is.null(res$stud_IDs)){
     stud_info <- cbind(res$stud_names[index_sorted], res$stud_IDs[index_sorted])
     rownames(leaderboard)<- rownames(leaderboard_performance) <- stud_info[, 2]
