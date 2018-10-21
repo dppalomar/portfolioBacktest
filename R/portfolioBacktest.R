@@ -2,7 +2,7 @@
 #
 #' @import xts
 #'         PerformanceAnalytics
-singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FALSE,
+singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FALSE, cpu_time_limit = Inf,
                                     shortselling = FALSE, leverage = 1,
                                     T_rolling_window = 252, optimize_every = 20, rebalance_every = optimize_every) {
   ######## error control  #########
@@ -24,6 +24,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
   
   start_time <- proc.time()[3] # time the following procedure
   # compute w
+  flag_timeout <- FALSE
   error <- FALSE
   error_message <- NULL
   w <- xts(matrix(NA, length(rebalance_indices), N), order.by = index(prices)[rebalance_indices])
@@ -32,19 +33,20 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
     idx_prices <- rebalance_indices[i]
     if (idx_prices %in% optimize_indices) {  # reoptimize
       prices_window <- prices[(idx_prices-T_rolling_window+1):idx_prices, ]
-      tryCatch({w[i, ] <- do.call(portfolio_fun, list(prices_window))},
+      tryCatch(R.utils::withTimeout({w[i, ] <- do.call(portfolio_fun, list(prices_window))}, timeout = cpu_time_limit),
+               TimeoutException=function(t) {error <<- TRUE; error_message <<- "Exceed time limit."; flag_timeout <<- TRUE},
                warning = function(w) { error <<- TRUE; error_message <<- w$message},
                error = function(e) { error <<- TRUE; error_message <<- e$message})
     } else  # just rebalance without reoptimizing
       w[i, ] <- w[i-1, ]
     
-    if (anyNA(w[i, ])) {
+    if (anyNA(w[i, ]) && !flag_timeout) {
       error = TRUE
       error_message <- c(error_message, "Returned portfolio contains NA.")
     }
     
     # exit in case of error
-    if (!error) {
+    if (!error && !flag_timeout) {
       if (!shortselling && any(w[i, ] + 1e-6 < 0)) {
         error <- TRUE
         error_message <- c(error_message, "No-shortselling constraint not satisfied.")
@@ -106,6 +108,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
 #' @param T_rolling_window length of the rolling window.
 #' @param optimize_every how often the portfolio is to be optimized.
 #' @param rebalance_every how often the portfolio is to be rebalanced.
+#' @param cpu_time_limit time limit for executing portfolio function on a single data set
 #' @return A list containing the performance in the following elements:
 #' \item{\code{returns}  }{xts object (or a list of xts when \code{prices} is a list), the daily return of given portfolio function}
 #' \item{\code{cumPnL}  }{xts object (or a list of xts when \code{prices} is a list), the cummulative daily return of given portfolio function}

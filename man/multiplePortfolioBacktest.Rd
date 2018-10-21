@@ -27,6 +27,8 @@ multiplePortfolioBacktest(folder_path = NULL,
 \item{optimize_every}{how often the portfolio is to be optimized.}
 
 \item{rebalance_every}{how often the portfolio is to be rebalanced.}
+
+\item{cpu_time_limit}{time limit for executing portfolio function on a single data set}
 }
 \value{
 A list containing the performance in the following elements:
