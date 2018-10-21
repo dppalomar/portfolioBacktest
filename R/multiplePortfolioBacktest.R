@@ -23,7 +23,6 @@
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
 #' @import xts
-#'         PerformanceAnalytics
 #' @export
 multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = NULL, prices__, return_all = FALSE, ...) {
   

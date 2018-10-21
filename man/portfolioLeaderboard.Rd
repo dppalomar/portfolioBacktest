@@ -4,12 +4,12 @@
 \alias{portfolioLeaderboard}
 \title{The leaderboard of portfolio function or students}
 \usage{
-portfolioLeaderboard(res = NA, weights = c(1, 1, 1, 1, 6))
+portfolioLeaderboard(res = NA, weights = list())
 }
 \arguments{
 \item{res}{Returned result from function \code{multiplePortfolioBacktest}}
 
-\item{weights}{weights for \code{sharpe ratio}, \code{max drawdown}, \code{expected return} 
+\item{weights}{a list of weights for \code{sharpe ratio}, \code{max drawdown}, \code{expected return}, \code{volatility} 
 \code{cpu time} and \code{failure ratio}}
 }
 \value{

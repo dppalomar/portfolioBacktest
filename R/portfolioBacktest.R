@@ -1,7 +1,6 @@
 # Backtesting on a single xts
 #
 #' @import xts
-#'         PerformanceAnalytics
 singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FALSE, cpu_time_limit = Inf,
                                     shortselling = FALSE, leverage = 1,
                                     T_rolling_window = 252, optimize_every = 20, rebalance_every = optimize_every) {
@@ -34,7 +33,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
     if (idx_prices %in% optimize_indices) {  # reoptimize
       prices_window <- prices[(idx_prices-T_rolling_window+1):idx_prices, ]
       tryCatch(R.utils::withTimeout({w[i, ] <- do.call(portfolio_fun, list(prices_window))}, timeout = cpu_time_limit),
-               TimeoutException=function(t) {error <<- TRUE; error_message <<- "Exceed time limit."; flag_timeout <<- TRUE},
+               TimeoutException = function(t) {error <<- TRUE; error_message <<- "Exceed time limit."; flag_timeout <<- TRUE},
                warning = function(w) { error <<- TRUE; error_message <<- w$message},
                error = function(e) { error <<- TRUE; error_message <<- e$message})
     } else  # just rebalance without reoptimizing
@@ -80,7 +79,10 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
   wealth_geom_BnH_trn <- cumprod(1 + rets)
   
   # compute various performance measures (in the future, add turnover and ROI)
-  performance <- c(SharpeRatio.annualized(rets), maxDrawdown(rets), Return.annualized(rets), StdDev.annualized(rets),
+  performance <- c(PerformanceAnalytics::SharpeRatio.annualized(rets), 
+                   PerformanceAnalytics::maxDrawdown(rets), 
+                   PerformanceAnalytics::Return.annualized(rets), 
+                   PerformanceAnalytics::StdDev.annualized(rets),
                    ret_port$ROT_bips)
   names(performance) <- c("sharpe ratio", "max drawdown", "expected return", "volatility", "ROT")
   
@@ -150,7 +152,6 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
 #' mul_res$performance_summary
 #' 
 #' @import xts
-#'         PerformanceAnalytics
 #' @export
 portfolioBacktest <- function(portfolio_fun, prices, ...) {
   
