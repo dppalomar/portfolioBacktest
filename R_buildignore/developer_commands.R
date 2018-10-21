@@ -27,3 +27,11 @@ library(portfolioBacktest)
 devtools::document()  #to generate all documentation via roxygen
 ?portfolioBacktest
 ?prices
+
+
+# Code tests
+#devtools::use_testthat()  # the first time
+devtools::test()
+#covr::package_coverage()  #coverage of tests
+#goodpractice::gp()  # overall checks
+

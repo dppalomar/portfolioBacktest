@@ -70,15 +70,17 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
   
   # compute returns of portfolio
   R_lin <- PerformanceAnalytics::CalculateReturns(prices[-c(1:(T_rolling_window-1)), ])
-  rets <- returnPortfolio(R = R_lin, weights = w)
+  ret_port <- returnPortfolio(R = R_lin, weights = w)
+  rets <- ret_port$rets
   
   # compute cumulative wealth (initial budget of 1$)
   #wealth_arith_BnH_trn <- 1 + cumsum(rets)
   wealth_geom_BnH_trn <- cumprod(1 + rets)
   
   # compute various performance measures (in the future, add turnover and ROI)
-  performance <- c(SharpeRatio.annualized(rets), maxDrawdown(rets), Return.annualized(rets), StdDev.annualized(rets))
-  names(performance) <- c("sharpe ratio", "max drawdown", "expected return", "volatility")
+  performance <- c(SharpeRatio.annualized(rets), maxDrawdown(rets), Return.annualized(rets), StdDev.annualized(rets),
+                   ret_port$ROT_bips)
+  names(performance) <- c("sharpe ratio", "max drawdown", "expected return", "volatility", "ROT")
   
   var_tb_returned <- list("returns" = rets,
                           "cumPnL" = wealth_geom_BnH_trn,
@@ -144,6 +146,8 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
 #' mul_res$performance
 #' mul_res$performance_summary
 #' 
+#' @import xts
+#'         PerformanceAnalytics
 #' @export
 portfolioBacktest <- function(portfolio_fun, prices, ...) {
   
@@ -216,28 +220,48 @@ returnPortfolio <- function(R, weights, execution = c("same day", "next day"), n
   # fill in w with NA to match the dates of R and lag appropriately
   w <- R; w[] <- NA
   w[index(weights), ] <- weights
-  switch(match.arg(execution),
+  switch(match.arg(execution),  # w[t] is the portfolio held before the realization of price[t] and R[t]
          "same day" = { w <- lag(w) },
          "next day" = { w <- lag(w, 2) },
          stop("Execution method unknown")
   )
   rebalance_indices <- which(!is.na(w[, 1]))
-  # loop
-  ret <- xts(rep(NA, nrow(R)), order.by = index(R))
+  # loop    (NAV contains the NAV at the beginning of the day, like w,
+  #          whereas ret contains the returns at the end of the day, so lag(ret) equals (NAV - lag(NAV))/lag(NAV))
+  NAV <- ret <- xts(rep(NA, nrow(R)), order.by = index(R))
   colnames(ret) <- name
-  for (i in rebalance_indices[1]:nrow(R)) {
-    if (i %in% rebalance_indices) {
-      cash <- 1 - sum(w[i, ])       # normalized cash wrt NAV
-      ret[i] <- sum(R[i, ]*w[i, ])  # recall w is normalized wrt NAV
-      w_eop <- (1 + R[i, ])*w[i, ]  # new w but it is still normalized wrt previous NAV which is not the correct normalization
+  colnames(NAV) <- "NAV"
+  NAV[rebalance_indices[1]] <- 1  # initial NAV of 1$
+  for (t in rebalance_indices[1]:nrow(R)) {
+    if (t > rebalance_indices[1])
+      NAV[t] <- NAV[t-1]*NAV_relchange  # just to keep track
+    if (t %in% rebalance_indices) {
+      cash <- 1 - sum(w[t, ])       # normalized cash wrt NAV
+      ret[t] <- sum(R[t, ]*w[t, ])  # recall w is normalized wrt NAV
+      w_eop <- (1 + R[t, ])*w[t, ]  # new w but it is still normalized wrt previous NAV which is not the correct normalization
     }
     else {
+      w[t, ] <- w_eop  # just to keep track
       cash <- 1 - sum(w_eop)       # normalized cash wrt NAV
-      ret[i] <- sum(R[i, ]*w_eop)  # recall w is normalized wrt NAV
-      w_eop <- (1 + R[i, ])*w_eop  # new w but it is still normalized wrt previous NAV which is not the correct normalization
-    } 
-    NAV_change <- cash + sum(w_eop)       # NAV(t+1)/NAV(t)
-    w_eop <- as.vector(w_eop/NAV_change)  # now w_eop is normalized wrt the current NAV
+      ret[t] <- sum(R[t, ]*w_eop)  # recall w is normalized wrt NAV
+      w_eop <- (1 + R[t, ])*w_eop  # new w but it is still normalized wrt previous NAV which is not the correct normalization
+    }
+    NAV_relchange <- cash + sum(w_eop)       # NAV_relchange(t+1) = NAV(t+1)/NAV(t)
+    w_eop <- as.vector(w_eop/NAV_relchange)  # now w_eop is normalized wrt the current NAV(t+1)
   }
-  return(ret[rebalance_indices[1]:nrow(ret), ])
+
+  # compute ROT based on absolute dollars
+  PnL <- diff(NAV); colnames(PnL) <- "PnL"
+  delta_abs <- diff(as.vector(NAV) * w)
+  turnover_abs <- xts(rowSums(abs(delta_abs)), index(delta_abs))
+  ROT_bips <- sum(PnL, na.rm = TRUE)/sum(turnover_abs, na.rm = TRUE)*1e4
+  
+  # compute ROT based on normalized dollars
+  PnL_rel <- PnL/lag(NAV)
+  delta_rel <- delta_abs/as.vector(lag(NAV))
+  turnover_rel <- xts(rowSums(abs(delta_rel)), index(delta_rel))
+  ROT_bips_rel <- sum(PnL_rel, na.rm = TRUE)/sum(turnover_rel, na.rm = TRUE)*1e4
+  
+  return(list(rets = ret[rebalance_indices[1]:nrow(ret), ],
+              ROT_bips = ROT_bips_rel))
 }

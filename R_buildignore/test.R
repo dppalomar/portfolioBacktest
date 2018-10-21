@@ -40,14 +40,19 @@ portfolio_fun_GMVP <- function(prices) {
   return(w)
 }
 
-# perform single backtesting
-res <- portfolioBacktest(portfolio_fun_GMVP, prices[[1]])
-names(res)
-res$error
-res$error_message
+portfolio_fun_uniform <- function(prices) {
+  return(rep(1/ncol(prices), ncol(prices)))
+}
 
-res <- portfolioBacktest(portfolio_fun_GMVP_norm, prices[[1]])
-res$error_message
+# perform single backtesting
+# res <- portfolioBacktest(portfolio_fun_GMVP, prices[[1]])
+# names(res)
+# res$error
+# res$error_message
+# 
+# res <- portfolioBacktest(portfolio_fun_GMVP_norm, prices[[1]])
+# res$error_message
+
 
 res <- portfolioBacktest(portfolio_fun_GMVP_norm, prices[[1]], shortselling = TRUE)
 res$error
@@ -71,4 +76,3 @@ PerformanceAnalytics::charts.PerformanceSummary(res$returns, wealth.index = TRUE
 mul_res <- portfolioBacktest(portfolio_fun_Markowitz, prices[1:3])
 mul_res$performance
 mul_res$performance_summary
-
