@@ -84,7 +84,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
                    PerformanceAnalytics::Return.annualized(rets), 
                    PerformanceAnalytics::StdDev.annualized(rets),
                    ret_port$ROT_bips)
-  names(performance) <- c("sharpe ratio", "max drawdown", "expected return", "volatility", "ROT")
+  names(performance) <- c("sharpe ratio", "max drawdown", "expected return", "volatility", "ROT bps")
   
   var_tb_returned <- list("returns" = rets,
                           "cumPnL" = wealth_geom_BnH_trn,
