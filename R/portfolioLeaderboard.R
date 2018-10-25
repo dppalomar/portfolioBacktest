@@ -52,7 +52,7 @@ portfolioLeaderboard <- function(res = NA, weights = list()) {
   leaderboard_performance <- cbind(res$performance_summary,
                                    res$cpu_time_average,
                                    res$failure_ratio)[index_sorted, ]
-  colnames(leaderboard_performance) <- c("sharpe ratio (median)", "max drawdown (median)", "expected return (median)", "volatility (median)", "ROT (median)", "average cpu time", "failure ratio")
+  colnames(leaderboard_performance) <- c("sharpe ratio (median)", "max drawdown (median)", "expected return (median)", "volatility (median)", "ROT bps (median)", "average cpu time", "failure ratio")
   if (!is.null(res$stud_IDs)){
     stud_info <- cbind(res$stud_names[index_sorted], res$stud_IDs[index_sorted])
     rownames(leaderboard)<- rownames(leaderboard_performance) <- stud_info[, 2]
