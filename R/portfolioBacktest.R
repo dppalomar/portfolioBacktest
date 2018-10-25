@@ -235,11 +235,14 @@ returnPortfolio <- function(R, weights, execution = c("same day", "next day"), n
   NAV <- ret <- xts(rep(NA, nrow(R)), order.by = index(R))
   colnames(ret) <- name
   colnames(NAV) <- "NAV"
+  delta_rel <- xts(matrix(0, nrow(w), ncol(w)), order.by = index(w))
   NAV[rebalance_indices[1]] <- 1  # initial NAV of 1$
+  w_eop <- w[rebalance_indices[1], ]  # I don't want to count the initial huge turnover
   for (t in rebalance_indices[1]:nrow(R)) {
     if (t > rebalance_indices[1])
       NAV[t] <- NAV[t-1]*NAV_relchange  # just to keep track
     if (t %in% rebalance_indices) {
+      delta_rel[t, ] <- w[t, ] - w_eop
       cash <- 1 - sum(w[t, ])       # normalized cash wrt NAV
       ret[t] <- sum(R[t, ]*w[t, ])  # recall w is normalized wrt NAV
       w_eop <- (1 + R[t, ])*w[t, ]  # new w but it is still normalized wrt previous NAV which is not the correct normalization
@@ -253,20 +256,15 @@ returnPortfolio <- function(R, weights, execution = c("same day", "next day"), n
     NAV_relchange <- cash + sum(w_eop)       # NAV_relchange(t+1) = NAV(t+1)/NAV(t)
     w_eop <- as.vector(w_eop/NAV_relchange)  # now w_eop is normalized wrt the current NAV(t+1)
   }
-
-  # compute ROT based on absolute dollars
-  PnL <- diff(NAV); colnames(PnL) <- "PnL"
-  delta_abs <- diff(as.vector(NAV) * w)
-  delta_abs[-rebalance_indices, ] <- 0  # only keep the rebalanced ones
-  turnover_abs <- xts(rowSums(abs(delta_abs)), index(delta_abs))
-  ROT_bips <- sum(PnL, na.rm = TRUE)/sum(turnover_abs, na.rm = TRUE)*1e4
   
   # compute ROT based on normalized dollars
+  PnL <- diff(NAV); colnames(PnL) <- "PnL"
   PnL_rel <- PnL/lag(NAV)
-  delta_rel <- delta_abs/as.vector(lag(NAV))
   turnover_rel <- xts(rowSums(abs(delta_rel)), index(delta_rel))
-  ROT_bips_rel <- sum(PnL_rel, na.rm = TRUE)/sum(turnover_rel, na.rm = TRUE)*1e4
+  sum_PnL_rel <- sum(PnL_rel, na.rm = TRUE)
+  sum_turnover_rel <- sum(turnover_rel, na.rm = TRUE) * length(rebalance_indices)/(length(rebalance_indices)-1)  # to compensate for the removed fist turnover
+  ROT_bips <- 1e4*sum_PnL_rel/sum_turnover_rel
   
   return(list(rets = ret[rebalance_indices[1]:nrow(ret), ],
-              ROT_bips = ROT_bips_rel))
+              ROT_bips = ROT_bips))
 }

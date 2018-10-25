@@ -44,6 +44,12 @@ portfolio_fun_uniform <- function(prices) {
   return(rep(1/ncol(prices), ncol(prices)))
 }
 
+portfolio_fun_BnH <- function(prices) {
+  w <- rep(0, ncol(prices))
+  w[1] <- 1
+  return(w)
+}
+
 # perform single backtesting
 # res <- portfolioBacktest(portfolio_fun_GMVP, prices[[1]])
 # names(res)
@@ -52,6 +58,11 @@ portfolio_fun_uniform <- function(prices) {
 # 
 # res <- portfolioBacktest(portfolio_fun_GMVP_norm, prices[[1]])
 # res$error_message
+
+
+res <- portfolioBacktest(portfolio_fun_uniform, prices[[1]])
+
+res <- portfolioBacktest(portfolio_fun_BnH, prices[[1]])
 
 
 res <- portfolioBacktest(portfolio_fun_GMVP_norm, prices[[1]], shortselling = TRUE)
