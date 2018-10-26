@@ -1,3 +1,4 @@
+#library(portfolioBacktest)
 data(prices)
 load("res_returns.RData")
 load("prices1.RData")
@@ -20,7 +21,7 @@ test_that("performance measures", {
   expect_that(abs(res$performance["max drawdown"] - 0.08664096) < 1e-8, is_true())
   expect_that(abs(res$performance["expected return"] - 0.18915374) < 1e-8, is_true())
   expect_that(abs(res$performance["volatility"] - 0.12899922) < 1e-8, is_true())
-  expect_that(abs(res$performance["ROT"] - 476.77241212) < 1e-8, is_true())
+  expect_that(abs(res$performance["ROT bps"] - 1433.164656 ) < 1e-4, is_true())
   
   expect_that(sum(abs(res$returns - res_returns)) < 1e-8*nrow(res_returns), is_true())
 })
