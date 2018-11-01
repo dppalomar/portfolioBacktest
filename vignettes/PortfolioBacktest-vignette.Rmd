@@ -189,7 +189,7 @@ res_all_students$failure_ratio
 
 Now we can rank the different portfolios/students based on a weighted combination of the rank percentiles (termed scores) of the performance measures:
 ```{r, fig.height=2, fig.width=9, out.width = "90%"}
-leaderboard <- portfolioLeaderboard(res_all_students, weights = list(sharpe_ratio = 7, max_drawdown = 1, expected_return = 1, ROT = 1))
+leaderboard <- portfolioLeaderboard(res_all_students, weights = list(Sharpe_ratio = 7, max_drawdown = 1, expected_return = 1, ROT = 1))
 
 # show leaderboard
 library(gridExtra)
