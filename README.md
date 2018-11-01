@@ -96,10 +96,10 @@ plot(res$cumPnL)
 
 ```r
 res$performance
-#>    sharpe ratio    max drawdown expected return      volatility 
+#>    Sharpe ratio    max drawdown expected return      volatility 
 #>      1.64718707      0.02471534      0.05919997      0.03594004 
-#>             ROT 
-#>    111.79980040
+#>  Sterling ratio     Omega ratio         ROT bps 
+#>      2.39527214      1.30331447    173.12764544
 ```
 
 We can also backtest over multiple data sets 
@@ -109,22 +109,28 @@ We can also backtest over multiple data sets
 mul_res <- portfolioBacktest(portfolio_fun, prices[1:5], shortselling = TRUE)
 mul_res$performance
 #>                    dataset 1    dataset 2    dataset 3    dataset 4
-#> sharpe ratio      1.64718707   2.54194003  -0.35641508   1.58398447
+#> Sharpe ratio      1.64718707   2.54194003  -0.35641508   1.58398447
 #> max drawdown      0.02471534   0.07245711   0.04829116   0.02562210
 #> expected return   0.05919997   0.32501267  -0.02639935   0.08892679
 #> volatility        0.03594004   0.12786009   0.07406911   0.05614120
-#> ROT             111.79980040 270.50724737 -36.04538399 130.16590750
-#>                   dataset 5
-#> sharpe ratio     1.09361594
-#> max drawdown     0.04479846
-#> expected return  0.06276355
-#> volatility       0.05739085
-#> ROT             98.26081927
+#> Sterling ratio    2.39527214   4.48558689  -0.54667034   3.47070687
+#> Omega ratio       1.30331447   1.50077945   0.94581069   1.32980756
+#> ROT bps         173.12764544 522.42888509 -65.74741983 176.89831844
+#>                    dataset 5
+#> Sharpe ratio      1.09361594
+#> max drawdown      0.04479846
+#> expected return   0.06276355
+#> volatility        0.05739085
+#> Sterling ratio    1.40102013
+#> Omega ratio       1.18994973
+#> ROT bps         166.89506464
 mul_res$performance_summary
-#>    sharpe ratio (median)    max drawdown (median) expected return (median) 
+#>    Sharpe ratio (median)    max drawdown (median) expected return (median) 
 #>               1.58398447               0.04479846               0.06276355 
-#>      volatility (median)             ROT (median) 
-#>               0.05739085             111.79980040
+#>      volatility (median)  Sterling ratio (median)     Omega ratio (median) 
+#>               0.05739085               2.39527214               1.30331447 
+#>         ROT bps (median) 
+#>             173.12764544
 ```
 
 
