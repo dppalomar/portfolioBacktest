@@ -9,8 +9,8 @@ portfolioLeaderboard(res = NA, weights = list())
 \arguments{
 \item{res}{Returned result from function \code{multiplePortfolioBacktest}}
 
-\item{weights}{a list of weights for \code{sharpe ratio}, \code{max drawdown}, \code{expected return}, \code{volatility} 
-\code{cpu time} and \code{failure ratio}}
+\item{weights}{a list of weights for \code{Sharpe ratio}, \code{max drawdown}, \code{expected return}, \code{volatility} 
+\code{Sterling ratio}, \code{Omega ratio}, \code{ROT}, \code{cpu time} and \code{failure ratio}}
 }
 \value{
 a matrix as the leaderboard
