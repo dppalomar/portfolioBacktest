@@ -4,12 +4,19 @@
 \alias{portfolioBacktest}
 \title{Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices}
 \usage{
-portfolioBacktest(portfolio_fun, prices, ...)
+portfolioBacktest(portfolio_fun, prices, par_dataset = 1,
+  packages = c(), assist_funs = c(), ...)
 }
 \arguments{
 \item{portfolio_fun}{function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.}
 
 \item{prices}{an xts object (or a list of \code{xts}) containing the stock prices for the backtesting.}
+
+\item{par_dataset}{an interger indicating number of datasets to be used in parallel}
+
+\item{packages}{a vector of strings indicating the required packages}
+
+\item{assist_funs}{a vector of strings indicating the assistant functions}
 
 \item{return_portfolio}{logical value, whether return portfolios}
 

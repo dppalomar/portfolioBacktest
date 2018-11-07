@@ -5,16 +5,21 @@
 \title{Evaluating multiple portfolio functions defined by customer}
 \usage{
 multiplePortfolioBacktest(folder_path = NULL,
-  portfolio_fun_list = NULL, prices__, return_all = FALSE, ...)
+  portfolio_fun_list = NULL, prices__, par_strategy = 1,
+  packages = c(), return_all = FALSE, ...)
 }
 \arguments{
 \item{folder_path}{path for a folder which contains all (and only) functions to be evaluated}
 
 \item{portfolio_fun_list}{a list of portfolio functions, valid when \code{folder_path} is not passed}
 
-\item{return_all}{logical, indicating whether return all the results.}
+\item{prices__}{a list of \code{xts} containing the stock prices for the backtesting.}
 
-\item{prices}{a list of \code{xts} containing the stock prices for the backtesting.}
+\item{par_strategy}{an interger indicating number of strategies to be evaluated in parallel}
+
+\item{packages}{a vector of strings indicating the required packages}
+
+\item{return_all}{logical, indicating whether return all the results.}
 
 \item{return_portfolio}{logical value, whether return portfolios.}
 

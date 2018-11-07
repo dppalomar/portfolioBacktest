@@ -4,7 +4,9 @@
 #'
 #' @param folder_path path for a folder which contains all (and only) functions to be evaluated
 #' @param portfolio_fun_list a list of portfolio functions, valid when \code{folder_path} is not passed
-#' @param prices a list of \code{xts} containing the stock prices for the backtesting.
+#' @param prices__ a list of \code{xts} containing the stock prices for the backtesting.
+#' @param par_strategy an interger indicating number of strategies to be evaluated in parallel
+#' @param packages a vector of strings indicating the required packages
 #' @param return_all logical, indicating whether return all the results.
 #' @param return_portfolio logical value, whether return portfolios.
 #' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
@@ -24,16 +26,30 @@
 #' 
 #' @import xts
 #' @export
-multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = NULL, prices__, return_all = FALSE, ...) {
+multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = NULL, prices__, par_strategy = 1, packages = c(), return_all = FALSE, ...) {
+  
+  # check parallel setting
+  par_strategy <- round(par_strategy)
+  if (par_strategy < 1) stop("Parallel number must be positive interger")
+  if (par_strategy > parallel::detectCores()) stop("Parallel number exceeds the hardware limit")
   
   if (is.null(folder_path) && is.null(portfolio_fun_list)) stop("The \"folder_path\" and \"portfolio_fun_list\" can not both be NULL")
   # when pass a list of function
   if (!is.null(portfolio_fun_list)) 
-    return(multiplePortfoioBacktestPassFunctions(portfolio_fun_list, prices__, return_all, ...))
+    return(multiplePortfoioBacktestPassFunctions(portfolio_fun_list, prices__, par_strategy, packages, return_all, ...))
   
-  # extract useful informations and init all
+  # extract useful informations
   files <- list.files(folder_path)
   stud_names <- stud_IDs <- c()
+  for (i in 1:length(files)) {
+    file <- files[i]
+    file_name_cleaned <- gsub("\\s+", "", file)
+    tmp <- unlist(strsplit(file_name_cleaned, "-|\\."))
+    stud_names <- c(stud_names, paste(tmp[1], tmp[2], collapse = " "))
+    stud_IDs <- c(stud_IDs, tmp[3])
+  }
+  
+  # init all
   time_average <- rep(NA, length(files))
   failure_ratio <- rep(1, length(files))
   error_message <- list()
@@ -45,47 +61,82 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
   var_fun_default <- ls()
   
   # some functions evaluation here
-  for (i in 1:length(files)) {
-    
-    file <- files[i]
-    file_name_cleaned <- gsub("\\s+", "", file)
-    tmp <- unlist(strsplit(file_name_cleaned, "-|\\."))
-    stud_names <- c(stud_names, paste(tmp[1], tmp[2], collapse = " "))
-    stud_IDs <- c(stud_IDs, tmp[3])
-    cat(paste0(Sys.time()," - Execute code from ", stud_names[i], " (", stud_IDs[i], ")\n"))
-    
-    # mirror list of present variables and functions
-    var_fun_default <- ls()
-    
-    
-    tryCatch({
-      suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
-      # check if non-function variable is loaded
-      if (checkNonFuncVar(setdiff(ls(), var_fun_default), env = environment()))
-        stop("Non function variables are not allowed to be loaded.")
+  
+  if (par_strategy == 1) {
+    for (i in 1:length(files)) {
       
-      res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices__, ...)
-      portfolios_perform[i, ] <- res$performance_summary
-      time_average[i] <- res$cpu_time_average
-      failure_ratio[i] <- res$failure_ratio
-      error_message[[i]] <- res$error_message
-      if (return_all) results_container[[i]] <- res
-    }, warning = function(w){
-      error_message[[i]] <<- w$message
-    }, error = function(e){
-      error_message[[i]] <<- e$message
-    })
+      cat(paste0(Sys.time()," - Execute code from ", stud_names[i], " (", stud_IDs[i], ")\n"))
+      
+      # mirror list of present variables and functions
+      var_fun_default <- ls()
+      
+      tryCatch({
+        suppressMessages(source(paste0(folder_path, "/", files[i]), local = TRUE))
+        # check if non-function variable is loaded
+        if (checkNonFuncVar(setdiff(ls(), var_fun_default), env = environment()))
+          stop("Non function variables are not allowed to be loaded.")
+        
+        res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices__, ...)
+        portfolios_perform[i, ] <- res$performance_summary
+        time_average[i] <- res$cpu_time_average
+        failure_ratio[i] <- res$failure_ratio
+        error_message[[i]] <- res$error_message
+        if (return_all) results_container[[i]] <- res
+      }, warning = function(w){
+        error_message[[i]] <<- w$message
+      }, error = function(e){
+        error_message[[i]] <<- e$message
+      })
+      
+      
+      # detach the newly loaded packages
+      packages_now <- search()
+      packages_det <- packages_now[!(packages_now %in% packages_default)]
+      detach_packages(packages_det)
+      
+      # delete students' function
+      var_fun_now <- ls()
+      var_fun_det <- var_fun_now[!(var_fun_now %in% var_fun_default)]
+      rm(list = var_fun_det)
+    }
+  } else {
+    cl <- makeCluster(par_strategy)
+    registerDoSNOW(cl)
     
+    # creat the progress bar
+    sink(file = tempfile())
+    pb <- txtProgressBar(max = length(stud_IDs), style = 3)
+    sink()
     
-    # detach the newly loaded packages
-    packages_now <- search()
-    packages_det <- packages_now[!(packages_now %in% packages_default)]
-    detach_packages(packages_det)
+    opts <- list(progress = function(n) setTxtProgressBar(pb, n))
+    result <- foreach(file = files, .combine = c, .options.snow = opts) %dopar% {
+      res__ <- list(source_error = FALSE)
+      tryCatch({
+        suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
+        res__ <- c(res__, portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices__, ...))
+      }, warning = function(w){
+        res__$source_error <<- TRUE
+        res__$error_message <<- w$message
+      }, error = function(e){
+        res__$source_error <<- TRUE
+        res__$error_message <<- e$message
+      })
+      return(list(res__))
+    }
     
-    # delete students' function
-    var_fun_now <- ls()
-    var_fun_det <- var_fun_now[!(var_fun_now %in% var_fun_default)]
-    rm(list = var_fun_det)
+    close(pb)
+    stopCluster(cl) 
+    
+    # extract result
+    if (return_all) results_container <- result
+    for (i in 1:length(files)) {
+      error_message[[i]] <- result[[i]]$error_message
+      if (result[[i]]$source_error) next
+      portfolios_perform[i, ] <- result[[i]]$performance_summary
+      time_average[i] <- result[[i]]$cpu_time_average
+      failure_ratio[i] <- result[[i]]$failure_ratio
+    }
+    
   }
   
   error_message <- c(error_message, as.list(rep(NA, length(stud_IDs)-length(error_message))))
@@ -106,7 +157,7 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
   return(vars_tb_returned)
 }
 
-multiplePortfoioBacktestPassFunctions <- function(portfolio_function_list, prices, return_all, ...) {
+multiplePortfoioBacktestPassFunctions <- function(portfolio_function_list, prices, par_strategy = 1, packages = c(), return_all, ...) {
   
   if (!is.list(portfolio_function_list)) stop("argument \"portfolio_function_list\" must be a list")
   
@@ -114,27 +165,54 @@ multiplePortfoioBacktestPassFunctions <- function(portfolio_function_list, price
   if (is.null(names(portfolio_function_list))) func_names <- paste0("func", 1:n_function)
   else func_names <- names(portfolio_function_list)
   
+  # init all
   cpu_time_average <- rep(NA, n_function)
   failure_ratio <- rep(1, n_function)
   error_message <- list()
   performance_summary <- matrix(NA, n_function, 7)
   if (return_all) results_container <- list()
   
-  names(cpu_time_average) <- names(failure_ratio) <-  rownames(performance_summary) <- func_names
+  if (par_strategy == 1) {
+    for (i in 1:n_function) {
+      # report status
+      cat(paste0(Sys.time()," - Execute ", func_names[i], "\n"))
+      res <- portfolioBacktest(portfolio_fun = portfolio_function_list[[i]], prices = prices, ...)
+      performance_summary[i, ] <- res$performance_summary
+      cpu_time_average[i] <- res$cpu_time_average
+      failure_ratio[i] <- res$failure_ratio
+      error_message[[i]] <- res$error_message
+      if (return_all) results_container[[i]] <- res
+    }
+  } else {
+    cl <- makeCluster(par_strategy)
+    registerDoSNOW(cl)
+    
+    # creat the progress bar
+    sink(file = tempfile())
+    pb <- txtProgressBar(max = n_function, style = 3)
+    sink()
+    
+    opts <- list(progress = function(n) setTxtProgressBar(pb, n))
+    result <- foreach(portfolio_fun = portfolio_function_list, .combine = c, .packages = packages, .options.snow = opts) %dopar% {
+      return(list(portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, ...)))
+    }
+    
+    close(pb)
+    stopCluster(cl) 
+    
+    # extract result
+    if (return_all) results_container <- result
+    for (i in 1:n_function) {
+      error_message[[i]]       <- result[[i]]$error_message
+      performance_summary[i, ] <- result[[i]]$performance_summary
+      cpu_time_average[i]      <- result[[i]]$cpu_time_average
+      failure_ratio[i]         <- result[[i]]$failure_ratio
+    }
+  }
+  rownames(performance_summary) <- names(cpu_time_average) <- names(failure_ratio) <- names(error_message) <- func_names
   colnames(performance_summary) <- paste(c("Sharpe ratio", "max drawdown", "expected return", "volatility", "Sterling ratio", "Omega ratio", "ROT bps"), " (median)")
   
-  for (i in 1:n_function) {
-    # report status
-    cat(paste0(Sys.time()," - Execute ", func_names[i], "\n"))
-    res <- portfolioBacktest(portfolio_fun = portfolio_function_list[[i]], prices = prices, ...)
-    performance_summary[i, ] <- res$performance_summary
-    cpu_time_average[i] <- res$cpu_time_average
-    failure_ratio[i] <- res$failure_ratio
-    error_message[[i]] <- res$error_message
-    if (return_all) results_container[[i]] <- res
-  }
   
-  names(error_message) <- func_names
   vars_tb_returned <- list("performance_summary" = performance_summary,
                            "cpu_time_average" = cpu_time_average,
                            "failure_ratio" = failure_ratio,
@@ -191,4 +269,19 @@ checkUninstalledPackages <- function(folder_path, show_detail = FALSE) {
         cat("find uninstalled packages", uninstalled_pkgs, "in", file, "\n")
   }
   return(unique(uninstalled_pkgs_all))
+}
+
+checKRequiredPackages <- function(file_path = NA, folder_path = NA, file_name = NA) {
+  if (!require("readtext")) stop("Package \"readtext\" is required to run this function!")
+  if (!require("stringi")) stop("Package \"stringi\" is required to run this function!")
+  if (is.na(file_path)) file_path <- paste0(folder_path, "/", file_name)
+  suppressWarnings(codes <- readtext(file_path))
+  pkgs <- stri_extract_all(codes$text, regex = "library\\(.*?\\)", simplify = TRUE)
+  if (is.na(pkgs[1])) return(c())
+  else {
+    pkgs <- as.vector(pkgs)
+    pkgs <- sub(".*\\(", "", pkgs)
+    pkgs <- sub(")", "", pkgs)
+    return(pkgs)
+  }
 }

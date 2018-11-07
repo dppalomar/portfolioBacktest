@@ -106,6 +106,9 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
 #'
 #' @param portfolio_fun function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.
 #' @param prices an xts object (or a list of \code{xts}) containing the stock prices for the backtesting.
+#' @param par_dataset an interger indicating number of datasets to be used in parallel
+#' @param packages a vector of strings indicating the required packages
+#' @param assist_funs a vector of strings indicating the assistant functions
 #' @param return_portfolio logical value, whether return portfolios
 #' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
 #' @param leverage amount of leverage (default is 1, so no leverage).
@@ -153,9 +156,15 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
 #' mul_res$performance
 #' mul_res$performance_summary
 #' 
-#' @import xts
+#' @import xts 
+#'         doSNOW
 #' @export
-portfolioBacktest <- function(portfolio_fun, prices, ...) {
+portfolioBacktest <- function(portfolio_fun, prices, par_dataset = 1, packages = c(), assist_funs = c(), ...) {
+  
+  # check parallel setting
+  par_dataset <- round(par_dataset)
+  if (par_dataset < 1) stop("Parallel number must be positive interger")
+  if (par_dataset > parallel::detectCores()) stop("Parallel number exceeds the hardware limit")
   
   # when price is an xts object
   if (!is.list(prices))
@@ -168,15 +177,45 @@ portfolioBacktest <- function(portfolio_fun, prices, ...) {
   return_portfolio <- isTRUE(list(...)$return_portfolio)
   
   # when price is a list of xts object
-  for (i in 1:length(prices)) {
-    result <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = prices[[i]], ...)
-    rets[[i]] <- result$return
-    cumPnL[[i]] <- result$cumPnL
-    performance[[i]] <- result$performance
-    time[i] <- result$cpu_time
-    error[i] <- result$error
-    error_message[[i]] <- result$error_message
-    if (return_portfolio) portfolio[[i]] <- result$portfolio
+  if (par_dataset == 1) { # no-parallel computering
+    rets <- cumPnL <- performance <- error_message <- portfolio <- list()
+    time <- error <- c()
+    for (i in 1:length(prices)) {
+      result <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = prices[[i]], ...)
+      rets[[i]] <- result$return
+      cumPnL[[i]] <- result$cumPnL
+      performance[[i]] <- result$performance
+      time[i] <- result$cpu_time
+      error[i] <- result$error
+      error_message[[i]] <- result$error_message
+      if (return_portfolio) portfolio[[i]] <- result$portfolio
+    }
+  } else { # parallel computering
+    cl <- makeCluster(par_dataset)
+    registerDoSNOW(cl)
+    
+    # creat the progress bar
+    sink(file = tempfile())
+    pb <- txtProgressBar(max = length(prices), style = 3)
+    sink()
+    
+    opts <- list(progress = function(n) setTxtProgressBar(pb, n))
+    result <- foreach(price = prices, .combine = c, .packages = packages, .export = assist_funs, .options.snow = opts) %dopar% {
+      return(singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = price, ...))
+    }
+    
+    close(pb)
+    stopCluster(cl) 
+    
+    # extract result
+    tmp           <- names(result)
+    rets          <- result[tmp == "returns"]
+    cumPnL        <- result[tmp == "cumPnL"]
+    performance   <- result[tmp == "performance"]
+    time          <- unlist(result[tmp == "cpu_time"])
+    error         <- unlist(result[tmp == "error"])
+    error_message <- result[tmp == "error_message"]
+    if (return_portfolio) portfolio <- result[tmp == "portfolio"]
   }
   
   # prepare results to be returned

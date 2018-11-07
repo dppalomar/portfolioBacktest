@@ -22,7 +22,8 @@ Maintainer: Daniel P. Palomar <daniel.p.palomar@gmail.com>
 URL: https://github.com/dppalomar/portfolioBacktest,
 BugReports: https://github.com/dppalomar/portfolioBacktest/issues
 Depends:
-    xts
+    xts,
+    doSNOW
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true

@@ -3,4 +3,5 @@
 export(multiplePortfolioBacktest)
 export(portfolioBacktest)
 export(portfolioLeaderboard)
+import(doSNOW)
 import(xts)
