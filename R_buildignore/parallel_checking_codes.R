@@ -42,18 +42,21 @@ portfolio_function_list <- c(GMVP_portfolio_fun, uniform_portfolio_fun, portfoli
 
 # parallel testing for function "portfolioBacktest()"
 system.time(
-res <- portfolioBacktest(portfolio_fun = portfolio_fun_Markowitz, prices = prices[1:9],
+res <- portfolioBacktest(portfolio_fun = portfolio_fun_Markowitz, prices = prices[1:18],
                          par_dataset = 3, packages = "CVXR")
 )
 
 system.time(
-res_signel <- portfolioBacktest(portfolio_fun = portfolio_fun_Markowitz, prices = prices[1:9])
+res_signel <- portfolioBacktest(portfolio_fun = portfolio_fun_Markowitz, prices = prices[1:18])
 )
+res$performance_summary
+res_signel$performance_summary
 # parallel testing for function "multiplePortfolioBacktest()"
 my_path <- "d:/Users/rzhouae/Documents/R/Git/portfolioBacktest/R_buildignore/student-functions/"
+my_mac_path <- "/Users/zhourui/Documents/R/GitProjects/portfolioBacktest/R_buildignore/student-functions/"
 
-res <- multiplePortfolioBacktest(folder_path = my_path, prices = prices[1:3], par_strategy = 3)
-res_signel <- multiplePortfolioBacktest(folder_path = my_path, prices = prices[1:3], par_strategy = 1, par_dataset = 3)
+res <- multiplePortfolioBacktest(folder_path = my_mac_path, prices = prices[1:3], par_strategy = 3)
+res_signel <- multiplePortfolioBacktest(folder_path = my_mac_path, prices = prices[1:3], par_strategy = 1)
 str(res)
 str(res_signel)
 
@@ -63,7 +66,7 @@ res <- multiplePortfolioBacktest(portfolio_fun_list = portfolio_function_list,
 str(res)
 
 # parallel at both stage
-res <- multiplePortfolioBacktest(folder_path = my_path, prices = prices[1:3], par_strategy = 3, par_dataset = 3)
+res <- multiplePortfolioBacktest(folder_path = my_mac_path, prices = prices[1:3], par_strategy = 3, par_dataset = 3)
 
 
 # sanity check
