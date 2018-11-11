@@ -111,6 +111,9 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
     opts <- list(progress = function(n) setTxtProgressBar(pb, n))
     result <- foreach(file = files, .combine = c, .options.snow = opts) %dopar% {
       res__ <- list(source_error = FALSE)
+      # snap the packages and variables
+      packages_default <- search()
+      var_fun_default <- ls()
       tryCatch({
         suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
         res__ <- c(res__, portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices__, ...))
@@ -121,6 +124,18 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
         res__$source_error <<- TRUE
         res__$error_message <<- e$message
       })
+      
+      # detach the newly loaded packages
+      packages_now <- search()
+      packages_det <- packages_now[!(packages_now %in% packages_default)]
+      detach_packages(packages_det)
+      
+      # delete students' function
+      var_fun_now <- ls()
+      var_fun_det <- var_fun_now[!(var_fun_now %in% var_fun_default)]
+      rm(list = var_fun_det)
+      
+      # return results
       return(list(res__))
     }
     
