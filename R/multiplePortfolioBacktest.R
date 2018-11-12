@@ -76,7 +76,7 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
         if (checkNonFuncVar(setdiff(ls(), var_fun_default), env = environment()))
           stop("Non function variables are not allowed to be loaded.")
         
-        res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices__, ...)
+        res <- portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices__, packages = packages, ...)
         portfolios_perform[i, ] <- res$performance_summary
         time_average[i] <- res$cpu_time_average
         failure_ratio[i] <- res$failure_ratio
@@ -116,7 +116,7 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
       var_fun_default <- ls()
       tryCatch({
         suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
-        res__ <- c(res__, portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices__, ...))
+        res__ <- c(res__, portfolioBacktest(portfolio_fun = portfolio_fun, prices = prices__, packages = packages, ...))
       }, warning = function(w){
         res__$source_error <<- TRUE
         res__$error_message <<- w$message
