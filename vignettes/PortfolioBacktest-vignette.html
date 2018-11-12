@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2018-11-01" />
+<meta name="date" content="2018-11-12" />
 
 <title>Portfolio Backtesting</title>
 
@@ -73,7 +73,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h1 class="title toc-ignore">Portfolio Backtesting</h1>
 <h3 class="author"><div style="white-space: pre-line;">Daniel P. Palomar and Rui ZHOU
 Hong Kong University of Science and Technology (HKUST)</div></h3>
-<h3 class="date">2018-11-01</h3>
+<h3 class="date">2018-11-12</h3>
 </header>
 
 <hr>
@@ -89,6 +89,9 @@ Hong Kong University of Science and Technology (HKUST)</div></h3>
 </ul></li>
 <li><a href="#usage-for-grading-students-in-a-course">Usage for grading students in a course</a><ul>
 <li><a href="#example-of-a-script-file-to-be-submitted-by-a-student">Example of a script file to be submitted by a student</a></li>
+</ul></li>
+<li><a href="#appendix">Appendix</a><ul>
+<li><a href="#performance-criteria">Performance criteria</a></li>
 </ul></li>
 </ul>
 </div>
@@ -155,6 +158,10 @@ package?portfolioBacktest
 }</code></pre></div>
 <p>Now we are ready to use the function <code>backtestPortfolio()</code> that will execute and evaluate the portfolio design function on a rolling-window basis:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res &lt;-<span class="st"> </span><span class="kw">portfolioBacktest</span>(uniform_portfolio_fun, prices[[<span class="dv">1</span>]])
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Package PerformanceAnalytics (1.5.2) loaded.</span>
+<span class="co">#&gt; Copyright (c) 2004-2018 Peter Carl and Brian G. Peterson, GPL-2 | GPL-3</span>
+<span class="co">#&gt; https://github.com/braverock/PerformanceAnalytics</span>
 <span class="kw">names</span>(res)
 <span class="co">#&gt; [1] &quot;returns&quot;       &quot;cumPnL&quot;        &quot;performance&quot;   &quot;cpu_time&quot;     </span>
 <span class="co">#&gt; [5] &quot;error&quot;         &quot;error_message&quot;</span>
@@ -186,7 +193,7 @@ res<span class="op">$</span>error
 res<span class="op">$</span>error_message
 <span class="co">#&gt; NULL</span>
 res<span class="op">$</span>cpu_time
-<span class="co">#&gt; [1] 0.11</span>
+<span class="co">#&gt; [1] 0.05</span>
 res<span class="op">$</span>performance
 <span class="co">#&gt;    Sharpe ratio    max drawdown expected return      volatility </span>
 <span class="co">#&gt;      1.64718707      0.02471534      0.05919997      0.03594004 </span>
@@ -213,7 +220,7 @@ res<span class="op">$</span>error
 res<span class="op">$</span>error_message
 <span class="co">#&gt; NULL</span>
 res<span class="op">$</span>cpu_time
-<span class="co">#&gt; [1] 2.64</span>
+<span class="co">#&gt; [1] 2.98</span>
 res<span class="op">$</span>performance
 <span class="co">#&gt;    Sharpe ratio    max drawdown expected return      volatility </span>
 <span class="co">#&gt;      -0.4187583       0.3460377      -0.1295226       0.3093016 </span>
@@ -226,7 +233,7 @@ res<span class="op">$</span>performance
 <span class="co">#&gt; [4] &quot;performance_summary&quot; &quot;cpu_time&quot;            &quot;cpu_time_average&quot;   </span>
 <span class="co">#&gt; [7] &quot;failure_ratio&quot;       &quot;error&quot;               &quot;error_message&quot;</span>
 res<span class="op">$</span>cpu_time
-<span class="co">#&gt; [1] 2.74 2.40 2.41 2.83 2.60</span>
+<span class="co">#&gt; [1] 2.85 2.53 2.50 2.77 2.47</span>
 res<span class="op">$</span>performance
 <span class="co">#&gt;                   dataset 1    dataset 2   dataset 3   dataset 4</span>
 <span class="co">#&gt; Sharpe ratio     -0.4187583   -0.5146592   1.2704831   1.8411582</span>
@@ -246,7 +253,7 @@ res<span class="op">$</span>performance
 <span class="co">#&gt; ROT bps         97.70912146</span></code></pre></div>
 <p>In particular, note the additional elements in the returned list:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res<span class="op">$</span>cpu_time_average
-<span class="co">#&gt; [1] 2.596</span>
+<span class="co">#&gt; [1] 2.624</span>
 res<span class="op">$</span>performance_summary
 <span class="co">#&gt;    Sharpe ratio (median)    max drawdown (median) expected return (median) </span>
 <span class="co">#&gt;               0.04438826               0.34603766               0.01703249 </span>
@@ -263,8 +270,8 @@ res<span class="op">$</span>failure_ratio
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res &lt;-<span class="st"> </span><span class="kw">multiplePortfolioBacktest</span>(<span class="dt">portfolio_fun_list =</span> <span class="kw">list</span>(uniform_portfolio_fun, 
                                                            GMVP_portfolio_fun), 
                                  <span class="dt">prices =</span>  prices[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>], <span class="dt">shortselling =</span> <span class="ot">TRUE</span>)
-<span class="co">#&gt; 2018-11-01 15:59:03 - Execute func1</span>
-<span class="co">#&gt; 2018-11-01 15:59:04 - Execute func2</span>
+<span class="co">#&gt; 2018-11-12 20:18:16 - Execute func1</span>
+<span class="co">#&gt; 2018-11-12 20:18:17 - Execute func2</span>
 res
 <span class="co">#&gt; $performance_summary</span>
 <span class="co">#&gt;       Sharpe ratio  (median) max drawdown  (median)</span>
@@ -279,7 +286,7 @@ res
 <span class="co">#&gt; </span>
 <span class="co">#&gt; $cpu_time_average</span>
 <span class="co">#&gt; func1 func2 </span>
-<span class="co">#&gt; 0.018 0.032 </span>
+<span class="co">#&gt; 0.018 0.028 </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; $failure_ratio</span>
 <span class="co">#&gt; func1 func2 </span>
@@ -298,9 +305,9 @@ res
 <p>If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily. It suffices to ask each student to submit a .R script (named <code>LASTNAME-firstname-STUDENTNUMBER-XXXX.R</code>) containing the portfolio function called exactly <code>portfolio_fun()</code> as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with <code>library()</code>). Then the instructor can put all those files in a folder and evaluate all of them at once.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res_all_students &lt;-<span class="st"> </span><span class="kw">multiplePortfolioBacktest</span>(<span class="dt">folder_path =</span> <span class="st">&quot;folder_path&quot;</span>, 
                                               <span class="dt">prices =</span>  prices[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>])
-<span class="co">#&gt; 2018-11-01 15:59:05 - Execute code from Firstname1 Surname1 (00000001)</span>
-<span class="co">#&gt; 2018-11-01 15:59:07 - Execute code from Firstname2 Surname2 (00000002)</span>
-<span class="co">#&gt; 2018-11-01 15:59:16 - Execute code from Firstname3 Surname3 (00000003)</span>
+<span class="co">#&gt; 2018-11-12 20:18:18 - Execute code from Firstname1 Surname1 (00000001)</span>
+<span class="co">#&gt; 2018-11-12 20:18:20 - Execute code from Firstname2 Surname2 (00000002)</span>
+<span class="co">#&gt; 2018-11-12 20:18:29 - Execute code from Firstname3 Surname3 (00000003)</span>
 res_all_students<span class="op">$</span>performance_summary
 <span class="co">#&gt;          Sharpe ratio  (median) max drawdown  (median)</span>
 <span class="co">#&gt; 00000001              2.3098857              0.1119180</span>
@@ -316,7 +323,7 @@ res_all_students<span class="op">$</span>performance_summary
 <span class="co">#&gt; 00000003                1.0377623              1.122605          267.2722</span>
 res_all_students<span class="op">$</span>cpu_time_average
 <span class="co">#&gt;  00000001  00000002  00000003 </span>
-<span class="co">#&gt; 0.6333333 2.8233333 0.6266667</span>
+<span class="co">#&gt; 0.5900000 2.6200000 0.6166667</span>
 res_all_students<span class="op">$</span>failure_ratio
 <span class="co">#&gt; 00000001 00000002 00000003 </span>
 <span class="co">#&gt;        0        0        0</span></code></pre></div>
@@ -347,6 +354,23 @@ portfolio_fun &lt;-<span class="st"> </span><span class="cf">function</span>(pri
   result &lt;-<span class="st"> </span><span class="kw">solve</span>(prob)
   <span class="kw">return</span>(<span class="kw">as.vector</span>(result<span class="op">$</span><span class="kw">getValue</span>(w)))
 }</code></pre></div>
+</div>
+</div>
+<div id="appendix" class="section level1">
+<h1>Appendix</h1>
+<div id="performance-criteria" class="section level2">
+<h2>Performance criteria</h2>
+<p>The definition of performance criteria used in this package is listed as below</p>
+<ul>
+<li><strong>expetced return:</strong> the <a href="https://www.investopedia.com/terms/a/annualized-total-return.asp">annualized return</a></li>
+<li><strong>volatility:</strong> the <a href="https://www.fool.com/knowledge-center/how-to-calculate-annualized-volatility.aspx">annualized standard deviation</a> of returns</li>
+<li><strong>max drawdown:</strong> the maximum loss from a peak to a trough of a portfolio, see also <a href="https://www.investopedia.com/terms/m/maximum-drawdown-mdd.asp">here</a></li>
+<li><strong>Sharpe ratio:</strong> <a href="https://en.wikipedia.org/wiki/Sharpe_ratio">annualized Sharpe ratio</a>, the ratio between <code>annualized return</code> and <code>annualized standard deviation</code></li>
+<li><strong>Sterling ratio:</strong> the return over average drawdown, see <a href="https://en.m.wikipedia.org/wiki/Sterling_ratio">here</a> for complete definition. In the package, we use <span class="math display">\[
+ \text{Sterling ratio} = \frac{\text{annualized return}}{\text{max drawdown}} \]</span></li>
+<li><p><strong>Omega ratio:</strong> the probability weighted ratio of gains over losses for some threshold return target, see <a href="https://en.m.wikipedia.org/wiki/Omega_ratio">here</a> for complete definition. The ratio is calculated as: <span class="math display">\[ \Omega(r) = \frac{\int_{r}^{\infty} (1-F(x))dx}{\int_{-\infty}^{r} F(x)dx} \]</span> In the package, we use <span class="math inline">\(\Omega(0)\)</span>, which is also known as Gain-Loss-Ratio.</p></li>
+<li><p><strong>Return over Turnover (ROT):</strong> the sum of cummulative return over the sum of turnover.</p></li>
+</ul>
 </div>
 </div>
 </div>

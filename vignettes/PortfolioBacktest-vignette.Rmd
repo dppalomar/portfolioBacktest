@@ -219,6 +219,23 @@ portfolio_fun <- function(prices) {
 }
 ```
 
+# Appendix
+
+## Performance criteria
+
+The definition of performance criteria used in this package is listed as below
+
+ - **expetced return:** the [annualized return](https://www.investopedia.com/terms/a/annualized-total-return.asp)
+ - **volatility:** the [annualized standard deviation](https://www.fool.com/knowledge-center/how-to-calculate-annualized-volatility.aspx) of returns 
+ - **max drawdown:** the maximum loss from a peak to a trough of a portfolio, see also [here](https://www.investopedia.com/terms/m/maximum-drawdown-mdd.asp)
+ - **Sharpe ratio:** [annualized Sharpe ratio](https://en.wikipedia.org/wiki/Sharpe_ratio), the ratio between `annualized return` and `annualized standard deviation`
+ - **Sterling ratio:** the return over average drawdown, see [here](https://en.m.wikipedia.org/wiki/Sterling_ratio) for complete definition. In the package, we use $$
+ \text{Sterling ratio} = \frac{\text{annualized return}}{\text{max drawdown}} $$
+ - **Omega ratio:** the probability weighted ratio of gains over losses for some threshold return target, see [here](https://en.m.wikipedia.org/wiki/Omega_ratio) for complete definition. The ratio is calculated as: $$ \Omega(r) = \frac{\int_{r}^{\infty} (1-F(x))dx}{\int_{-\infty}^{r} F(x)dx} $$
+ In the package, we use $\Omega(0)$, which is also known as Gain-Loss-Ratio.
+ 
+ - **Return over Turnover (ROT):** the sum of cummulative return over the sum of turnover.
+
 
 
 
