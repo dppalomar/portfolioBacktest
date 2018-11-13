@@ -156,7 +156,7 @@ multiplePortfolioBacktest <- function(folder_path = NULL, portfolio_fun_list = N
   
   error_message <- c(error_message, as.list(rep(NA, length(stud_IDs)-length(error_message))))
   rownames(portfolios_perform) <- names(time_average) <- names(failure_ratio) <- names(error_message) <- stud_IDs
-  colnames(portfolios_perform) <- paste(c("Sharpe ratio", "max drawdown", "expected return", "volatility", "Sterling ratio", "Omega ratio", "ROT bps"), " (median)")
+  colnames(portfolios_perform) <- paste(c("Sharpe ratio", "max drawdown", "annual return", "annual volatility", "Sterling ratio", "Omega ratio", "ROT bps"), " (median)")
 
   vars_tb_returned <- list("stud_names" = stud_names,
                            "stud_IDs" = stud_IDs,
@@ -225,7 +225,7 @@ multiplePortfoioBacktestPassFunctions <- function(portfolio_function_list, price
     }
   }
   rownames(performance_summary) <- names(cpu_time_average) <- names(failure_ratio) <- names(error_message) <- func_names
-  colnames(performance_summary) <- paste(c("Sharpe ratio", "max drawdown", "expected return", "volatility", "Sterling ratio", "Omega ratio", "ROT bps"), " (median)")
+  colnames(performance_summary) <- paste(c("Sharpe ratio", "max drawdown", "annual return", "annual volatility", "Sterling ratio", "Omega ratio", "ROT bps"), " (median)")
   
   
   vars_tb_returned <- list("performance_summary" = performance_summary,

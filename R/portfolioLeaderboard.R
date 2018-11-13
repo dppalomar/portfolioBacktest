@@ -47,7 +47,7 @@ portfolioLeaderboard <- function(res = NA, weights = list()) {
   # add names
   index_vaild_sorted <- (1:length(mask_valid))[mask_valid][index_sorting]
   index_sorted <- c(index_vaild_sorted, (1:length(mask_valid))[-index_vaild_sorted])
-  colnames(leaderboard) <- c("Sharpe ratio score", "max drawdown score", "expected return score", "volatility score", 
+  colnames(leaderboard) <- c("Sharpe ratio score", "max drawdown score", "annual return score", "annual volatility score", 
                              "Sterling ratio score", "Omega ratio score", "ROT score", "cpu time score",  "failure ratio score", "final score")
   
   # also show original performance
@@ -55,7 +55,7 @@ portfolioLeaderboard <- function(res = NA, weights = list()) {
   leaderboard_performance <- cbind(res$performance_summary,
                                    res$cpu_time_average,
                                    res$failure_ratio)[index_sorted, ]
-  colnames(leaderboard_performance) <- c("Sharpe ratio (median)", "max drawdown (median)", "expected return (median)", "volatility (median)", 
+  colnames(leaderboard_performance) <- c("Sharpe ratio (median)", "max drawdown (median)", "annual return (median)", "annual volatility (median)", 
                                          "Sterling ratio (median)", "Omega ratio (median)", "ROT bps (median)", "average cpu time", "failure ratio")
   if (!is.null(res$stud_IDs)){
     stud_info <- cbind(res$stud_names[index_sorted], res$stud_IDs[index_sorted])
