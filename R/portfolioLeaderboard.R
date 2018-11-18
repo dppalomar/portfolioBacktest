@@ -66,9 +66,9 @@ portfolioLeaderboard <- function(res = NA, weights = list()) {
       "leaderboard_performance" = leaderboard_performance,
       "error_summary" = error_summary))
   } else {
-    rownames(leaderboard) <- names(res$error)
+    rownames(leaderboard) <- rownames(leaderboard_performance) <- names(res$error)
     return(list(
-      "leaderboard" = leaderboard[, mask_criteria],
+      "leaderboard_scores" = leaderboard[, mask_criteria],
       "leaderboard_performance" = leaderboard_performance,
       "error_summary" = error_summary))
   }
