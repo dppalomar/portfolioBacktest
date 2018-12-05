@@ -4,6 +4,9 @@
 singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FALSE, cpu_time_limit = Inf,
                                     shortselling = FALSE, leverage = 1,
                                     T_rolling_window = 252, optimize_every = 20, rebalance_every = optimize_every) {
+  # TO BE DELETED
+  prices <- prices$prices
+  
   ######## error control  #########
   if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]]")
   if (!is.xts(prices)) stop("prices have to be xts")
@@ -167,7 +170,7 @@ portfolioBacktest <- function(portfolio_fun, prices, par_dataset = 1, packages =
   if (par_dataset > parallel::detectCores()) stop("Parallel number exceeds the hardware limit")
   
   # when price is an xts object
-  if (!is.list(prices))
+  if (length(prices) == 1)
     return(singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, ...))
   
   rets <- cumPnL <- performance <- error_message <- portfolio <- list()

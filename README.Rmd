@@ -45,16 +45,15 @@ We start by loading the package and some random sets of stock market data:
 ```{r, message = FALSE}
 library(xts)
 library(portfolioBacktest)
-data(prices)  # you may want to specify data(prices, package = "portfolioBacktest") 
-              # in case there is any conflict with the package PerformanceAnalytics
+data(dataset) 
 ```
-The dataset `prices` is a list of objects `xts` that contains the prices of random sets of stock market data from the S&P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.
+The dataset `dataset` is a list of objects `xts` that contains the prices of random sets of stock market data from the S&P 500, over random periods of two years with a random selection of 50 stocks of each universe.
  
 ```{r}
-length(prices)
-str(prices[[1]])
+length(dataset)
+str(dataset[[1]])
 
-colnames(prices[[1]])
+colnames(dataset[[1]]$prices)
 ```
 
 Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector `w`:
@@ -71,7 +70,7 @@ portfolio_fun <- function(prices) {
 
 We are then ready to use the function `backtestPortfolio()` that will execute and evaluate the portfolio design function on a rolling-window basis:
 ```{r}
-res <- portfolioBacktest(portfolio_fun, prices[[1]], shortselling = TRUE)
+res <- portfolioBacktest(portfolio_fun, dataset[[1]], shortselling = TRUE)
 names(res)
 plot(res$cumPnL)
 res$performance
@@ -80,7 +79,7 @@ res$performance
 We can also backtest over multiple data sets 
 ```{r}
 # perform multiple backtesting
-mul_res <- portfolioBacktest(portfolio_fun, prices[1:5], shortselling = TRUE)
+mul_res <- portfolioBacktest(portfolio_fun, dataset[1:5], shortselling = TRUE)
 mul_res$performance
 mul_res$performance_summary
 ```

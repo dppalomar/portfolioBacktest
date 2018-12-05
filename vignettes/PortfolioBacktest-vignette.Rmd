@@ -73,16 +73,15 @@ We start by loading the package and some random sets of stock market data:
 ```{r, message = FALSE}
 library(xts)
 library(portfolioBacktest)
-data(prices)  # you may want to specify data(prices, package = "portfolioBacktest") 
-              # in case there is any conflict with the package PerformanceAnalytics
+data(dataset) 
 ```
 The dataset `prices` is a list of objects `xts` that contains the prices of random sets of stock market data from the S&P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.
  
 ```{r}
-length(prices)
-str(prices[[1]])
+length(dataset)
+str(dataset[[1]])
 
-colnames(prices[[1]])
+colnames(dataset[[1]]$prices)
 ```
 
 ## Backtesting a single portfolio
@@ -97,7 +96,7 @@ uniform_portfolio_fun <- function(prices) {
 
 Now we are ready to use the function `backtestPortfolio()` that will execute and evaluate the portfolio design function on a rolling-window basis:
 ```{r}
-res <- portfolioBacktest(uniform_portfolio_fun, prices[[1]])
+res <- portfolioBacktest(uniform_portfolio_fun, dataset[[1]])
 names(res)
 plot(res$cumPnL)
 res$performance
@@ -113,14 +112,14 @@ GMVP_portfolio_fun <- function(prices) {
   w <- w/sum(abs(w))  # it may not satisfy w>=0
   return(w)
 }
-res <- portfolioBacktest(GMVP_portfolio_fun, prices[[1]])
+res <- portfolioBacktest(GMVP_portfolio_fun, dataset[[1]])
 res$error
 res$error_message
 ```
 
 Indeed, the GMVP does not satisfy the no-shortselling constraint. We can repeat the backtesting indicating that shortselling is allowed:
 ```{r}
-res <- portfolioBacktest(GMVP_portfolio_fun, prices[[1]], shortselling = TRUE)
+res <- portfolioBacktest(GMVP_portfolio_fun, dataset[[1]], shortselling = TRUE)
 res$error
 res$error_message
 res$cpu_time
@@ -145,7 +144,7 @@ Markowitz_portfolio_fun <- function(prices) {
 ```
 We can now backtest it:
 ```{r, cache=TRUE}
-res <- portfolioBacktest(Markowitz_portfolio_fun, prices[[1]])
+res <- portfolioBacktest(Markowitz_portfolio_fun, dataset[[1]])
 res$error
 res$error_message
 res$cpu_time
@@ -154,7 +153,7 @@ res$performance
 
 Instead of backtesting a portfolio on a single `xts` dataset, it is more meaningful to backtest it on multiple datasets. This can be easily done simply by passing a list of `xts` objects:
 ```{r, cache=TRUE}
-res <- portfolioBacktest(Markowitz_portfolio_fun, prices[1:5])
+res <- portfolioBacktest(Markowitz_portfolio_fun, dataset[1:5])
 names(res)
 res$cpu_time
 res$performance
@@ -172,7 +171,7 @@ Backtesting multiple portfolios is equally simple. It suffices to pass a list of
 ```{r, cache=TRUE}
 res <- multiplePortfolioBacktest(portfolio_fun_list = list(uniform_portfolio_fun, 
                                                            GMVP_portfolio_fun), 
-                                 prices =  prices[1:5], shortselling = TRUE)
+                                 prices =  dataset[1:5], shortselling = TRUE)
 res
 ```
 
@@ -181,7 +180,7 @@ res
 If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily. It suffices to ask each student to submit a .R script (named `LASTNAME-firstname-STUDENTNUMBER-XXXX.R`) containing the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). Then the instructor can put all those files in a folder and evaluate all of them at once.
 ```{r, cache=TRUE}
 res_all_students <- multiplePortfolioBacktest(folder_path = "folder_path", 
-                                              prices =  prices[1:3])
+                                              prices =  dataset[1:3])
 res_all_students$performance_summary
 res_all_students$cpu_time_average
 res_all_students$failure_ratio

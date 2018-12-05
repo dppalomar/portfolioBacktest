@@ -35,38 +35,35 @@ We start by loading the package and some random sets of stock market data:
 ```r
 library(xts)
 library(portfolioBacktest)
-data(prices)  # you may want to specify data(prices, package = "portfolioBacktest") 
-              # in case there is any conflict with the package PerformanceAnalytics
+data(dataset) 
 ```
-The dataset `prices` is a list of objects `xts` that contains the prices of random sets of stock market data from the S&P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.
+The dataset `dataset` is a list of objects `xts` that contains the prices of random sets of stock market data from the S&P 500, over random periods of two years with a random selection of 50 stocks of each universe.
  
 
 ```r
-length(prices)
-#> [1] 100
-str(prices[[1]])
-#> An 'xts' object on 2013-01-23/2014-12-29 containing:
-#>   Data: num [1:474, 1:46] 128 130 130 129 128 ...
+length(dataset)
+#> [1] 10
+str(dataset[[1]])
+#> List of 1
+#>  $ prices:An 'xts' object on 2014-09-02/2016-08-30 containing:
+#>   Data: num [1:504, 1:50] 18.8 19 19.3 19.2 19.1 ...
 #>  - attr(*, "dimnames")=List of 2
 #>   ..$ : NULL
-#>   ..$ : chr [1:46] "1 HK Equity" "101 HK Equity" "1038 HK Equity" "1044 HK Equity" ...
+#>   ..$ : chr [1:50] "NVDA" "FL" "CDNS" "EIX" ...
 #>   Indexed by objects of class: [Date] TZ: UTC
 #>   xts Attributes:  
-#>  NULL
+#> List of 2
+#>   ..$ src    : chr "yahoo"
+#>   ..$ updated: POSIXct[1:1], format: "2018-12-05 13:30:48"
 
-colnames(prices[[1]])
-#>  [1] "1 HK Equity"    "101 HK Equity"  "1038 HK Equity" "1044 HK Equity"
-#>  [5] "1088 HK Equity" "1093 HK Equity" "11 HK Equity"   "1109 HK Equity"
-#>  [9] "1177 HK Equity" "12 HK Equity"   "1299 HK Equity" "1398 HK Equity"
-#> [13] "151 HK Equity"  "16 HK Equity"   "17 HK Equity"   "175 HK Equity" 
-#> [17] "19 HK Equity"   "1928 HK Equity" "2 HK Equity"    "2007 HK Equity"
-#> [21] "2018 HK Equity" "2313 HK Equity" "2318 HK Equity" "2319 HK Equity"
-#> [25] "2382 HK Equity" "2388 HK Equity" "2628 HK Equity" "267 HK Equity" 
-#> [29] "27 HK Equity"   "3 HK Equity"    "3328 HK Equity" "386 HK Equity" 
-#> [33] "388 HK Equity"  "3988 HK Equity" "5 HK Equity"    "6 HK Equity"   
-#> [37] "66 HK Equity"   "688 HK Equity"  "762 HK Equity"  "823 HK Equity" 
-#> [41] "83 HK Equity"   "836 HK Equity"  "857 HK Equity"  "883 HK Equity" 
-#> [45] "939 HK Equity"  "941 HK Equity"
+colnames(dataset[[1]]$prices)
+#>  [1] "NVDA"  "FL"    "CDNS"  "EIX"   "HOLX"  "MCK"   "AZO"   "INCY" 
+#>  [9] "IPG"   "ANSS"  "EW"    "INTC"  "HRB"   "BEN"   "LKQ"   "WFC"  
+#> [17] "FRT"   "ICE"   "CB"    "COST"  "BLK"   "CMCSA" "NBL"   "SRCL" 
+#> [25] "BMY"   "CAH"   "ED"    "D"     "CTAS"  "HP"    "ROP"   "CMA"  
+#> [33] "TXN"   "ALGN"  "BAC"   "TRV"   "DVN"   "BIIB"  "DE"    "ABC"  
+#> [41] "VTR"   "OKE"   "ADBE"  "GLW"   "NWSA"  "MAC"   "ADP"   "HD"   
+#> [49] "HCA"   "AAPL"
 ```
 
 Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector `w`:
@@ -85,7 +82,7 @@ portfolio_fun <- function(prices) {
 We are then ready to use the function `backtestPortfolio()` that will execute and evaluate the portfolio design function on a rolling-window basis:
 
 ```r
-res <- portfolioBacktest(portfolio_fun, prices[[1]], shortselling = TRUE)
+res <- portfolioBacktest(portfolio_fun, dataset[[1]], shortselling = TRUE)
 names(res)
 #> [1] "returns"       "cumPnL"        "performance"   "cpu_time"     
 #> [5] "error"         "error_message"
@@ -97,42 +94,42 @@ plot(res$cumPnL)
 ```r
 res$performance
 #>      Sharpe ratio      max drawdown     annual return annual volatility 
-#>        1.64718707        0.02471534        0.05919997        0.03594004 
+#>       -0.18563752        0.04528734       -0.00836890        0.04508195 
 #>    Sterling ratio       Omega ratio           ROT bps 
-#>        2.39527214        1.30331447      173.12764544
+#>       -0.18479559        0.97358349       -9.46725948
 ```
 
 We can also backtest over multiple data sets 
 
 ```r
 # perform multiple backtesting
-mul_res <- portfolioBacktest(portfolio_fun, prices[1:5], shortselling = TRUE)
+mul_res <- portfolioBacktest(portfolio_fun, dataset[1:5], shortselling = TRUE)
 mul_res$performance
-#>                      dataset 1    dataset 2    dataset 3    dataset 4
-#> Sharpe ratio        1.64718707   2.54194003  -0.35641508   1.58398447
-#> max drawdown        0.02471534   0.07245711   0.04829116   0.02562210
-#> annual return       0.05919997   0.32501267  -0.02639935   0.08892679
-#> annual volatility   0.03594004   0.12786009   0.07406911   0.05614120
-#> Sterling ratio      2.39527214   4.48558689  -0.54667034   3.47070687
-#> Omega ratio         1.30331447   1.50077945   0.94581069   1.32980756
-#> ROT bps           173.12764544 522.42888509 -65.74741983 176.89831844
-#>                      dataset 5
-#> Sharpe ratio        1.09361594
-#> max drawdown        0.04479846
-#> annual return       0.06276355
-#> annual volatility   0.05739085
-#> Sterling ratio      1.40102013
-#> Omega ratio         1.18994973
-#> ROT bps           166.89506464
+#>                     dataset 1    dataset 2    dataset 3   dataset 4
+#> Sharpe ratio      -0.18563752   2.52144320  0.151993558  0.75956378
+#> max drawdown       0.04528734   0.03768676  0.039600713  0.03401692
+#> annual return     -0.00836890   0.10100510  0.007531534  0.03756689
+#> annual volatility  0.04508195   0.04005845  0.049551665  0.04945851
+#> Sterling ratio    -0.18479559   2.68012171  0.190186826  1.10435903
+#> Omega ratio        0.97358349   1.48967011  1.028987449  1.14186344
+#> ROT bps           -9.46725948 222.89155669 22.239545666 92.59241894
+#>                     dataset 5
+#> Sharpe ratio       0.31696399
+#> max drawdown       0.05959546
+#> annual return      0.01779474
+#> annual volatility  0.05614119
+#> Sterling ratio     0.29859217
+#> Omega ratio        1.06507217
+#> ROT bps           41.42647550
 mul_res$performance_summary
 #>      Sharpe ratio (median)      max drawdown (median) 
-#>                 1.58398447                 0.04479846 
+#>                 0.31696399                 0.03960071 
 #>     annual return (median) annual volatility (median) 
-#>                 0.06276355                 0.05739085 
+#>                 0.01779474                 0.04945851 
 #>    Sterling ratio (median)       Omega ratio (median) 
-#>                 2.39527214                 1.30331447 
+#>                 0.29859217                 1.06507217 
 #>           ROT bps (median) 
-#>               173.12764544
+#>                41.42647550
 ```
 
 
