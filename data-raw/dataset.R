@@ -28,6 +28,8 @@ multipleSymbolsDownload <- function(stock_namelist, begin_date, end_date) {
 
 multipleXTSMerge <- function(xts_list, join) {
   res <- xts_list[[1]]
+  if (length(xts_list) == 1) return(res)
+  
   for (i in 2:length(xts_list)) {
     res <- merge.xts(res, xts_list[[i]], join = join)
   }
@@ -54,6 +56,11 @@ load('data-raw/SP500_symbols.RData')
 SP500_YAHOO <- multipleSymbolsDownload(stock_namelist = SP500_symbols, begin_date = "2008-12-01", end_date = "2018-12-01")
 save(SP500_YAHOO, file = "data-raw/SP500_YAHOO.RData")
 
+# download index
+SP500_INDEX_YAHOO <- multipleSymbolsDownload(stock_namelist = "^GSPC", begin_date = "2008-12-01", end_date = "2018-12-01")
+colnames(SP500_INDEX_YAHOO) <- "INDEX"
+save(SP500_INDEX_YAHOO, file = "data-raw/SP500_INDEX_YAHOO.RData")
+
 # save it in the variable dataset
 genRandomSampleSingle <- function(source_dataset, N_sample, T_sample) {
   N <- ncol(source_dataset)
@@ -75,10 +82,19 @@ dataset <- list()
 N_sample <- 50
 T_sample <- 252*2
 for (i in 1:10) {
-  dataset[[i]] <- list(prices = genRandomSampleSingle(source_dataset = SP500_YAHOO, N_sample = N_sample, T_sample = T_sample))
+  # generate random segment from complete data set
+  dataset_seg <- genRandomSampleSingle(source_dataset = SP500_YAHOO, N_sample = N_sample, T_sample = T_sample)
+  # cut the corresponding segment from SP500 INDEX
+  index_seg <- SP500_INDEX_YAHOO[index(dataset_seg), ]
+  dataset[[i]] <- list(prices = dataset_seg, index = index_seg)
 }
-sapply(dataset, function(x){ncol(x$prices)})
 
+# check if row number matched
+sapply(dataset, function(x){nrow(x$prices) == nrow(x$index)})
+# check if any NA exists
+sapply(dataset, function(x){anyNA(x$prices) || anyNA(x$index)})
+# check if date index matched
+sapply(dataset, function(x){all(index(x$prices) == index(x$index))})
 
 # check data
 for (i in 1:50) {
