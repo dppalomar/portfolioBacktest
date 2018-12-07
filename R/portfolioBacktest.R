@@ -1,108 +1,3 @@
-# Backtesting on a single xts
-#
-#' @import xts
-singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FALSE, cpu_time_limit = Inf,
-                                    shortselling = FALSE, leverage = 1,
-                                    T_rolling_window = 252, optimize_every = 20, rebalance_every = optimize_every) {
-  # TO BE DELETED
-  prices <- prices$prices
-  
-  ######## error control  #########
-  if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]]")
-  if (!is.xts(prices)) stop("prices have to be xts")
-  N <- ncol(prices)
-  T <- nrow(prices)
-  if (T_rolling_window >= T) stop("T is not large enough for the given sliding window length")
-  if (optimize_every%%rebalance_every != 0) stop("The reoptimization period has to be a multiple of the rebalancing period")
-  if (anyNA(prices)) stop("prices contain NAs")
-  if (!is.function(portfolio_fun)) stop("portfolio_fun is not a function")
-  #################################
-  
-  # indices
-  #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= T_rolling_window)]
-  optimize_indices <- seq(from = T_rolling_window, to = T, by = optimize_every)
-  rebalance_indices <- seq(from = T_rolling_window, to = T, by = rebalance_every)
-  if (any(!(optimize_indices %in% rebalance_indices))) stop("The reoptimization indices have to be a subset of the rebalancing indices")
-  
-  start_time <- proc.time()[3] # time the following procedure
-  # compute w
-  flag_timeout <- FALSE
-  error <- FALSE
-  error_message <- NULL
-  w <- xts(matrix(NA, length(rebalance_indices), N), order.by = index(prices)[rebalance_indices])
-  colnames(w) <- colnames(prices)
-  for (i in 1:length(rebalance_indices)) {
-    idx_prices <- rebalance_indices[i]
-    if (idx_prices %in% optimize_indices) {  # reoptimize
-      prices_window <- prices[(idx_prices-T_rolling_window+1):idx_prices, ]
-      tryCatch(R.utils::withTimeout({w[i, ] <- do.call(portfolio_fun, list(prices_window))}, timeout = cpu_time_limit),
-               TimeoutException = function(t) {error <<- TRUE; error_message <<- "Exceed time limit."; flag_timeout <<- TRUE},
-               warning = function(w) { error <<- TRUE; error_message <<- w$message},
-               error = function(e) { error <<- TRUE; error_message <<- e$message})
-    } else  # just rebalance without reoptimizing
-      w[i, ] <- w[i-1, ]
-    
-    if (anyNA(w[i, ]) && !flag_timeout) {
-      error = TRUE
-      error_message <- c(error_message, "Returned portfolio contains NA.")
-    }
-    
-    # exit in case of error
-    if (!error && !flag_timeout) {
-      if (!shortselling && any(w[i, ] + 1e-6 < 0)) {
-        error <- TRUE
-        error_message <- c(error_message, "No-shortselling constraint not satisfied.")
-      }
-      if (sum(abs(w[i, ])) > leverage + 1e-6) {
-        error <- TRUE
-        error_message <- c(error_message, "Leverage constraint not satisfied.")
-      }
-    }
-    if (error) {
-      var_tb_returned <- list("returns" = NA,
-                              "cumPnL" = NA,
-                              "performance" = rep(NA, 7),
-                              "cpu_time" = NA,
-                              "error" = error,
-                              "error_message" = error_message)
-      if (return_portfolio) var_tb_returned$portfolio <- w
-      return(var_tb_returned)
-    }
-  }
-  
-  time <- as.numeric(proc.time()[3] - start_time)
-  
-  # compute returns of portfolio
-  R_lin <- PerformanceAnalytics::CalculateReturns(prices[-c(1:(T_rolling_window-1)), ])
-  ret_port <- returnPortfolio(R = R_lin, weights = w)
-  rets <- ret_port$rets
-  
-  # compute cumulative wealth (initial budget of 1$)
-  #wealth_arith_BnH_trn <- 1 + cumsum(rets)
-  wealth_geom_BnH_trn <- cumprod(1 + rets)
-  
-  # compute various performance measures (in the future, add turnover and ROI)
-  performance <- c(PerformanceAnalytics::SharpeRatio.annualized(rets), 
-                   PerformanceAnalytics::maxDrawdown(rets), 
-                   PerformanceAnalytics::Return.annualized(rets), 
-                   PerformanceAnalytics::StdDev.annualized(rets),
-                   PerformanceAnalytics::Return.annualized(rets) / PerformanceAnalytics::maxDrawdown(rets),
-                   PerformanceAnalytics::Omega(rets),
-                   ret_port$ROT_bips)
-  names(performance) <- c("Sharpe ratio", "max drawdown", "annual return", "annual volatility", "Sterling ratio", "Omega ratio", "ROT bps")
-  
-  var_tb_returned <- list("returns" = rets,
-                          "cumPnL" = wealth_geom_BnH_trn,
-                          "performance" = performance,
-                          "cpu_time" = time,
-                          "error" = error,
-                          "error_message" = error_message)
-  if (return_portfolio) var_tb_returned$portfolio <- w
-  return(var_tb_returned)
-}
-
-
-
 #' @title Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices
 #'
 #' @description Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
@@ -113,6 +8,7 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
 #' @param packages a vector of strings indicating the required packages
 #' @param assist_funs a vector of strings indicating the assistant functions
 #' @param return_portfolio logical value, whether return portfolios
+#' @param return_return logical value, whether return the portfolio returns
 #' @param shortselling whether shortselling is allowed or not (default \code{FALSE}).
 #' @param leverage amount of leverage (default is 1, so no leverage).
 #' @param T_rolling_window length of the rolling window.
@@ -162,91 +58,279 @@ singlePortfolioBacktest <- function(portfolio_fun, prices, return_portfolio = FA
 #' @import xts 
 #'         doSNOW
 #' @export
-portfolioBacktest <- function(portfolio_fun, prices, par_dataset = 1, packages = c(), assist_funs = c(), ...) {
+#' 
+portfolioBacktest <- function(folder_path = NULL, portfolio_funs = NULL, dataset, par_portfolio = 1, benchmark = c("uniform"), ...) {
+  ####### error control ########
+  par_portfolio <- round(par_portfolio)
+  if (par_portfolio < 1) stop("Parallel number must be positive interger")
+  if (par_portfolio > parallel::detectCores()) warning("Parallel number exceeds the hardware limit")
+  if (is.null(folder_path) && is.null(portfolio_funs)) stop("The \"folder_path\" and \"portfolio_fun_list\" can not both be NULL")
+  if (!is.null(portfolio_funs) && !is.list(portfolio_funs)) portfolio_funs <- list(portfolio_funs)
+  ##############################
+  
+  # when portfolio_funs is passed
+  if (!is.null(portfolio_funs)) {
+    if (is.null(portfolio_funs)) portfolio_names <- names(portfolio_funs)
+    else portfolio_names <- paste0("fun", 1:length(portfolio_funs))
+    
+    if (par_portfolio == 1) {
+      result <- list()
+      for (i in 1:length(portfolio_funs)) {
+        cat(paste0("Evaluating ", i, "(/", length(portfolio_funs), ")-th function\n"))
+        result[[i]] <- singlePortfolioBacktest(portfolio_fun = portfolio_funs[[i]], dataset = dataset, ...)
+      }
+    } else {
+      # creat the progress bar based on function number
+      sink(file = tempfile())
+      pb <- txtProgressBar(max = length(portfolio_funs), style = 3)
+      sink()
+      opts <- list(progress = function(n) setTxtProgressBar(pb, n))
+      opts$progress(0)
+      
+      cl <- makeCluster(par_portfolio)
+      registerDoSNOW(cl)
+      result <- foreach(i = 1:length(portfolio_funs), .combine = c, .options.snow = opts) %dopar% {
+        return(list(singlePortfolioBacktest(portfolio_fun = portfolio_funs[[i]], dataset = dataset, ...)))
+      }
+      close(pb)
+      stopCluster(cl) 
+    }
+    
+  } else { # when portfolio_funs is not passed but folder_path is passed
+    files <- list.files(folder_path)
+    portfolio_names <- files
+    
+    # define a safe enviroment to source .R files
+    dataset__ <- dataset # backup dataset in case of being covered by sourced files
+    safeEval <- function(folder_path, file, dataset__, ...) {
+      packages_default <- search() # snap the default packages
+      source_error <- FALSE; source_error_message <- NA
+      tryCatch(expr    = suppressMessages(source(paste0(folder_path, "/", file), local = TRUE)), 
+               warning = function(w){source_error <<- TRUE; source_error_message <<- w$message}, 
+               error   = function(e){source_error <<- TRUE; source_error_message <<- e$message})
+      if (source_error) return(list(source_error_message = source_error_message))
+      res <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, dataset = dataset__, ...)
+      packages_now <- search()# detach the newly loaded packages
+      packages_det <- packages_now[!(packages_now %in% packages_default)]
+      detach_packages(packages_det)
+      return(res)
+    }
+    
+    if (par_portfolio == 1) {
+      result <- list()
+      for (i in 1:length(files)) {
+        cat(paste0("Evaluating ", i, "(/", length(files), ")-th file: ", files[i], "\n"))
+        result[[i]] <- safeEval(folder_path, files[i], dataset__, ...)
+      }
+    } else {
+      # creat the progress bar based on files number
+      sink(file = tempfile())
+      pb <- txtProgressBar(max = length(files), style = 3)
+      sink()
+      opts <- list(progress = function(n) setTxtProgressBar(pb, n))
+      opts$progress(0)
+      
+      cl <- makeCluster(par_portfolio)
+      registerDoSNOW(cl)
+      result <- foreach(file = files, .combine = c, .options.snow = opts) %dopar% {
+        return(list(safeEval(folder_path, file, dataset__, ...)))
+      }
+      close(pb)
+      stopCluster(cl) 
+    }
+  }
+  
+  names(result) <- portfolio_names
+  
+  # add benchmark and return result
+  res_benchmark <- benchmarkBacktest(dataset = dataset, benchmark = benchmark, ...)
+  result <- c(result, res_benchmark)
+  attr(result, 'portfolio_index') <- 1:length(portfolio_names)
+  attr(result, 'contain_benchmark') <- length(res_benchmark) > 0
+  attr(result, 'benchmark_index') <- (1:length(result))[-c(1:length(portfolio_names))]
+  return(result)
+}
+
+# benchmark portfolio backtest
+
+benchmarkBacktest <- function(dataset, benchmark, ...) {
+  
+  res <- list()
+  if ("uniform" %in% benchmark) {
+    cat("Evaluating benchmark-uniform\n")
+    res$uniform <- singlePortfolioBacktest(portfolio_fun = uniform_portfolio_fun, dataset = dataset, ...)
+  }
+  if ("index" %in% benchmark) {
+    cat("Evaluating benchmark-index\n")
+    res$index <- singlePortfolioBacktest(market = TRUE, dataset = dataset, ...)
+  }
+  return(res)
+}
+
+singlePortfolioBacktest <- function(portfolio_fun, dataset,
+                                    par_dataset = 1, packages = c(), assist_funs = c(), ...) {
   
   # check parallel setting
   par_dataset <- round(par_dataset)
   if (par_dataset < 1) stop("Parallel number must be positive interger")
-  if (par_dataset > parallel::detectCores()) stop("Parallel number exceeds the hardware limit")
+  if (par_dataset > parallel::detectCores()) warning("Parallel number exceeds the hardware limit")
   
-  # when price is an xts object
-  if (length(prices) == 1)
-    return(singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = prices, ...))
-  
-  rets <- cumPnL <- performance <- error_message <- portfolio <- list()
-  time <- error <- c()
-  
-  # check if need return portfolio
-  return_portfolio <- isTRUE(list(...)$return_portfolio)
+  # creat the progress bar
+  sink(file = tempfile())
+  pb <- txtProgressBar(max = length(dataset), style = 3)
+  sink()
+  opts <- list(progress = function(n) setTxtProgressBar(pb, n))
+  opts$progress(0)
   
   # when price is a list of xts object
-  if (par_dataset == 1) { # no-parallel computering
-    rets <- cumPnL <- performance <- error_message <- portfolio <- list()
-    time <- error <- c()
-    for (i in 1:length(prices)) {
-      result <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = prices[[i]], ...)
-      rets[[i]] <- result$return
-      cumPnL[[i]] <- result$cumPnL
-      performance[[i]] <- result$performance
-      time[i] <- result$cpu_time
-      error[i] <- result$error
-      error_message[[i]] <- result$error_message
-      if (return_portfolio) portfolio[[i]] <- result$portfolio
+  if (par_dataset == 1) { ########## no-parallel mode
+    result <- list()
+    for (i in 1:length(dataset)) {
+      result[[i]] <- singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dataset[[i]], ...)
+      opts$progress(i) # show progress bar
     }
-  } else { # parallel computering
+  } else {               ########### parallel mode
     cl <- makeCluster(par_dataset)
     registerDoSNOW(cl)
-    
-    # creat the progress bar
-    sink(file = tempfile())
-    pb <- txtProgressBar(max = length(prices), style = 3)
-    sink()
-    
-    opts <- list(progress = function(n) setTxtProgressBar(pb, n))
-    result <- foreach(price = prices, .combine = c, .packages = packages, .export = assist_funs, .options.snow = opts) %dopar% {
-      return(singlePortfolioBacktest(portfolio_fun = portfolio_fun, prices = price, ...))
+    result <- foreach(dat = dataset, .combine = c, .packages = packages, .export = assist_funs, .options.snow = opts) %dopar% {
+      return(list(singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dat, ...)))
     }
-    
-    close(pb)
     stopCluster(cl) 
-    
-    # extract result
-    tmp           <- names(result)
-    rets          <- result[tmp == "returns"]
-    cumPnL        <- result[tmp == "cumPnL"]
-    performance   <- result[tmp == "performance"]
-    time          <- unlist(result[tmp == "cpu_time"])
-    error         <- unlist(result[tmp == "error"])
-    error_message <- result[tmp == "error_message"]
-    if (return_portfolio) portfolio <- result[tmp == "portfolio"]
   }
   
-  # prepare results to be returned
-  performance <- sapply(performance, cbind)
-  rownames(performance) <- names(result$performance)
-  colnames(performance) <- paste("dataset", 1:length(prices))
-  # summarize performance 
-  failure_ratio <- sum(error) / length(prices)
-  if (failure_ratio < 1) {
-    performance_summary <- apply(cbind(performance[, !error]), 1, median)
-    names(performance_summary) <- paste(names(performance_summary), "(median)")
-    time_average <- mean(time[!error])
-  } else
-    performance_summary <- time_average <- NA
+  close(pb)
   
-  var_tb_returned <- list("returns" = rets,
-                          "cumPnL" = cumPnL,
-                          "performance" = performance,
-                          "performance_summary" = performance_summary,
-                          "cpu_time" = time,
-                          "cpu_time_average" = time_average,
-                          "failure_ratio" = failure_ratio,
-                          "error" = error,
-                          "error_message" = error_message)
-  if (return_portfolio) var_tb_returned$portfolio <- portfolio
-  return(var_tb_returned)
+  return(result)
 }
 
+
+# singlePortfolioSingleDataBacktest <- function(portfolio_fun, benchmark = c(), dat, ...) {
+#   res <- singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, prices = dat$prices, ...)
+#   if ("uniform" %in% benchmark) res$benchmark$uniform <- singlePortfolioSingleXTSBacktest(portfolio_fun = uniform_portfolio_fun, prices = dat$prices, ...)
+#   if ("index" %in% benchmark) res$benchmark$index <- singlePortfolioSingleXTSBacktest(market = dat$index, ...)
+#   return(res)
+# }
+
+
+# Backtesting of one portfolio function on one single xts
+#
+#' @import xts
+singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, market = FALSE,
+                                             return_portfolio = TRUE, return_return = TRUE,
+                                             shortselling = FALSE, leverage = 1, cpu_time_limit = Inf,
+                                             T_rolling_window = 252, optimize_every = 20, rebalance_every = optimize_every) {
+  # creat return container
+  res <- list(performance = portfolioPerformance(), 
+              cpu_time = NA, 
+              error = FALSE, 
+              error_message = NA,
+              portfolio = NA,
+              return = NA,
+              cumPnL = NA)
+  
+  # when portfolio_return is given
+  if (market) {
+    res$performance <- portfolioPerformance(rets = diff(log(data$index))[-(1:T_rolling_window), ])
+    return(res)
+  }
+  
+  prices <- data$prices
+  
+  ######## error control  #########
+  if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]]")
+  if (!is.xts(prices)) stop("prices have to be xts")
+  N <- ncol(prices)
+  T <- nrow(prices)
+  if (T_rolling_window >= T) stop("T is not large enough for the given sliding window length")
+  if (optimize_every%%rebalance_every != 0) stop("The reoptimization period has to be a multiple of the rebalancing period")
+  if (anyNA(prices)) stop("prices contain NAs")
+  if (!is.function(portfolio_fun)) stop("portfolio_fun is not a function")
+  #################################
+  
+  # indices
+  #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= T_rolling_window)]
+  optimize_indices <- seq(from = T_rolling_window, to = T, by = optimize_every)
+  rebalance_indices <- seq(from = T_rolling_window, to = T, by = rebalance_every)
+  if (any(!(optimize_indices %in% rebalance_indices))) stop("The reoptimization indices have to be a subset of the rebalancing indices")
+  
+  
+  # compute w
+  error <- flag_timeout <- FALSE; error_message <- NA; cpu_time <- c()
+  w <- xts(matrix(NA, length(rebalance_indices), N), order.by = index(prices)[rebalance_indices])
+  colnames(w) <- colnames(prices)
+  
+  for (i in 1:length(rebalance_indices)) {
+    
+    idx_prices <- rebalance_indices[i]
+    
+    if (idx_prices %in% optimize_indices) {  # reoptimize
+      prices_window <- prices[(idx_prices-T_rolling_window+1):idx_prices, ]
+      start_time <- proc.time()[3] 
+      tryCatch(expr             = R.utils::withTimeout({w[i, ] <- do.call(portfolio_fun, list(prices_window))}, timeout = cpu_time_limit),
+               TimeoutException = function(t) {error <<- TRUE; error_message <<- "Exceed time limit."; flag_timeout <<- TRUE},
+               warning          = function(w) {error <<- TRUE; error_message <<- w$message},
+               error            = function(e) {error <<- TRUE; error_message <<- e$message})
+      cpu_time <- c(cpu_time, as.numeric(proc.time()[3] - start_time))
+    } else {# just rebalance without reoptimizing
+      w[i, ] <- w[i-1, ]
+    }
+    
+    if (anyNA(w[i, ]) && !flag_timeout)
+      {error = TRUE; error_message <- c(error_message, "Returned portfolio contains NA.")}
+    if (!error && !flag_timeout) {
+      if (!shortselling && any(w[i, ] + 1e-6 < 0)) 
+        {error <- TRUE; error_message <- c(error_message, "No-shortselling constraint not satisfied.")}
+      if (sum(abs(w[i, ])) > leverage + 1e-6) 
+        {error <- TRUE; error_message <- c(error_message, "Leverage constraint not satisfied.")}
+    }
+    if (error) {
+      res$error <- error
+      res$error_message <- error_message
+      if (return_portfolio) res$portfolio <- w
+      return(res)
+    }
+  }
+  
+  
+  # compute returns of portfolio
+  R_lin <- PerformanceAnalytics::CalculateReturns(prices)
+  ret_port <- returnPortfolio(R = R_lin, weights = w)
+  rets <- ret_port$rets
+
+  res$performance <- portfolioPerformance(rets = rets, ROT_bips = ret_port$ROT_bips)
+  res$cpu_time <- mean(cpu_time)
+  res$error <- error
+  res$error_message <- error_message
+  if (return_portfolio) res$portfolio <- w
+  if (return_return) {res$return <- rets; res$cumPnL <- cumprod(1 + rets)}
+  
+  return(res)
+}
+
+# analyse the performance of a portfolio
+#   rets: is an xts recording portfolio's return
+#   weights: is an xts with the normalized dollar allocation (wrt NAV, typically with sum=1) where
+#            - each row represents a rebalancing date (with portfolio computed with info up to and including that day)
+#            - dates with no rows means no rebalancing (note that the portfolio may then violate some margin constraints...)
+#
+portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
+  performance <- rep(NA, 7)
+  names(performance) <- c("Sharpe ratio", "max drawdown", "annual return", "annual volatility", 
+                          "Sterling ratio", "Omega ratio", "ROT bps")
+  # return blank vector if no need computation
+  if (anyNA(rets)) return(performance)
+  
+  # fill the elements one by one
+  performance['Sharpe ratio']      <- PerformanceAnalytics::SharpeRatio.annualized(rets)
+  performance['max drawdown']      <- PerformanceAnalytics::maxDrawdown(rets)
+  performance['annual return']     <- PerformanceAnalytics::Return.annualized(rets)
+  performance['annual volatility'] <- PerformanceAnalytics::StdDev.annualized(rets)
+  performance['Sterling ratio']    <- PerformanceAnalytics::Return.annualized(rets) / PerformanceAnalytics::maxDrawdown(rets)
+  performance['Omega ratio']       <- PerformanceAnalytics::Omega(rets)
+  performance['ROT bps']           <- ROT_bips
+  
+  return(performance)
+}
 
 #
 # Computes the returns of a portfolio of several assets (ignoring transaction costs):

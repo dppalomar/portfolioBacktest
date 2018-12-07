@@ -4,8 +4,8 @@
 \alias{portfolioBacktest}
 \title{Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices}
 \usage{
-portfolioBacktest(portfolio_fun, prices, par_dataset = 1,
-  packages = c(), assist_funs = c(), ...)
+portfolioBacktest(folder_path = NULL, portfolio_funs = NULL, dataset,
+  par_portfolio = 1, benchmark = c("uniform"), ...)
 }
 \arguments{
 \item{portfolio_fun}{function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.}
@@ -19,6 +19,8 @@ portfolioBacktest(portfolio_fun, prices, par_dataset = 1,
 \item{assist_funs}{a vector of strings indicating the assistant functions}
 
 \item{return_portfolio}{logical value, whether return portfolios}
+
+\item{return_return}{logical value, whether return the portfolio returns}
 
 \item{shortselling}{whether shortselling is allowed or not (default \code{FALSE}).}
 
