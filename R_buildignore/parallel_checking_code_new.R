@@ -63,7 +63,8 @@ sapply(res_signel[[1]], function(x){x$benchmark$uniform$performance})
 my_path <- "d:/Users/rzhouae/Documents/R/Git/portfolioBacktest/R_buildignore/student-functions/"
 my_mac_path <- "/Users/zhourui/Documents/R/GitProjects/portfolioBacktest/R_buildignore/student-functions/"
 
-res <- portfolioBacktest(folder_path = my_path, dataset = dataset, par_portfolio = 3)
+res1 <- portfolioBacktest(folder_path = my_path, dataset = dataset, par_portfolio = 3)
+res2 <- portfolioBacktest(folder_path = my_path, dataset = dataset, par_portfolio = 3, show_progress_bar = TRUE)
 res_single <- portfolioBacktest(folder_path = my_path, dataset = dataset, par_portfolio = 1)
 sapply(res[[3]], function(x){x$performance})
 res[[3]][[1]]$error_message
@@ -72,6 +73,8 @@ res_single[[3]][[1]]$error_message
 
 # parallel testing for function "multiplePortfolioBacktest()" using a list of functions
 res_par <- portfolioBacktest(portfolio_funs = portfolio_function_list,
+                             dataset = dataset[1:3], shortselling = TRUE, par_portfolio = 3)
+res_par <- portfolioBacktest(portfolio_funs = portfolio_function_list, show_progress_bar = TRUE,
                              dataset = dataset, shortselling = TRUE, par_portfolio = 3)
 
 res_sig <- portfolioBacktest(portfolio_funs = portfolio_function_list,

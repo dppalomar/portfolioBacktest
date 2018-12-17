@@ -1,7 +1,6 @@
-library(CVXR)
-
 # define some portfolio functions
 portfolio_fun_Markowitz <- function(prices) {
+  require(CVXR)
   # compute log returns
   X <- diff(log(prices))[-1]
   
@@ -43,53 +42,33 @@ portfolio_fun_uniform <- function(prices) {
 library(portfolioBacktest)
 data("dataset")
 
-##### test core function: singlePortfolioSingleXTSBacktest ############
-res1 <- portfolioBacktest:::singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun_uniform, 
-                                                             data = dataset[[1]],
-                                                             return_portfolio = TRUE,
-                                                             return_return = TRUE)
-res2 <- portfolioBacktest:::singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun_GMVP_norm, 
-                                                             data = dataset[[1]], shortselling = TRUE)
-str(res1)
-str(res2)
+tmp <- portfolioBacktest:::singlePortfolioBacktest(portfolio_fun_uniform, dataset, show_progress_bar = FALSE)
+portfolio_funs <- list(my_uniform = portfolio_fun_uniform,
+                       my_GMVP = portfolio_fun_GMVP,
+                       my_GMVP_norm = portfolio_fun_GMVP_norm,
+                       my_Markowitz = portfolio_fun_Markowitz)
 
-##### test function: benchmarkBacktest ################
-res1 <- portfolioBacktest:::benchmarkBacktest(dataset = dataset, benchmark = c('uniform', 'index'))
-str(res1)
+res1_mute <- portfolioBacktest(portfolio_funs, dataset, benchmark = c('uniform', 'index'))
+res2_mute <- portfolioBacktest(portfolio_funs, dataset, benchmark = c('index'), shortselling = TRUE)
 
-##### test function: singlePortfolioBacktest ##########
-res1 <- portfolioBacktest:::singlePortfolioBacktest(portfolio_fun = portfolio_fun_uniform,
-                                                    dataset = dataset,
-                                                    return_portfolio = TRUE,
-                                                    return_return = TRUE)
-res2 <- portfolioBacktest:::singlePortfolioBacktest(portfolio_fun = portfolio_fun_GMVP_norm,
-                                                    dataset = dataset, shortselling = TRUE)
-str(res1)
-str(res2)
-sapply(res1, function(x){x$performance})
-sapply(res1, function(x){x$benchmark$uniform$performance})
-sapply(res2, function(x){x$performance})
-sapply(res2, function(x){x$benchmark$uniform$performance})
+res1_bar <- portfolioBacktest(portfolio_funs, dataset, benchmark = c('uniform', 'index'), show_progress_bar = TRUE)
+res2_bar <- portfolioBacktest(portfolio_funs, dataset, benchmark = c('index'), shortselling = TRUE, show_progress_bar = TRUE)
 
-
-##### test function: portfolioBacktest ##########
-rm(res1, res2)
-res1 <- portfolioBacktest::portfolioBacktest(portfolio_funs = portfolio_fun_uniform,
-                                             benchmark = c('uniform', 'index'),
-                                             dataset = dataset,
-                                             return_portfolio = TRUE,
-                                             return_return = TRUE)
-res2 <- portfolioBacktest::portfolioBacktest(portfolio_funs = portfolio_fun_GMVP_norm,
-                                             benchmark = c(),
-                                             dataset = dataset, shortselling = TRUE)
 names(res1)
 names(res2)
-sapply(res1[['fun1']], function(x){x$performance})
-sapply(res2[['fun1']], function(x){x$performance})
-sapply(res2[['uniform']], function(x){x$performance})
 
+backtestSelector(res1_mute, portfolio_name = "my_GMVP")$performance
+backtestSelector(res2_mute, portfolio_name = "my_GMVP")$performance
+
+backtestSelector(res1_mute, portfolio_name = "my_GMVP_norm")$error_message
+backtestSelector(res2_mute, portfolio_name = "my_GMVP_norm")$error_message
 
 ### test function: backtestSelector ############
 backtestSelector(res1, portfolio_name = 'uniform', selector = c('Sharpe ratio', 'max drawdown'))
 
-backtestSummary(res1, portfolio_indexs = 1:3)
+backtestSummary(res2_mute, portfolio_index = 2)
+backtestSummary(res2_mute, portfolio_indexs = 1:3)
+portfolioLeaderboard(res2_mute, weights = list('Sharpe ratio' = 1,
+                                               'max drawdown' = 1,
+                                               'annual return' = 1,
+                                               'failure rate' = 7))
