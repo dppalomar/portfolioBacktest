@@ -71,11 +71,11 @@ package?portfolioBacktest
 ## Loading data
 We start by loading the package and some random sets of stock market data:
 ```{r, message = FALSE}
-library(xts)
+library(PerformanceAnalytics)
 library(portfolioBacktest)
 data(dataset) 
 ```
-The dataset `prices` is a list of objects `xts` that contains the prices of random sets of stock market data from the S&P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.
+The dataset `dataset` is a list of data that contains the prices of random sets of stock market data from the S&P 500, over random periods of two years with a random selection of 50 stocks of each universe.
  
 ```{r}
 length(dataset)
@@ -94,11 +94,12 @@ uniform_portfolio_fun <- function(prices) {
 }
 ```
 
-Now we are ready to use the function `backtestPortfolio()` that will execute and evaluate the portfolio design function on a rolling-window basis:
+Now we are ready to use the function `backtestPortfolio()` that will execute and evaluate the portfolio design function on a rolling-window basis, and the result can be easily handled with privided function `backtestSelector()`
 ```{r}
-res <- portfolioBacktest(uniform_portfolio_fun, dataset[[1]])
+bt <- portfolioBacktest(uniform_portfolio_fun, dataset[1], shortselling = TRUE)
+res <- backtestSelector(bt)
 names(res)
-plot(res$cumPnL)
+plot(res$cumPnL[[1]])
 res$performance
 ```
 
@@ -112,14 +113,16 @@ GMVP_portfolio_fun <- function(prices) {
   w <- w/sum(abs(w))  # it may not satisfy w>=0
   return(w)
 }
-res <- portfolioBacktest(GMVP_portfolio_fun, dataset[[1]])
+bt <- portfolioBacktest(GMVP_portfolio_fun, dataset[1])
+res <- backtestSelector(bt)
 res$error
 res$error_message
 ```
 
 Indeed, the GMVP does not satisfy the no-shortselling constraint. We can repeat the backtesting indicating that shortselling is allowed:
 ```{r}
-res <- portfolioBacktest(GMVP_portfolio_fun, dataset[[1]], shortselling = TRUE)
+bt <- portfolioBacktest(GMVP_portfolio_fun, dataset[1], shortselling = TRUE)
+res <- backtestSelector(bt)
 res$error
 res$error_message
 res$cpu_time
@@ -128,9 +131,8 @@ res$performance
 
 We could be more sophisticated and design a Markowitz mean-variance portfolio satisfying the no-shortselling constraint:
 ```{r, message=FALSE}
-library(CVXR)  #install.packages("CVXR")
-
 Markowitz_portfolio_fun <- function(prices) {
+  library(CVXR) #install.packages("CVXR")
   X <- diff(log(prices))[-1]  # compute log returns
   mu <- colMeans(X)  # compute mean vector
   Sigma <- cov(X)  # compute the SCM
@@ -144,7 +146,8 @@ Markowitz_portfolio_fun <- function(prices) {
 ```
 We can now backtest it:
 ```{r, cache=TRUE}
-res <- portfolioBacktest(Markowitz_portfolio_fun, dataset[[1]])
+bt <- portfolioBacktest(Markowitz_portfolio_fun, dataset[1])
+res <- backtestSelector(bt)
 res$error
 res$error_message
 res$cpu_time
@@ -153,42 +156,93 @@ res$performance
 
 Instead of backtesting a portfolio on a single `xts` dataset, it is more meaningful to backtest it on multiple datasets. This can be easily done simply by passing a list of `xts` objects:
 ```{r, cache=TRUE}
-res <- portfolioBacktest(Markowitz_portfolio_fun, dataset[1:5])
-names(res)
-res$cpu_time
-res$performance
+mul_data_bt <- portfolioBacktest(Markowitz_portfolio_fun, dataset[1:5])
+mul_data_res <- backtestSelector(mul_data_bt)
+names(mul_data_res)
+mul_data_res$cpu_time
+mul_data_res$performance
 ```
-In particular, note the additional elements in the returned list:
+
+The results from backtesting on multiple datasets can be further summarized by function `backtestSummary()` based on user customized summary functions. For example, we can summarize results using `median()` and `mean()`
 ```{r, cache=TRUE}
-res$cpu_time_average
-res$performance_summary
-res$failure_ratio
+res_summary <- backtestSummary(mul_data_bt, summary_funs = list('median' = median, 'mean' = mean))
+names(res_summary)
+res_summary$performance_summary_median
+res_summary$performance_summary_mean
 ```
 
 
 ## Backtesting multiple portfolios
-Backtesting multiple portfolios is equally simple. It suffices to pass a list of functions to the backtesting function `multiplePortfolioBacktest()`:
+Backtesting multiple portfolios is equally simple. It suffices to pass a list of functions to the backtesting function `portfolioBacktest()`:
 ```{r, cache=TRUE}
-res <- multiplePortfolioBacktest(portfolio_fun_list = list(uniform_portfolio_fun, 
-                                                           GMVP_portfolio_fun), 
-                                 prices =  dataset[1:5], shortselling = TRUE)
-res
+bt <- portfolioBacktest(list(uniform_portfolio_fun, GMVP_portfolio_fun), 
+                        dataset[1:5], shortselling = TRUE)
+names(bt)
+res_summary <- backtestSummary(bt, summary_funs = list('median' = median))
+res_summary$performance_summary_median
+```
+Note that the function names are given as `fun1` and `fun2` because only the function bodies are passed to `portfolioBacktest()`. To make the results more recognizable, we can manually pass the function names as follows:
+```{r, cache=TRUE}
+bt <- portfolioBacktest(list('my_uniform' = uniform_portfolio_fun, 'my_GMVP' = GMVP_portfolio_fun), 
+                        dataset[1:5], shortselling = TRUE)
+names(bt)
+res_summary <- backtestSummary(bt, summary_funs = list('median' = median))
+res_summary$performance_summary_median
+```
+
+## Incoporate benchmarks
+When perform the backtest of our designed portfolio functions, we may want to incorporate some benchmarks. Now the package suppport two benchmarks, which are `uniform portfolio` and `index` of the certain market. We can easily do that in any case by passing corresponding value to argument `benchmark`.
+```{r, cache=TRUE}
+bt <- portfolioBacktest(list('my_uniform' = uniform_portfolio_fun, 'my_GMVP' = GMVP_portfolio_fun), 
+                        dataset[1:5], shortselling = TRUE, benchmark = c('uniform', 'index'))
+names(bt)
+res_summary <- backtestSummary(bt, summary_funs = list('median' = median))
+res_summary$performance_summary_median
+```
+
+## Progress bar
+In order to monitor the backtest progress, we add the progress bar display in all cases. Users can turn on the progress bar by setting argument `show_progress_bar` be `TRUE`.
+```{r}
+mul_data_bt <- portfolioBacktest(uniform_portfolio_fun, dataset[1:5], show_progress_bar = TRUE)
+bt <- portfolioBacktest(list('my_uniform' = uniform_portfolio_fun, 'my_GMVP' = GMVP_portfolio_fun), 
+                        dataset[1:5], shortselling = TRUE, benchmark = c('uniform', 'index'), 
+                        show_progress_bar = TRUE)
+```
+
+## Parallel mode
+The backtest incurs very heavy computation load when numbers of portfolio functions or dataset go large. Therefore, we add support for parallel mode in this package. Users can choose if they want to parallel evaluate different portfolio functions or in a more fine-grained way, evaluating multiple datasets parallel for each function.
+```{r, cache=TRUE}
+# parallel = 2 for functions
+system.time(bt_nopar <- portfolioBacktest(list(Markowitz_portfolio_fun, Markowitz_portfolio_fun), dataset))
+system.time(bt_parfuns <- portfolioBacktest(list(Markowitz_portfolio_fun, Markowitz_portfolio_fun), dataset,
+                                            par_portfolio = 2))
+
+# parallel = 5 for datasets
+system.time(bt_nopar <- portfolioBacktest(Markowitz_portfolio_fun, dataset))
+system.time(bt_pardata <- portfolioBacktest(Markowitz_portfolio_fun, dataset, par_dataset = 5))
+```
+It is obvious that the evaluation time for backtesting has been significantly reduced. Note that the parallel evaluation time can not be exactly equal to the original time divided by parallel cores because starting new R sessions also takes extra time. For some technical reasons, the loaded packages information can not be automatically passed to parallel R sessions. Therefore we highly recommend users to cover the `library(XXX)` inside function body like
+```{r, eval=FALSE}
+portfolio_fun <- function(x) {
+  library(required_package_name)
+  # here whatever code
+}
 ```
 
 
 # Usage for grading students in a course
-If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily. It suffices to ask each student to submit a .R script (named `LASTNAME-firstname-STUDENTNUMBER-XXXX.R`) containing the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). Then the instructor can put all those files in a folder and evaluate all of them at once.
+If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily. It suffices to ask each student to submit a .R script (necessary to be named uniquely like `STUDENTNUMBER-XXXX.R`) containing the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). Then the instructor can put all those files in a folder and evaluate all of them at once.
 ```{r, cache=TRUE}
-res_all_students <- multiplePortfolioBacktest(folder_path = "folder_path", 
-                                              prices =  dataset[1:3])
+bt_all_students <- portfolioBacktest(folder_path = "folder_path", dataset =  dataset[1:3])
+res_all_students <- backtestSummary(bt_all_students, summary_funs = list('median' = median))
 res_all_students$performance_summary
 res_all_students$cpu_time_average
-res_all_students$failure_ratio
+res_all_students$failure_rate
 ```
 
 Now we can rank the different portfolios/students based on a weighted combination of the rank percentiles (termed scores) of the performance measures:
 ```{r, fig.height=2, fig.width=9, out.width = "90%"}
-leaderboard <- portfolioLeaderboard(res_all_students, weights = list(Sharpe_ratio = 7, max_drawdown = 1, expected_return = 1, ROT = 1))
+leaderboard <- portfolioLeaderboard(bt_all_students, weights = list('Sharpe ratio' = 7, 'max drawdown' = 1,  'annual return' = 1, 'ROT bps' = 1))
 
 # show leaderboard
 library(gridExtra)
@@ -197,7 +251,7 @@ grid.table(leaderboard$leaderboard_scores)
 
 
 ## Example of a script file to be submitted by a student
-Consider the student Mickey Mouse with id number 666. Then the script file should be named `Mickey-Mouse-666.R` and should contain the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`):
+Consider the student with id number 666. Then the script file should be named `666-XXX.R` and should contain the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`):
 ```{r, eval=FALSE}
 library(CVXR)
 
@@ -217,6 +271,7 @@ portfolio_fun <- function(prices) {
   return(as.vector(result$getValue(w)))
 }
 ```
+
 
 # Appendix
 
