@@ -12,7 +12,7 @@ output:
 
 
 # portfolioBacktest
-Backtesting of a portfolio in a rolling-window fashion over a dataset of stock prices. Multiple datasets are allowed (e.g., taken randomly over different markets, different time periods, and different subset of the stock universe). In addition, multiple portfolios can be backtested for a subsequent comparison and ranking on a number of criteria including expected return, volatility, Sharpe ratio, maximum drawdown, turnover rate, return on investment, computational time, etc. The portfolio is defined as a function that takes as input a window of the stock prices and outputs the portfolio weights. This package can be useful for a researcher/practitioner who wants to backtest a set of portfolios over a multitude of datasets over different markets. In addition, it can be particularly useful to evaluate students in a portfolio design course where the grading is based on the performance.
+Backtesting of a portfolio in a rolling-window fashion over a dataset of stock prices. Multiple datasets are allowed (e.g., taken randomly over different markets, different time periods, and different subset of the stock universe). In addition, multiple portfolios can be backtested for a subsequent comparison and ranking on a number of criteria including annual return, annual volatility, Sharpe ratio, maximum drawdown, turnover rate, return on investment, computational time, etc. The portfolio is defined as a function that takes as input a window of the stock prices and outputs the portfolio weights. This package can be useful for a researcher/practitioner who wants to backtest a set of portfolios over a multitude of datasets over different markets. In addition, it can be particularly useful to evaluate students in a portfolio design course where the grading is based on the performance.
 
 
 ## Installation
@@ -90,10 +90,8 @@ portfolio_fun <- function(prices) {
 We are then ready to use the function `portfolioBacktest()` that will execute and evaluate the portfolio design function on a rolling-window basis, and the result can be easily handled with privided function `backtestSelector()`
 
 ```r
-BT <- portfolioBacktest(portfolio_funs = portfolio_fun, dataset = dataset[1], benchmark = NULL, shortselling = TRUE)
-#> Evaluating 1(/1)-th function
-#>   |                                                                         |=================================================================| 100%
-res <- backtestSelector(BT)
+bt <- portfolioBacktest(portfolio_fun, dataset[1], shortselling = TRUE)
+res <- backtestSelector(bt)
 names(res)
 #> [1] "performance"   "error"         "error_message" "cpu_time"     
 #> [5] "portfolio"     "return"        "cumPnL"
@@ -114,11 +112,8 @@ We can also backtest over multiple data sets
 
 ```r
 # perform multiple backtesting
-mul_data_BT <- portfolioBacktest(portfolio_funs = portfolio_fun, dataset = dataset, 
-                                 benchmark = NULL, shortselling = TRUE)
-#> Evaluating 1(/1)-th function
-#>   |                                                                         |======                                                           |  10%  |                                                                         |=============                                                    |  20%  |                                                                         |====================                                             |  30%  |                                                                         |==========================                                       |  40%  |                                                                         |================================                                 |  50%  |                                                                         |=======================================                          |  60%  |                                                                         |==============================================                   |  70%  |                                                                         |====================================================             |  80%  |                                                                         |==========================================================       |  90%  |                                                                         |=================================================================| 100%
-mul_data_res <- backtestSelector(mul_data_BT)
+mul_data_bt <- portfolioBacktest(portfolio_fun, dataset,shortselling = TRUE)
+mul_data_res <- backtestSelector(mul_data_bt)
 mul_data_res$performance
 #>       Sharpe ratio max drawdown annual return annual volatility
 #>  [1,]    0.4437945 3.670731e-02   0.020073339      4.523115e-02
@@ -148,15 +143,8 @@ For comparison, we may want some benchmarks. Now the package suppport two benchm
 
 
 ```r
-mul_data_BT <- portfolioBacktest(portfolio_funs = portfolio_fun, dataset = dataset, 
-                                 benchmark = c("uniform", "index"), shortselling = TRUE)
-#> Evaluating 1(/1)-th function
-#>   |                                                                         |======                                                           |  10%  |                                                                         |=============                                                    |  20%  |                                                                         |====================                                             |  30%  |                                                                         |==========================                                       |  40%  |                                                                         |================================                                 |  50%  |                                                                         |=======================================                          |  60%  |                                                                         |==============================================                   |  70%  |                                                                         |====================================================             |  80%  |                                                                         |==========================================================       |  90%  |                                                                         |=================================================================| 100%
-#> Evaluating benchmark-uniform
-#>   |                                                                         |======                                                           |  10%  |                                                                         |=============                                                    |  20%  |                                                                         |====================                                             |  30%  |                                                                         |==========================                                       |  40%  |                                                                         |================================                                 |  50%  |                                                                         |=======================================                          |  60%  |                                                                         |==============================================                   |  70%  |                                                                         |====================================================             |  80%  |                                                                         |==========================================================       |  90%  |                                                                         |=================================================================| 100%
-#> Evaluating benchmark-index
-#>   |                                                                         |======                                                           |  10%  |                                                                         |=============                                                    |  20%  |                                                                         |====================                                             |  30%  |                                                                         |==========================                                       |  40%  |                                                                         |================================                                 |  50%  |                                                                         |=======================================                          |  60%  |                                                                         |==============================================                   |  70%  |                                                                         |====================================================             |  80%  |                                                                         |==========================================================       |  90%  |                                                                         |=================================================================| 100%
-names(mul_data_BT)
+mul_data_bt <- portfolioBacktest(portfolio_fun, dataset, benchmark = c("uniform", "index"), shortselling = TRUE)
+names(mul_data_bt)
 #> [1] "fun1"    "uniform" "index"
 ```
 
@@ -165,7 +153,7 @@ Then we can extract the desired result by using passing the corresponding name t
 
 ```r
 # extract result of the passed function
-res_fun1 <- backtestSelector(mul_data_BT, "fun1")
+res_fun1 <- backtestSelector(mul_data_bt, "fun1")
 names(res_fun1)
 #> [1] "performance"   "error"         "error_message" "cpu_time"     
 #> [5] "portfolio"     "return"        "cumPnL"
@@ -194,7 +182,7 @@ res_fun1$performance
 #> [10,]      1.6618016    1.258987 136.3864955
 
 # extract result of the uniform portfolio function
-res_uniform <- backtestSelector(mul_data_BT, "uniform")
+res_uniform <- backtestSelector(mul_data_bt, "uniform")
 names(res_uniform)
 #> [1] "performance"   "error"         "error_message" "cpu_time"     
 #> [5] "portfolio"     "return"        "cumPnL"
@@ -204,10 +192,11 @@ For a clear view, we can summarize all the portfolios' performance based on user
 
 
 ```r
-res_summary <- backtestSummary(mul_data_BT, summary_funs = list(median = median, mean = mean))
+res_summary <- backtestSummary(mul_data_bt, summary_funs = list('median' = median, 'mean' = mean))
 names(res_summary)
 #> [1] "performance_summary_median" "performance_summary_mean"  
-#> [3] "failure_rate"               "error_message"
+#> [3] "cpu_time_average"           "failure_rate"              
+#> [5] "error_message"
 res_summary$performance_summary_median
 #>         Sharpe ratio max drawdown annual return annual volatility
 #> fun1        1.377054   0.02859362    0.04554562        0.03852998
@@ -216,7 +205,7 @@ res_summary$performance_summary_median
 #>         Sterling ratio Omega ratio   ROT bps
 #> fun1          1.512551    1.244571  109.3589
 #> uniform       2.462373    1.285195 3662.3918
-#> index         1.510728    1.207702        NA
+#> index         1.510728    1.207702       Inf
 res_summary$performance_summary_mean
 #>         Sharpe ratio max drawdown annual return annual volatility
 #> fun1        1.369272   0.02681590    0.04372139        0.03432993
@@ -225,7 +214,7 @@ res_summary$performance_summary_mean
 #>         Sterling ratio Omega ratio   ROT bps
 #> fun1          2.113559    1.253538  107.4515
 #> uniform       2.782111    1.274863 3458.5735
-#> index         1.774171    1.212180        NA
+#> index         1.774171    1.212180       Inf
 ```
 
 

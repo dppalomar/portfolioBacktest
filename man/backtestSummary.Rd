@@ -18,6 +18,9 @@ backtestSummary(res, portfolio_names = NA, portfolio_indexs = NA,
 
 \item{show_benchmark}{logical value indicating whether to show benchmark in the portfolio}
 }
+\value{
+a list of desired results
+}
 \description{
 Summarize the results from portfolio backtest
 }

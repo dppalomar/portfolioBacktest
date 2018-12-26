@@ -16,6 +16,9 @@ backtestSelector(res, portfolio_name = names(res)[1],
 
 \item{selector}{a vector of required performance}
 }
+\value{
+a list of desired results
+}
 \description{
 Select the results from portfolio backtest and return as a matrix
 }

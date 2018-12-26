@@ -4,7 +4,8 @@
 \alias{portfolioLeaderboard}
 \title{The leaderboard of portfolio function or students}
 \usage{
-portfolioLeaderboard(res = NA, weights = list())
+portfolioLeaderboard(res = NA, weights = list(),
+  summary_fun = median, show_benchmark = TRUE)
 }
 \arguments{
 \item{res}{Returned result from function \code{multiplePortfolioBacktest}}

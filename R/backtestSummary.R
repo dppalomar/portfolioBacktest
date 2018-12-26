@@ -8,6 +8,8 @@
 #' @param summary_funs a list of summary function
 #' @param show_benchmark logical value indicating whether to show benchmark in the portfolio
 #' 
+#' @return a list of desired results
+#' 
 #' @author Daniel P. Palomar and Rui Zhou
 #'
 #' @export  
@@ -28,6 +30,10 @@ backtestSummary <- function(res, portfolio_names = NA, portfolio_indexs = NA,
     result[[summary_name]] <- tmp$performance
   }
   
+  # add cpu time information
+  result$cpu_time_average <- tmp$cpu_time_average
+  names(result$cpu_time_average) <- portfolio_names
+  
   # add error information
   result$failure_rate <- tmp$failure_rate
   names(result$failure_rate) <- portfolio_names
@@ -41,7 +47,7 @@ backtestSummary <- function(res, portfolio_names = NA, portfolio_indexs = NA,
 backtestSummarySingleFun <- function(res, portfolio_names, summary_fun) {
   n_portfolio <- length(portfolio_names)
   result <- error_message <- list()
-  failure_rate <- c()
+  failure_rate <- cpu_time_average <- c()
   summary_container <- matrix(NA, n_portfolio, length(portfolioPerformance()))
   colnames(summary_container) <- names(portfolioPerformance())
   rownames(summary_container) <- portfolio_names
@@ -50,14 +56,19 @@ backtestSummarySingleFun <- function(res, portfolio_names, summary_fun) {
     if (!is.null(tmp$source_error_message)) {
       failure_rate <- c(failure_rate, 1)
       error_message[[i]] <- tmp$source_error_message
+      cpu_time_average <- c(cpu_time_average, NA)
       next
     }
     mask_fail <- tmp$error
     summary_container[i, ] <- apply(tmp$performance[!mask_fail, ], 2, summary_fun)
     failure_rate <- c(failure_rate, mean(mask_fail))
-    error_message[[i]] <- unique(unlist(tmp$error_message))
+    cpu_time_average <- c(cpu_time_average, mean(tmp$cpu_time[!mask_fail]))
+    err_mess <- unique(unlist(tmp$error_message))
+    error_message[[i]] <- err_mess[!is.na(err_mess)]
   }
+  cpu_time_average[is.nan(cpu_time_average)] <- NA
   return(list(performance_summary = summary_container, 
+              cpu_time_average = cpu_time_average,
               failure_rate = failure_rate,
               error_message = error_message))
 }
@@ -73,6 +84,8 @@ backtestSummarySingleFun <- function(res, portfolio_names, summary_fun) {
 #' @param portfolio_name the name of a portfolio
 #' @param portfolio_index the index of a portfolio
 #' @param selector a vector of required performance
+#' 
+#' @return a list of desired results
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 

@@ -24,7 +24,7 @@ knit_hooks$set(pngquant = hook_pngquant)
 ```
 
 # portfolioBacktest
-Backtesting of a portfolio in a rolling-window fashion over a dataset of stock prices. Multiple datasets are allowed (e.g., taken randomly over different markets, different time periods, and different subset of the stock universe). In addition, multiple portfolios can be backtested for a subsequent comparison and ranking on a number of criteria including expected return, volatility, Sharpe ratio, maximum drawdown, turnover rate, return on investment, computational time, etc. The portfolio is defined as a function that takes as input a window of the stock prices and outputs the portfolio weights. This package can be useful for a researcher/practitioner who wants to backtest a set of portfolios over a multitude of datasets over different markets. In addition, it can be particularly useful to evaluate students in a portfolio design course where the grading is based on the performance.
+Backtesting of a portfolio in a rolling-window fashion over a dataset of stock prices. Multiple datasets are allowed (e.g., taken randomly over different markets, different time periods, and different subset of the stock universe). In addition, multiple portfolios can be backtested for a subsequent comparison and ranking on a number of criteria including annual return, annual volatility, Sharpe ratio, maximum drawdown, turnover rate, return on investment, computational time, etc. The portfolio is defined as a function that takes as input a window of the stock prices and outputs the portfolio weights. This package can be useful for a researcher/practitioner who wants to backtest a set of portfolios over a multitude of datasets over different markets. In addition, it can be particularly useful to evaluate students in a portfolio design course where the grading is based on the performance.
 
 
 ## Installation
@@ -70,8 +70,8 @@ portfolio_fun <- function(prices) {
 
 We are then ready to use the function `portfolioBacktest()` that will execute and evaluate the portfolio design function on a rolling-window basis, and the result can be easily handled with privided function `backtestSelector()`
 ```{r}
-BT <- portfolioBacktest(portfolio_funs = portfolio_fun, dataset = dataset[1], benchmark = NULL, shortselling = TRUE)
-res <- backtestSelector(BT)
+bt <- portfolioBacktest(portfolio_fun, dataset[1], shortselling = TRUE)
+res <- backtestSelector(bt)
 names(res)
 plot(res$cumPnL[[1]])
 res$performance
@@ -80,37 +80,35 @@ res$performance
 We can also backtest over multiple data sets 
 ```{r}
 # perform multiple backtesting
-mul_data_BT <- portfolioBacktest(portfolio_funs = portfolio_fun, dataset = dataset, 
-                                 benchmark = NULL, shortselling = TRUE)
-mul_data_res <- backtestSelector(mul_data_BT)
+mul_data_bt <- portfolioBacktest(portfolio_fun, dataset,shortselling = TRUE)
+mul_data_res <- backtestSelector(mul_data_bt)
 mul_data_res$performance
 ```
 
 For comparison, we may want some benchmarks. Now the package suppport two benchmarks, which are `uniform portfolio` and `index` of the certain market. We can easily do that 
 
 ```{r}
-mul_data_BT <- portfolioBacktest(portfolio_funs = portfolio_fun, dataset = dataset, 
-                                 benchmark = c("uniform", "index"), shortselling = TRUE)
-names(mul_data_BT)
+mul_data_bt <- portfolioBacktest(portfolio_fun, dataset, benchmark = c("uniform", "index"), shortselling = TRUE)
+names(mul_data_bt)
 ```
 
 Then we can extract the desired result by using passing the corresponding name to argument `portfolio_name` of function `backtestSelector()`
 
 ```{r}
 # extract result of the passed function
-res_fun1 <- backtestSelector(mul_data_BT, "fun1")
+res_fun1 <- backtestSelector(mul_data_bt, "fun1")
 names(res_fun1)
 res_fun1$performance
 
 # extract result of the uniform portfolio function
-res_uniform <- backtestSelector(mul_data_BT, "uniform")
+res_uniform <- backtestSelector(mul_data_bt, "uniform")
 names(res_uniform)
 ```
 
 For a clear view, we can summarize all the portfolios' performance based on user customized summary functions. For example, we want to compare the median and average value of the performance of these portfolios.
 
 ```{r}
-res_summary <- backtestSummary(mul_data_BT, summary_funs = list(median = median, mean = mean))
+res_summary <- backtestSummary(mul_data_bt, summary_funs = list('median' = median, 'mean' = mean))
 names(res_summary)
 res_summary$performance_summary_median
 res_summary$performance_summary_mean
