@@ -3,7 +3,7 @@
 \docType{data}
 \name{dataset}
 \alias{dataset}
-\title{Random sets of stock market data from the S&P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.}
+\title{Random sets of stock market data from the S&P 500, over random periods of two years with a random selection of 50 stocks of each universe.}
 \format{A list of \code{xts} objects with the prices of random sets of stock market data from the S&P 500 over random periods of two years with a random selection of 50 stocks of each universe.}
 \source{
 \href{https://finance.yahoo.com}{Yahoo! Finance}
@@ -12,6 +12,6 @@
 data(dataset)
 }
 \description{
-Random sets of stock market data from the S&P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.
+Random sets of stock market data from the S&P 500, over random periods of two years with a random selection of 50 stocks of each universe.
 }
 \keyword{datasets}

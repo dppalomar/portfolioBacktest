@@ -62,6 +62,8 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
   par_portfolio <- round(par_portfolio)
   if (par_portfolio < 1) stop("Parallel number must be positive interger")
   if (par_portfolio > parallel::detectCores()) warning("Parallel number exceeds the hardware limit")
+  if (par_portfolio > 1 && !require(doSNOW, quietly = TRUE)) 
+    stop("Package \"doSNOW\" needed for parallel mode. Please install it.")
   if (is.null(folder_path) && is.null(portfolio_funs)) stop("The \"folder_path\" and \"portfolio_fun_list\" can not both be NULL")
   if (!is.null(portfolio_funs) && !is.list(portfolio_funs)) portfolio_funs <- list(portfolio_funs)
   ##############################
@@ -189,6 +191,8 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
   par_dataset <- round(par_dataset)
   if (par_dataset < 1) stop("Parallel number must be positive interger")
   if (par_dataset > parallel::detectCores()) warning("Parallel number exceeds the hardware limit")
+  if (par_dataset > 1 && !require(doSNOW, quietly = TRUE)) 
+    stop("Package \"doSNOW\" needed for parallel mode. Please install it.")
   
   # creat the progress bar
   if (show_progress_bar) {
@@ -256,7 +260,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, market = FALSE
     return(res)
   }
   
-  prices <- data$prices
+  prices <- data$adjusted
   
   ######## error control  #########
   if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]]")
@@ -286,9 +290,9 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, market = FALSE
     idx_prices <- rebalance_indices[i]
     
     if (idx_prices %in% optimize_indices) {  # reoptimize
-      prices_window <- prices[(idx_prices-T_rolling_window+1):idx_prices, ]
+      data_window  <- lapply(data, function(x){x[(idx_prices-T_rolling_window+1):idx_prices, ]})
       start_time <- proc.time()[3] 
-      tryCatch(expr             = R.utils::withTimeout({w[i, ] <- do.call(portfolio_fun, list(prices_window))}, timeout = cpu_time_limit),
+      tryCatch(expr             = R.utils::withTimeout({w[i, ] <- do.call(portfolio_fun, list(data_window))}, timeout = cpu_time_limit),
                TimeoutException = function(t) {error <<- TRUE; error_message <<- "Exceed time limit."; flag_timeout <<- TRUE},
                warning          = function(w) {error <<- TRUE; error_message <<- paste0(w$message, ".")},
                error            = function(e) {error <<- TRUE; error_message <<- paste0(e$message, ".")})
