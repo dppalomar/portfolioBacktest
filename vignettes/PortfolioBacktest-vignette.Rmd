@@ -79,16 +79,17 @@ The dataset `dataset` is a list of data that contains the prices of random sets 
  
 ```{r}
 length(dataset)
-str(dataset[[1]])
+names(dataset[[1]])
+str(dataset[[1]]$adjusted)
 
-colnames(dataset[[1]]$prices)
+colnames(dataset[[1]]$adjusted)
 ```
 
 ## Backtesting a single portfolio
 We start by defining a simple portfolio design in the form of a function that takes as input the prices and outputs the portfolio vector `w`:
 ```{r}
-uniform_portfolio_fun <- function(prices) {
-  N <- ncol(prices)
+uniform_portfolio_fun <- function(data) {
+  N <- ncol(data$adjusted)
   w <- rep(1/N, N)  # satisfies the constraints w>=0 amd sum(w)=1
   return(w)
 }
@@ -97,7 +98,7 @@ uniform_portfolio_fun <- function(prices) {
 Now we are ready to use the function `backtestPortfolio()` that will execute and evaluate the portfolio design function on a rolling-window basis, and the result can be easily handled with privided function `backtestSelector()`
 ```{r}
 bt <- portfolioBacktest(uniform_portfolio_fun, dataset[1], shortselling = TRUE)
-res <- backtestSelector(bt)
+res <- backtestSelector(bt, portfolio_index = 1)
 names(res)
 plot(res$cumPnL[[1]])
 res$performance
@@ -105,8 +106,8 @@ res$performance
 
 Let's try with a slightly more sophisticated portfolio design, like the global minimum variance portfolio (GMVP):
 ```{r}
-GMVP_portfolio_fun <- function(prices) {
-  X <- diff(log(prices))[-1]  # compute log returns
+GMVP_portfolio_fun <- function(data) {
+  X <- diff(log(data$adjusted))[-1]  # compute log returns
   Sigma <- cov(X)  # compute SCM
   # design GMVP
   w <- solve(Sigma, rep(1, nrow(Sigma)))
@@ -114,7 +115,7 @@ GMVP_portfolio_fun <- function(prices) {
   return(w)
 }
 bt <- portfolioBacktest(GMVP_portfolio_fun, dataset[1])
-res <- backtestSelector(bt)
+res <- backtestSelector(bt, portfolio_index = 1)
 res$error
 res$error_message
 ```
@@ -122,7 +123,7 @@ res$error_message
 Indeed, the GMVP does not satisfy the no-shortselling constraint. We can repeat the backtesting indicating that shortselling is allowed:
 ```{r}
 bt <- portfolioBacktest(GMVP_portfolio_fun, dataset[1], shortselling = TRUE)
-res <- backtestSelector(bt)
+res <- backtestSelector(bt, portfolio_index = 1)
 res$error
 res$error_message
 res$cpu_time
@@ -131,9 +132,9 @@ res$performance
 
 We could be more sophisticated and design a Markowitz mean-variance portfolio satisfying the no-shortselling constraint:
 ```{r, message=FALSE}
-Markowitz_portfolio_fun <- function(prices) {
+Markowitz_portfolio_fun <- function(data) {
   library(CVXR) #install.packages("CVXR")
-  X <- diff(log(prices))[-1]  # compute log returns
+  X <- diff(log(data$adjusted))[-1]  # compute log returns
   mu <- colMeans(X)  # compute mean vector
   Sigma <- cov(X)  # compute the SCM
   # design mean-variance portfolio
@@ -147,7 +148,7 @@ Markowitz_portfolio_fun <- function(prices) {
 We can now backtest it:
 ```{r, cache=TRUE}
 bt <- portfolioBacktest(Markowitz_portfolio_fun, dataset[1])
-res <- backtestSelector(bt)
+res <- backtestSelector(bt, portfolio_index = 1)
 res$error
 res$error_message
 res$cpu_time
@@ -157,18 +158,17 @@ res$performance
 Instead of backtesting a portfolio on a single `xts` dataset, it is more meaningful to backtest it on multiple datasets. This can be easily done simply by passing a list of `xts` objects:
 ```{r, cache=TRUE}
 mul_data_bt <- portfolioBacktest(Markowitz_portfolio_fun, dataset[1:5])
-mul_data_res <- backtestSelector(mul_data_bt)
+mul_data_res <- backtestSelector(mul_data_bt, portfolio_index = 1)
 names(mul_data_res)
 mul_data_res$cpu_time
 mul_data_res$performance
 ```
 
-The results from backtesting on multiple datasets can be further summarized by function `backtestSummary()` based on user customized summary functions. For example, we can summarize results using `median()` and `mean()`
+The results from backtesting on multiple datasets can be further summarized by function `backtestSummary()` based on user customized summary functions. For example, we can summarize results using `median()`
 ```{r, cache=TRUE}
-res_summary <- backtestSummary(mul_data_bt, summary_funs = list('median' = median, 'mean' = mean))
+res_summary <- backtestSummary(mul_data_bt, summary_fun = median)
 names(res_summary)
-res_summary$performance_summary_median
-res_summary$performance_summary_mean
+res_summary$performance_summary
 ```
 
 
@@ -176,18 +176,34 @@ res_summary$performance_summary_mean
 Backtesting multiple portfolios is equally simple. It suffices to pass a list of functions to the backtesting function `portfolioBacktest()`:
 ```{r, cache=TRUE}
 bt <- portfolioBacktest(list(uniform_portfolio_fun, GMVP_portfolio_fun), 
-                        dataset[1:5], shortselling = TRUE)
+                        dataset, shortselling = TRUE)
 names(bt)
-res_summary <- backtestSummary(bt, summary_funs = list('median' = median))
-res_summary$performance_summary_median
+res_summary <- backtestSummary(bt, summary_fun = median)
+res_summary$performance_summary
 ```
+
+We also provide another function `backtestTable()` to extract the results into matrix form.
+```{r}
+res_table <- backtestTable(bt)
+names(res_table)
+res_table$`Sharpe ratio`
+```
+
+The results from `backtestTable()` works well with the boxplot
+```{r}
+library(RColorBrewer)
+palette <- brewer.pal(9, "Spectral")
+boxplot(res_table$`Sharpe ratio`, col=palette)
+```
+
+
 Note that the function names are given as `fun1` and `fun2` because only the function bodies are passed to `portfolioBacktest()`. To make the results more recognizable, we can manually pass the function names as follows:
 ```{r, cache=TRUE}
 bt <- portfolioBacktest(list('my_uniform' = uniform_portfolio_fun, 'my_GMVP' = GMVP_portfolio_fun), 
                         dataset[1:5], shortselling = TRUE)
 names(bt)
-res_summary <- backtestSummary(bt, summary_funs = list('median' = median))
-res_summary$performance_summary_median
+res_summary <- backtestSummary(bt, summary_fun = median)
+res_summary$performance_summary
 ```
 
 ## Incoporate benchmarks
@@ -196,8 +212,8 @@ When perform the backtest of our designed portfolio functions, we may want to in
 bt <- portfolioBacktest(list('my_uniform' = uniform_portfolio_fun, 'my_GMVP' = GMVP_portfolio_fun), 
                         dataset[1:5], shortselling = TRUE, benchmark = c('uniform', 'index'))
 names(bt)
-res_summary <- backtestSummary(bt, summary_funs = list('median' = median))
-res_summary$performance_summary_median
+res_summary <- backtestSummary(bt, summary_fun = median)
+res_summary$performance_summary
 ```
 
 ## Progress bar
@@ -234,7 +250,7 @@ portfolio_fun <- function(x) {
 If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily. It suffices to ask each student to submit a .R script (necessary to be named uniquely like `STUDENTNUMBER-XXXX.R`) containing the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). Then the instructor can put all those files in a folder and evaluate all of them at once.
 ```{r, cache=TRUE}
 bt_all_students <- portfolioBacktest(folder_path = "folder_path", dataset =  dataset[1:3])
-res_all_students <- backtestSummary(bt_all_students, summary_funs = list('median' = median))
+res_all_students <- backtestSummary(bt_all_students, summary_fun = median)
 res_all_students$performance_summary
 res_all_students$cpu_time_average
 res_all_students$failure_rate

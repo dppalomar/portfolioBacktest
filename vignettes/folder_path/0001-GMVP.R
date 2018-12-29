@@ -2,7 +2,7 @@ library(CVXR)
 
 # GMVP
 portfolio_fun <- function(data) {
-  Sigma <- cov(data)
+  Sigma <- cov(data$adjusted)
   w <- Variable(nrow(Sigma))
   prob <- Problem(Minimize(quad_form(w, Sigma)), 
                   constraints = list(w >= 0, sum(w) == 1))
