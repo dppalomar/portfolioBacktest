@@ -16,8 +16,8 @@ portfolioLeaderboard <- function(res = NA, weights = list(), summary_fun = media
   if (any(unlist(weights) < 0)) stop("all weights must be non-negative")
   if (all(unlist(weights) == 0)) stop("cannot set all weights be zero")
   
-  tmp <- backtestSummary(res = res, summary_funs = list(summary_fun), show_benchmark = show_benchmark)
-  performance_summary <- tmp[[1]]
+  tmp <- backtestSummary(res = res, summary_fun = summary_fun, show_benchmark = show_benchmark)
+  performance_summary <- t(tmp[[1]])
   failure_ratio       <- tmp$failure_rate
   cpu_time_average    <- tmp$cpu_time_average
   error_message       <- tmp$error_message

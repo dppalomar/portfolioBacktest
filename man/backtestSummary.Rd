@@ -5,7 +5,7 @@
 \title{Portfolio Backtest Results Summary}
 \usage{
 backtestSummary(res, portfolio_names = NA, portfolio_indexs = NA,
-  summary_funs = list(median = median), show_benchmark = TRUE)
+  summary_fun = median, show_benchmark = TRUE)
 }
 \arguments{
 \item{res}{the results from function `portfolioBacktest()`}
@@ -14,9 +14,9 @@ backtestSummary(res, portfolio_names = NA, portfolio_indexs = NA,
 
 \item{portfolio_indexs}{the indexs of a portfolio}
 
-\item{summary_funs}{a list of summary function}
-
 \item{show_benchmark}{logical value indicating whether to show benchmark in the portfolio}
+
+\item{summary_funs}{summary function}
 }
 \value{
 a list of desired results

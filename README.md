@@ -43,42 +43,42 @@ The dataset `dataset` is a list of data that contains the prices of random sets 
 ```r
 length(dataset)
 #> [1] 10
-str(dataset[[1]])
-#> List of 2
-#>  $ prices:An 'xts' object on 2013-07-03/2015-07-02 containing:
-#>   Data: num [1:504, 1:50] 51.2 51.8 51.8 51.9 52.3 ...
+names(dataset[[1]])
+#> [1] "open"     "high"     "low"      "close"    "volume"   "adjusted"
+#> [7] "index"
+str(dataset[[1]]$adjusted)
+#> An 'xts' object on 2015-04-24/2017-04-24 containing:
+#>   Data: num [1:504, 1:50] 22.1 22.1 22.7 22.5 22.3 ...
 #>  - attr(*, "dimnames")=List of 2
 #>   ..$ : NULL
-#>   ..$ : chr [1:50] "MSI" "CCI" "CMG" "KSU" ...
+#>   ..$ : chr [1:50] "MAS.Adjusted" "MGM.Adjusted" "CMI.Adjusted" "CSX.Adjusted" ...
 #>   Indexed by objects of class: [Date] TZ: UTC
 #>   xts Attributes:  
 #> List of 2
-#>   ..$ src    : chr "yahoo"
-#>   ..$ updated: POSIXct[1:1], format: "2018-12-05 14:26:04"
-#>  $ index :An 'xts' object on 2013-07-03/2015-07-02 containing:
-#>   Data: num [1:504, 1] 1615 1632 1640 1652 1653 ...
-#>  - attr(*, "dimnames")=List of 2
-#>   ..$ : NULL
-#>   ..$ : chr "INDEX"
-#>   Indexed by objects of class: [Date] TZ: UTC
-#>   xts Attributes:  
-#> List of 2
-#>   ..$ src    : chr "yahoo"
-#>   ..$ updated: POSIXct[1:1], format: "2018-12-05 18:59:49"
+#>  $ src    : chr "yahoo"
+#>  $ updated: POSIXct[1:1], format: "2018-12-29 16:24:41"
 
-colnames(dataset[[1]]$prices)
-#>  [1] "MSI"  "CCI"  "CMG"  "KSU"  "CSCO" "DLTR" "GLW"  "FLIR" "AVGO" "JWN" 
-#> [11] "XLNX" "STZ"  "XEL"  "VZ"   "SYY"  "IFF"  "MU"   "CSX"  "DFS"  "ILMN"
-#> [21] "XOM"  "HP"   "WM"   "WEC"  "CNP"  "HBI"  "INCY" "IT"   "HBAN" "ISRG"
-#> [31] "TIF"  "AMAT" "GD"   "NFLX" "ETR"  "CI"   "MSCI" "COTY" "FE"   "ICE" 
-#> [41] "DIS"  "TEL"  "PM"   "ALB"  "MCD"  "ALL"  "EQR"  "MAS"  "PEP"  "KEY"
+colnames(dataset[[1]]$adjusted)
+#>  [1] "MAS.Adjusted"  "MGM.Adjusted"  "CMI.Adjusted"  "CSX.Adjusted" 
+#>  [5] "TGT.Adjusted"  "AWK.Adjusted"  "LNC.Adjusted"  "KO.Adjusted"  
+#>  [9] "CCI.Adjusted"  "RJF.Adjusted"  "ICE.Adjusted"  "SRE.Adjusted" 
+#> [13] "FOXA.Adjusted" "CERN.Adjusted" "ORLY.Adjusted" "EMR.Adjusted" 
+#> [17] "CME.Adjusted"  "AVB.Adjusted"  "AMT.Adjusted"  "TIF.Adjusted" 
+#> [21] "HAL.Adjusted"  "OMC.Adjusted"  "NTAP.Adjusted" "KORS.Adjusted"
+#> [25] "AEP.Adjusted"  "A.Adjusted"    "KSS.Adjusted"  "BHGE.Adjusted"
+#> [29] "BEN.Adjusted"  "HST.Adjusted"  "AMP.Adjusted"  "WY.Adjusted"  
+#> [33] "AGN.Adjusted"  "CPB.Adjusted"  "NWL.Adjusted"  "INTC.Adjusted"
+#> [37] "XRAY.Adjusted" "VRSK.Adjusted" "MLM.Adjusted"  "CI.Adjusted"  
+#> [41] "PHM.Adjusted"  "MKC.Adjusted"  "OXY.Adjusted"  "GM.Adjusted"  
+#> [45] "CB.Adjusted"   "RHT.Adjusted"  "DOV.Adjusted"  "GLW.Adjusted" 
+#> [49] "FLIR.Adjusted" "GPC.Adjusted"
 ```
 
 Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector `w`:
 
 ```r
-portfolio_fun <- function(prices) {
-  X <- diff(log(prices))[-1]  # compute log returns
+portfolio_fun <- function(data) {
+  X <- diff(log(data$adjusted))[-1]  # compute log returns, here we use adjusted prices
   Sigma <- cov(X)  # compute SCM
   # design GMVP
   w <- solve(Sigma, rep(1, nrow(Sigma)))
@@ -91,7 +91,7 @@ We are then ready to use the function `portfolioBacktest()` that will execute an
 
 ```r
 bt <- portfolioBacktest(portfolio_fun, dataset[1], shortselling = TRUE)
-res <- backtestSelector(bt)
+res <- backtestSelector(bt, portfolio_index = 1)
 names(res)
 #> [1] "performance"   "error"         "error_message" "cpu_time"     
 #> [5] "portfolio"     "return"        "cumPnL"
@@ -100,43 +100,35 @@ plot(res$cumPnL[[1]])
 
 <img src="man/figures/README-unnamed-chunk-6-1.png" width="75%" style="display: block; margin: auto;" />
 
-```r
-res$performance
-#>      Sharpe ratio max drawdown annual return annual volatility
-#> [1,]    0.4437945   0.03670731    0.02007334        0.04523115
-#>      Sterling ratio Omega ratio  ROT bps
-#> [1,]      0.5468486    1.078093 48.09867
-```
-
 We can also backtest over multiple data sets 
 
 ```r
 # perform multiple backtesting
-mul_data_bt <- portfolioBacktest(portfolio_fun, dataset,shortselling = TRUE)
-mul_data_res <- backtestSelector(mul_data_bt)
+mul_data_bt <- portfolioBacktest(portfolio_fun, dataset, shortselling = TRUE)
+mul_data_res <- backtestSelector(mul_data_bt, portfolio_index = 1)
 mul_data_res$performance
 #>       Sharpe ratio max drawdown annual return annual volatility
-#>  [1,]    0.4437945 3.670731e-02   0.020073339      4.523115e-02
-#>  [2,]    2.3859666 1.510183e-02   0.076737026      3.216182e-02
-#>  [3,]    1.2541919 4.576403e-02   0.045353149      3.616125e-02
-#>  [4,]    1.7950207 5.997073e-06   0.000019294      1.074862e-05
-#>  [5,]    0.7189881 2.528428e-02   0.030081997      4.183935e-02
-#>  [6,]    1.5927899 2.966404e-02   0.063387853      3.979674e-02
-#>  [7,]    0.7054128 3.222290e-02   0.028171124      3.993566e-02
-#>  [8,]    2.0424434 1.899085e-02   0.077353615      3.787308e-02
-#>  [9,]    1.2835515 3.689461e-02   0.050298393      3.918689e-02
-#> [10,]    1.4705575 2.752320e-02   0.045738098      3.110256e-02
+#>  [1,]   0.43216171   0.02601129   0.018310402        0.04236933
+#>  [2,]   0.45708668   0.04323931   0.024808463        0.05427518
+#>  [3,]   1.41115502   0.02286482   0.046456693        0.03292104
+#>  [4,]  -0.01951969   0.06783961  -0.001085763        0.05562397
+#>  [5,]   0.72256088   0.06083075   0.041099042        0.05687970
+#>  [6,]   2.17578547   0.02212631   0.071331145        0.03278409
+#>  [7,]   4.32024112   0.01591036   0.139474565        0.03228398
+#>  [8,]   1.13401883   0.04077619   0.051204767        0.04515337
+#>  [9,]   0.86003940   0.07066204   0.049092802        0.05708204
+#> [10,]   1.82664160   0.03751242   0.057249236        0.03134125
 #>       Sterling ratio Omega ratio     ROT bps
-#>  [1,]      0.5468486    1.078093  48.0986690
-#>  [2,]      5.0813056    1.442469 191.4189698
-#>  [3,]      0.9910218    1.227148 114.9065118
-#>  [4,]      3.2172361    1.365454   0.2507008
-#>  [5,]      1.1897511    1.129900  74.0246684
-#>  [6,]      2.1368585    1.302004 125.1864196
-#>  [7,]      0.8742580    1.122554  87.2840141
-#>  [8,]      4.0732047    1.378620 193.1474015
-#>  [9,]      1.3632994    1.230155 103.8112961
-#> [10,]      1.6618016    1.258987 136.3864955
+#>  [1,]     0.70394064    1.075537  36.4135924
+#>  [2,]     0.57374788    1.083725  60.4375741
+#>  [3,]     2.03179820    1.251251 122.4139059
+#>  [4,]    -0.01600485    1.001542  -0.7599049
+#>  [5,]     0.67562935    1.142782 108.8563347
+#>  [6,]     3.22381606    1.393876 159.0092504
+#>  [7,]     8.76627360    1.910817 352.9881774
+#>  [8,]     1.25575149    1.222673 129.9534162
+#>  [9,]     0.69475494    1.164732  86.8431384
+#> [10,]     1.52614101    1.343066 142.6190387
 ```
 
 For comparison, we may want some benchmarks. Now the package suppport two benchmarks, which are `uniform portfolio` and `index` of the certain market. We can easily do that 
@@ -159,27 +151,27 @@ names(res_fun1)
 #> [5] "portfolio"     "return"        "cumPnL"
 res_fun1$performance
 #>       Sharpe ratio max drawdown annual return annual volatility
-#>  [1,]    0.4437945 3.670731e-02   0.020073339      4.523115e-02
-#>  [2,]    2.3859666 1.510183e-02   0.076737026      3.216182e-02
-#>  [3,]    1.2541919 4.576403e-02   0.045353149      3.616125e-02
-#>  [4,]    1.7950207 5.997073e-06   0.000019294      1.074862e-05
-#>  [5,]    0.7189881 2.528428e-02   0.030081997      4.183935e-02
-#>  [6,]    1.5927899 2.966404e-02   0.063387853      3.979674e-02
-#>  [7,]    0.7054128 3.222290e-02   0.028171124      3.993566e-02
-#>  [8,]    2.0424434 1.899085e-02   0.077353615      3.787308e-02
-#>  [9,]    1.2835515 3.689461e-02   0.050298393      3.918689e-02
-#> [10,]    1.4705575 2.752320e-02   0.045738098      3.110256e-02
+#>  [1,]   0.43216171   0.02601129   0.018310402        0.04236933
+#>  [2,]   0.45708668   0.04323931   0.024808463        0.05427518
+#>  [3,]   1.41115502   0.02286482   0.046456693        0.03292104
+#>  [4,]  -0.01951969   0.06783961  -0.001085763        0.05562397
+#>  [5,]   0.72256088   0.06083075   0.041099042        0.05687970
+#>  [6,]   2.17578547   0.02212631   0.071331145        0.03278409
+#>  [7,]   4.32024112   0.01591036   0.139474565        0.03228398
+#>  [8,]   1.13401883   0.04077619   0.051204767        0.04515337
+#>  [9,]   0.86003940   0.07066204   0.049092802        0.05708204
+#> [10,]   1.82664160   0.03751242   0.057249236        0.03134125
 #>       Sterling ratio Omega ratio     ROT bps
-#>  [1,]      0.5468486    1.078093  48.0986690
-#>  [2,]      5.0813056    1.442469 191.4189698
-#>  [3,]      0.9910218    1.227148 114.9065118
-#>  [4,]      3.2172361    1.365454   0.2507008
-#>  [5,]      1.1897511    1.129900  74.0246684
-#>  [6,]      2.1368585    1.302004 125.1864196
-#>  [7,]      0.8742580    1.122554  87.2840141
-#>  [8,]      4.0732047    1.378620 193.1474015
-#>  [9,]      1.3632994    1.230155 103.8112961
-#> [10,]      1.6618016    1.258987 136.3864955
+#>  [1,]     0.70394064    1.075537  36.4135924
+#>  [2,]     0.57374788    1.083725  60.4375741
+#>  [3,]     2.03179820    1.251251 122.4139059
+#>  [4,]    -0.01600485    1.001542  -0.7599049
+#>  [5,]     0.67562935    1.142782 108.8563347
+#>  [6,]     3.22381606    1.393876 159.0092504
+#>  [7,]     8.76627360    1.910817 352.9881774
+#>  [8,]     1.25575149    1.222673 129.9534162
+#>  [9,]     0.69475494    1.164732  86.8431384
+#> [10,]     1.52614101    1.343066 142.6190387
 
 # extract result of the uniform portfolio function
 res_uniform <- backtestSelector(mul_data_bt, "uniform")
@@ -192,29 +184,19 @@ For a clear view, we can summarize all the portfolios' performance based on user
 
 
 ```r
-res_summary <- backtestSummary(mul_data_bt, summary_funs = list('median' = median, 'mean' = mean))
+res_summary <- backtestSummary(mul_data_bt, summary_fun = median)
 names(res_summary)
-#> [1] "performance_summary_median" "performance_summary_mean"  
-#> [3] "cpu_time_average"           "failure_rate"              
-#> [5] "error_message"
-res_summary$performance_summary_median
-#>         Sharpe ratio max drawdown annual return annual volatility
-#> fun1        1.377054   0.02859362    0.04554562        0.03852998
-#> uniform     1.576826   0.07635119    0.19351495        0.13079670
-#> index       1.070965   0.07506676    0.13313531        0.12256102
-#>         Sterling ratio Omega ratio   ROT bps
-#> fun1          1.512551    1.244571  109.3589
-#> uniform       2.462373    1.285195 3662.3918
-#> index         1.510728    1.207702       Inf
-res_summary$performance_summary_mean
-#>         Sharpe ratio max drawdown annual return annual volatility
-#> fun1        1.369272   0.02681590    0.04372139        0.03432993
-#> uniform     1.501213   0.08562760    0.20117883        0.13485154
-#> index       1.102840   0.08298395    0.12858558        0.12074051
-#>         Sterling ratio Omega ratio   ROT bps
-#> fun1          2.113559    1.253538  107.4515
-#> uniform       2.782111    1.274863 3458.5735
-#> index         1.774171    1.212180       Inf
+#> [1] "performance_summary" "failure_rate"        "cpu_time_average"   
+#> [4] "error_message"
+res_summary$performance_summary
+#>                           fun1      uniform      index
+#> Sharpe ratio        0.99702912 1.546805e+00 1.33208392
+#> max drawdown        0.03914431 8.946477e-02 0.09169451
+#> annual return       0.04777475 1.651707e-01 0.14897463
+#> annual volatility   0.04376135 1.215642e-01 0.12479190
+#> Sterling ratio      0.97984607 2.219609e+00 1.93644619
+#> Omega ratio         1.19370264 1.296275e+00 1.27258183
+#> ROT bps           115.63512029 2.715873e+03        Inf
 ```
 
 

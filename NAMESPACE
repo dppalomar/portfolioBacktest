@@ -2,7 +2,11 @@
 
 export(backtestSelector)
 export(backtestSummary)
+export(backtestTable)
 export(portfolioBacktest)
 export(portfolioLeaderboard)
+export(stockDataDownload)
+export(stockDataResample)
 import(doSNOW)
+import(quantmod)
 import(xts)

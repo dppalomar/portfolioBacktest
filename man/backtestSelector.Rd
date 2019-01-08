@@ -4,8 +4,8 @@
 \alias{backtestSelector}
 \title{Portfolio Backtest Results Selector}
 \usage{
-backtestSelector(res, portfolio_name = names(res)[1],
-  portfolio_index = NA, selector = NULL)
+backtestSelector(res, portfolio_name = NA, portfolio_index = NA,
+  selector = NULL)
 }
 \arguments{
 \item{res}{the results from function `portfolioBacktest()`}

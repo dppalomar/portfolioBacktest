@@ -51,15 +51,16 @@ The dataset `dataset` is a list of data that contains the prices of random sets 
  
 ```{r}
 length(dataset)
-str(dataset[[1]])
+names(dataset[[1]])
+str(dataset[[1]]$adjusted)
 
-colnames(dataset[[1]]$prices)
+colnames(dataset[[1]]$adjusted)
 ```
 
 Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector `w`:
 ```{r, message=FALSE}
-portfolio_fun <- function(prices) {
-  X <- diff(log(prices))[-1]  # compute log returns
+portfolio_fun <- function(data) {
+  X <- diff(log(data$adjusted))[-1]  # compute log returns, here we use adjusted prices
   Sigma <- cov(X)  # compute SCM
   # design GMVP
   w <- solve(Sigma, rep(1, nrow(Sigma)))
@@ -71,17 +72,16 @@ portfolio_fun <- function(prices) {
 We are then ready to use the function `portfolioBacktest()` that will execute and evaluate the portfolio design function on a rolling-window basis, and the result can be easily handled with privided function `backtestSelector()`
 ```{r}
 bt <- portfolioBacktest(portfolio_fun, dataset[1], shortselling = TRUE)
-res <- backtestSelector(bt)
+res <- backtestSelector(bt, portfolio_index = 1)
 names(res)
 plot(res$cumPnL[[1]])
-res$performance
 ```
 
 We can also backtest over multiple data sets 
 ```{r}
 # perform multiple backtesting
-mul_data_bt <- portfolioBacktest(portfolio_fun, dataset,shortselling = TRUE)
-mul_data_res <- backtestSelector(mul_data_bt)
+mul_data_bt <- portfolioBacktest(portfolio_fun, dataset, shortselling = TRUE)
+mul_data_res <- backtestSelector(mul_data_bt, portfolio_index = 1)
 mul_data_res$performance
 ```
 
@@ -108,10 +108,9 @@ names(res_uniform)
 For a clear view, we can summarize all the portfolios' performance based on user customized summary functions. For example, we want to compare the median and average value of the performance of these portfolios.
 
 ```{r}
-res_summary <- backtestSummary(mul_data_bt, summary_funs = list('median' = median, 'mean' = mean))
+res_summary <- backtestSummary(mul_data_bt, summary_fun = median)
 names(res_summary)
-res_summary$performance_summary_median
-res_summary$performance_summary_mean
+res_summary$performance_summary
 ```
 
 

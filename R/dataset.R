@@ -1,4 +1,4 @@
-#' Random sets of stock market data from the S&P 500, HSI, NKY, SHZ, and UKC, over random periods of two years with a random selection of 50 stocks of each universe.
+#' Random sets of stock market data from the S&P 500, over random periods of two years with a random selection of 50 stocks of each universe.
 #'
 #' @docType data
 #'
