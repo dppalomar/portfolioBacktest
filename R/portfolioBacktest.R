@@ -281,7 +281,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, market = FALSE
   
   
   # compute w
-  error <- flag_timeout <- FALSE; error_message <- NA; cpu_time <- c()
+  error <- flag_timeout <- FALSE; error_message <- NA; error_capture <- NULL; cpu_time <- c(); 
   w <- xts(matrix(NA, length(rebalance_indices), N), order.by = index(prices)[rebalance_indices])
   colnames(w) <- colnames(prices)
   
@@ -292,26 +292,40 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, market = FALSE
     if (idx_prices %in% optimize_indices) {  # reoptimize
       data_window  <- lapply(data, function(x){x[(idx_prices-T_rolling_window+1):idx_prices, ]})
       start_time <- proc.time()[3] 
-      tryCatch(expr             = R.utils::withTimeout({w[i, ] <- do.call(portfolio_fun, list(data_window))}, timeout = cpu_time_limit),
-               TimeoutException = function(t) {error <<- TRUE; error_message <<- "Exceed time limit."; flag_timeout <<- TRUE},
-               warning          = function(w) {error <<- TRUE; error_message <<- paste0(w$message, ".")},
-               error            = function(e) {error <<- TRUE; error_message <<- paste0(e$message, ".")})
+      error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(w[i, ] <- do.call(portfolio_fun, list(data_window)), environment()), 
+                                            timeout = cpu_time_limit, onTimeout = "silent")
       cpu_time <- c(cpu_time, as.numeric(proc.time()[3] - start_time))
     } else {# just rebalance without reoptimizing
       w[i, ] <- w[i-1, ]
     }
     
-    if (anyNA(w[i, ]) && !flag_timeout)
-      {error = TRUE; error_message <- c(error_message, "Returned portfolio contains NA.")}
-    if (!error && !flag_timeout) {
+    # check if error happens
+    if (is.list(error_capture)) {
+      error <- TRUE
+      error_message <- error_capture$message
+      error_stack <- list("at" = deparse(error_capture$call), 
+                          "stack" = paste(sapply(error_capture$calls[-1], deparse), collapse = "\n"))
+    }
+    
+    # check NA
+    if (!error && anyNA(w[i, ])) {
+      error = TRUE
+      error_message <- c("Returned portfolio contains NA.")
+    }
+    
+    # check constraint
+    if (!error) {
       if (!shortselling && any(w[i, ] + 1e-6 < 0)) 
-        {error <- TRUE; error_message <- c(error_message, "No-shortselling constraint not satisfied.")}
+        {error <- TRUE; error_message <- c("No-shortselling constraint not satisfied.")}
       if (sum(abs(w[i, ])) > leverage + 1e-6) 
         {error <- TRUE; error_message <- c(error_message, "Leverage constraint not satisfied.")}
     }
+    
+    # immediate return when error happens
     if (error) {
       res$error <- error
       res$error_message <- error_message[!is.na(error_message)]
+      if (is.list(error_capture)) attr(res$error_message, "error_stack") <- error_stack
       if (return_portfolio) res$portfolio <- w
       return(res)
     }

@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2018-12-29" />
+<meta name="date" content="2019-01-12" />
 
 <title>Portfolio Backtesting</title>
 
@@ -73,7 +73,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h1 class="title toc-ignore">Portfolio Backtesting</h1>
 <h3 class="author"><div style="white-space: pre-line;">Daniel P. Palomar and Rui ZHOU
 Hong Kong University of Science and Technology (HKUST)</div></h3>
-<h3 class="date">2018-12-29</h3>
+<h3 class="date">2019-01-12</h3>
 </header>
 
 <hr>
@@ -89,6 +89,7 @@ Hong Kong University of Science and Technology (HKUST)</div></h3>
 <li><a href="#incoporate-benchmarks">Incoporate benchmarks</a></li>
 <li><a href="#progress-bar">Progress bar</a></li>
 <li><a href="#parallel-mode">Parallel mode</a></li>
+<li><a href="#trace-where-execution-error-happens">Trace where execution error happens</a></li>
 </ul></li>
 <li><a href="#usage-for-grading-students-in-a-course">Usage for grading students in a course</a><ul>
 <li><a href="#example-of-a-script-file-to-be-submitted-by-a-student">Example of a script file to be submitted by a student</a></li>
@@ -202,7 +203,7 @@ res<span class="op">$</span>error_message
 <span class="co">#&gt; [[1]]</span>
 <span class="co">#&gt; [1] NA</span>
 res<span class="op">$</span>cpu_time
-<span class="co">#&gt; [1] 0.003846154</span>
+<span class="co">#&gt; [1] 0.002307692</span>
 res<span class="op">$</span>performance
 <span class="co">#&gt;      Sharpe ratio max drawdown annual return annual volatility</span>
 <span class="co">#&gt; [1,]    0.4321617   0.02601129     0.0183104        0.04236933</span>
@@ -230,7 +231,7 @@ res<span class="op">$</span>error_message
 <span class="co">#&gt; [[1]]</span>
 <span class="co">#&gt; [1] NA</span>
 res<span class="op">$</span>cpu_time
-<span class="co">#&gt; [1] 0.2338462</span>
+<span class="co">#&gt; [1] 0.2576923</span>
 res<span class="op">$</span>performance
 <span class="co">#&gt;      Sharpe ratio max drawdown annual return annual volatility</span>
 <span class="co">#&gt; [1,]   -0.1049306    0.2096863   -0.02058176         0.1961464</span>
@@ -243,7 +244,7 @@ mul_data_res &lt;-<span class="st"> </span><span class="kw">backtestSelector</sp
 <span class="co">#&gt; [1] &quot;performance&quot;   &quot;error&quot;         &quot;error_message&quot; &quot;cpu_time&quot;     </span>
 <span class="co">#&gt; [5] &quot;portfolio&quot;     &quot;return&quot;        &quot;cumPnL&quot;</span>
 mul_data_res<span class="op">$</span>cpu_time
-<span class="co">#&gt; [1] 0.2200000 0.2046154 0.2076923 0.2153846 0.2084615</span>
+<span class="co">#&gt; [1] 0.2669231 0.2346154 0.2400000 0.2453846 0.2346154</span>
 mul_data_res<span class="op">$</span>performance
 <span class="co">#&gt;      Sharpe ratio max drawdown annual return annual volatility</span>
 <span class="co">#&gt; [1,]   -0.1049306    0.2096863   -0.02058176         0.1961464</span>
@@ -421,24 +422,62 @@ bt &lt;-<span class="st"> </span><span class="kw">portfolioBacktest</span>(<span
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># parallel = 2 for functions</span>
 <span class="kw">system.time</span>(bt_nopar &lt;-<span class="st"> </span><span class="kw">portfolioBacktest</span>(<span class="kw">list</span>(Markowitz_portfolio_fun, Markowitz_portfolio_fun), dataset))
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   57.16    0.05   57.19</span>
+<span class="co">#&gt;   65.39    0.06   65.85</span>
 <span class="kw">system.time</span>(bt_parfuns &lt;-<span class="st"> </span><span class="kw">portfolioBacktest</span>(<span class="kw">list</span>(Markowitz_portfolio_fun, Markowitz_portfolio_fun), dataset,
                                             <span class="dt">par_portfolio =</span> <span class="dv">2</span>))
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;    0.07    0.03   31.65</span>
+<span class="co">#&gt;    0.05    0.11   39.09</span>
 
 <span class="co"># parallel = 5 for datasets</span>
 <span class="kw">system.time</span>(bt_nopar &lt;-<span class="st"> </span><span class="kw">portfolioBacktest</span>(Markowitz_portfolio_fun, dataset))
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;   31.31    0.05   31.49</span>
+<span class="co">#&gt;   33.78    0.07   34.01</span>
 <span class="kw">system.time</span>(bt_pardata &lt;-<span class="st"> </span><span class="kw">portfolioBacktest</span>(Markowitz_portfolio_fun, dataset, <span class="dt">par_dataset =</span> <span class="dv">5</span>))
 <span class="co">#&gt;    user  system elapsed </span>
-<span class="co">#&gt;    0.05    0.05   12.89</span></code></pre></div>
+<span class="co">#&gt;    0.03    0.04   14.32</span></code></pre></div>
 <p>It is obvious that the evaluation time for backtesting has been significantly reduced. Note that the parallel evaluation time can not be exactly equal to the original time divided by parallel cores because starting new R sessions also takes extra time. For some technical reasons, the loaded packages information can not be automatically passed to parallel R sessions. Therefore we highly recommend users to cover the <code>library(XXX)</code> inside function body like</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">portfolio_fun &lt;-<span class="st"> </span><span class="cf">function</span>(x) {
   <span class="kw">library</span>(required_package_name)
   <span class="co"># here whatever code</span>
 }</code></pre></div>
+</div>
+<div id="trace-where-execution-error-happens" class="section level2">
+<h2>Trace where execution error happens</h2>
+<p>The execution error might happen without any clue. While our function is robustly designed to not be stopped by any error from the user defined function. To help user trace where the execution error happens, we also report the call stack when a execution error happens. Such information is given as the attribution <code>error_stack</code> of returned <code>error_message</code>. For example, let’s define a portfolio function which will throw a error:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(CVXR)
+sub_function2 &lt;-<span class="st"> </span><span class="cf">function</span>(x) {
+  <span class="st">&quot;a&quot;</span> <span class="op">+</span><span class="st"> </span>x <span class="co"># an error will happen here</span>
+}
+
+sub_function1 &lt;-<span class="st"> </span><span class="cf">function</span>(x) {
+  <span class="kw">return</span>(<span class="kw">sub_function2</span>(x))
+}
+
+wrong_portfolio_fun &lt;-<span class="st"> </span><span class="cf">function</span>(data) {
+  N &lt;-<span class="st"> </span><span class="kw">ncol</span>(data<span class="op">$</span>adjusted)
+  uni_port &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1</span><span class="op">/</span>N, N)
+  <span class="kw">return</span>(<span class="kw">sub_function1</span>(uni_port))
+}</code></pre></div>
+<p>Then, we pass the above portfolio function into <code>portfolioBacktest()</code> and show how to check the error trace:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bt &lt;-<span class="st"> </span><span class="kw">portfolioBacktest</span>(wrong_portfolio_fun, dataset[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>])
+res &lt;-<span class="st"> </span><span class="kw">backtestSelector</span>(bt, <span class="dt">portfolio_index =</span> <span class="dv">1</span>)
+
+<span class="co"># information of 1st error</span>
+error1 &lt;-<span class="st"> </span>res<span class="op">$</span>error_message[[<span class="dv">1</span>]]
+<span class="kw">str</span>(error1)
+<span class="co">#&gt;  chr &quot;non-numeric argument to binary operator&quot;</span>
+<span class="co">#&gt;  - attr(*, &quot;error_stack&quot;)=List of 2</span>
+<span class="co">#&gt;   ..$ at   : chr &quot;\&quot;a\&quot; + x&quot;</span>
+<span class="co">#&gt;   ..$ stack: chr &quot;sub_function1(uni_port)\nsub_function2(x)&quot;</span>
+
+<span class="co"># the exact location of error happening</span>
+<span class="kw">cat</span>(<span class="kw">attr</span>(error1, <span class="st">&quot;error_stack&quot;</span>)<span class="op">$</span>at)
+<span class="co">#&gt; &quot;a&quot; + x</span>
+
+<span class="co"># the call stack of error happening</span>
+<span class="kw">cat</span>(<span class="kw">attr</span>(error1, <span class="st">&quot;error_stack&quot;</span>)<span class="op">$</span>stack)
+<span class="co">#&gt; sub_function1(uni_port)</span>
+<span class="co">#&gt; sub_function2(x)</span></code></pre></div>
 </div>
 </div>
 <div id="usage-for-grading-students-in-a-course" class="section level1">
@@ -457,7 +496,7 @@ res_all_students<span class="op">$</span>performance_summary
 <span class="co">#&gt; ROT bps           373.18306365    315.9623959 346.58565659</span>
 res_all_students<span class="op">$</span>cpu_time_average
 <span class="co">#&gt;      0001-GMVP 0002-Markowitz       0003-max </span>
-<span class="co">#&gt;     0.06564103     0.24102564     0.05871795</span>
+<span class="co">#&gt;     0.05974359     0.24153846     0.06051282</span>
 res_all_students<span class="op">$</span>failure_rate
 <span class="co">#&gt;      0001-GMVP 0002-Markowitz       0003-max </span>
 <span class="co">#&gt;              0              0              0</span></code></pre></div>
