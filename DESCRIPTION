@@ -27,7 +27,8 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     PerformanceAnalytics,
-    R.utils
+    R.utils,
+    evaluate
 RoxygenNote: 6.1.0
 Suggests:
     readtext,

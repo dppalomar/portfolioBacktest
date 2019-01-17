@@ -245,6 +245,40 @@ portfolio_fun <- function(x) {
 }
 ```
 
+## Trace where execution error happens
+The execution error might happen without any clue. While our function is robustly designed to not be stopped by any error from the user defined function. To help user trace where the execution error happens, we also report the call stack when a execution error happens. Such information is given as the attribution `error_stack` of returned `error_message`.
+For example, let's define a portfolio function which will throw a error:
+```{r}
+library(CVXR)
+sub_function2 <- function(x) {
+  "a" + x # an error will happen here
+}
+
+sub_function1 <- function(x) {
+  return(sub_function2(x))
+}
+
+wrong_portfolio_fun <- function(data) {
+  N <- ncol(data$adjusted)
+  uni_port <- rep(1/N, N)
+  return(sub_function1(uni_port))
+}
+```
+Then, we pass the above portfolio function into `portfolioBacktest()` and show how to check the error trace:
+```{r}
+bt <- portfolioBacktest(wrong_portfolio_fun, dataset[1:5])
+res <- backtestSelector(bt, portfolio_index = 1)
+
+# information of 1st error
+error1 <- res$error_message[[1]]
+str(error1)
+
+# the exact location of error happening
+cat(attr(error1, "error_stack")$at)
+
+# the call stack of error happening
+cat(attr(error1, "error_stack")$stack)
+```
 
 # Usage for grading students in a course
 If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily. It suffices to ask each student to submit a .R script (necessary to be named uniquely like `STUDENTNUMBER-XXXX.R`) containing the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). Then the instructor can put all those files in a folder and evaluate all of them at once.
