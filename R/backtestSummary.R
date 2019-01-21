@@ -161,7 +161,6 @@ backtestTable <- function(res, portfolio_names = NA, portfolio_indexs = NA,
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
 #' @export
-
 backtestSelector <- function(res, portfolio_name = NA, portfolio_index = NA, selector = NULL) {
   selector_range <- c(names(portfolioPerformance()), 'error', 'error_message', 'cpu_time', 'return', 'portfolio')
   if (is.null(selector)) selector <- selector_range

@@ -4,7 +4,7 @@ data("SP500_symbols")
 
 SP500_YAHOO <- stockDataDownload(stock_symbols = SP500_symbols, from = "2008-12-01", to = "2018-12-01")
 save(SP500_YAHOO, file = "data-raw/SP500_YAHOO.RData")
-sapply(SP500_YAHOO, dim)
+sapply(SP500_YAHOO, dim)  # sanity check
 
 dataset <- stockDataResample(SP500_YAHOO, N_stock = 50, T_sample = 252*2, N_dataset = 10)
 save(dataset, file = "data-raw/dataset.RData")
