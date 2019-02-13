@@ -83,11 +83,11 @@ summaryBarPlot <- function(res_summary, measures = NULL, type = c("ggplot2", "si
          },
          "ggplot2" = {
            df <- as.data.frame.table(res_table)
-           ggplot(df, ggplot2::aes(x=Var2, y=Freq, fill=Var1)) +
-             geom_bar(stat="identity", color="black", position=ggplot2::position_dodge()) +
+           ggplot(df, aes(x = Var2, y = Freq, fill = Var1)) + theme_bw() + 
+             geom_bar(stat = "identity", color = "black", position = position_dodge()) +
              labs(title = "Performance of portfolios", x = NULL, y = NULL, fill = NULL) +
-             #scale_fill_viridis(discrete = TRUE)  #this requires viridis instead of viridisLite
              scale_fill_manual(values = viridis(nrow(res_table)))
+             #scale_fill_viridis(discrete = TRUE)  #this requires viridis instead of viridisLite
          },
          stop("Table type unknown"))
 }
@@ -149,18 +149,18 @@ backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("g
            #   return(x_without_outliers)
            # })
            limits <- apply(res_table, 2, function(x) {
-             lquartile <- quantile(x, 0.25)
-             uquartile <- quantile(x, 0.75)
+             lquartile <- quantile(x, 0.25, na.rm = TRUE)
+             uquartile <- quantile(x, 0.75, na.rm = TRUE)
              IQR <- uquartile - lquartile
-             return(c(limit_min = min(x[x > lquartile - 1.6*IQR]), limit_max = max(x[x < uquartile + 1.6*IQR])))
+             c(limit_min = min(x[x > lquartile - 1.6*IQR], na.rm = TRUE), limit_max = max(x[x < uquartile + 1.6*IQR], na.rm = TRUE))
            })
            plot_limits <- c(min(limits["limit_min", ]), max(limits["limit_max", ]))
            df <- as.data.frame.table(res_table[, ncol(res_table):1])
            ggplot(df, aes(x = Var2, y = Freq, fill = factor(Var2))) +
-             labs(title = measure, x = NULL, y = NULL) +
-             theme(legend.position = "none") + 
+             geom_boxplot(show.legend = FALSE) +  # outlier.shape = NA, show.legend = FALSE
              coord_flip(ylim = plot_limits) + 
-             geom_boxplot() +  # outlier.shape = NA
+             theme_bw() + #theme(legend.position = "none") + 
+             labs(title = measure, x = NULL, y = NULL) +
              scale_fill_manual(values = viridis(ncol(res_table)))
          },
          stop("Boxplot type unknown"))
