@@ -21,7 +21,11 @@
 summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", "grid.table")) {
   if (is.null(measures)) measures <- rownames(res_summary_median$performance_summary)  # by default use all
   # extract performance measures
-  performance <- t(round(res_summary$performance_summary[measures, ], 4))
+  real_measures <- intersect(measures, rownames(res_summary_median$performance_summary))
+  performance <- res_summary$performance_summary[real_measures, ]
+  if ("cpu time" %in% measures)
+    performance <- rbind("cpu time" = res_summary$cpu_time_average, performance)
+  performance <- t(round(performance, 4))
   
   # show table
   switch(match.arg(type),
@@ -83,7 +87,7 @@ summaryBarPlot <- function(res_summary, measures = NULL, type = c("ggplot2", "si
          },
          "ggplot2" = {
            df <- as.data.frame.table(res_table)
-           ggplot(df, aes(x = Var2, y = Freq, fill = Var1)) + theme_bw() + 
+           ggplot(df, aes(x = Var2, y = Freq, fill = Var1)) + 
              geom_bar(stat = "identity", color = "black", position = position_dodge()) +
              labs(title = "Performance of portfolios", x = NULL, y = NULL, fill = NULL) +
              scale_fill_manual(values = viridis(nrow(res_table)))
@@ -159,7 +163,7 @@ backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("g
            ggplot(df, aes(x = Var2, y = Freq, fill = factor(Var2))) +
              geom_boxplot(show.legend = FALSE) +  # outlier.shape = NA, show.legend = FALSE
              coord_flip(ylim = plot_limits) + 
-             theme_bw() + #theme(legend.position = "none") + 
+             #theme_bw() + #theme(legend.position = "none") + 
              labs(title = measure, x = NULL, y = NULL) +
              scale_fill_manual(values = viridis(ncol(res_table)))
          },
