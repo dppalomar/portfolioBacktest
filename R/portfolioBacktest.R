@@ -85,7 +85,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
     if (par_portfolio == 1) {
       result <- list()
       for (i in 1:length(portfolio_funs)) {
-        if (show_progress_bar) cat(paste0("Evaluating function ", i, " of ", length(portfolio_funs), "\n"))
+        if (show_progress_bar) cat(sprintf("Backtesting function %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
         result[[i]] <- safeEval(portfolio_funs[[i]], dataset, show_progress_bar, ...)
       }
     } else {
@@ -132,7 +132,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
     if (par_portfolio == 1) {
       result <- list()
       for (i in 1:length(files)) {
-        if (show_progress_bar) cat(paste0("Evaluating file ", i, " of ", length(files), " : ", files[i], "\n"))
+        if (show_progress_bar) cat(sprintf("Backtesting file %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
         result[[i]] <- safeEval(folder_path, files[i], dataset__, show_progress_bar, ...)
       }
     } else {
