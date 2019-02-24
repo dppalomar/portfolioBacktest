@@ -218,7 +218,10 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
     stopCluster(cl) 
   }
   
-  if (show_progress_bar) close(pb)
+  if (is.null(names(dataset)))
+    names(result) <- paste0("data", 1:length(dataset))
+  else
+    names(result) <- names(dataset)
   
   return(result)
 }
