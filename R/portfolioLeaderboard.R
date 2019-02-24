@@ -40,7 +40,7 @@ portfolioLeaderboard <- function(res = NA, weights = list(), summary_fun = media
                   rank_percentile( performance_summary[mask_valid, 5]),
                   rank_percentile( performance_summary[mask_valid, 6]),
                   rank_percentile( performance_summary[mask_valid, 7]),
-                  rank_percentile(-cpu_time_average[mask_valid]),
+                  rank_percentile(-cpu_time_summary[mask_valid]),
                   rank_percentile(-failure_ratio[mask_valid]))
   final_score <- scores %*% weights_rescaled
   index_sorting <- sort(final_score, decreasing = TRUE, index = TRUE)$ix
