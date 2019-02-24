@@ -19,7 +19,7 @@ portfolioLeaderboard <- function(res = NA, weights = list(), summary_fun = media
   tmp <- backtestSummary(res = res, summary_fun = summary_fun, show_benchmark = show_benchmark)
   performance_summary <- t(tmp[[1]])
   failure_ratio       <- tmp$failure_rate
-  cpu_time_average    <- tmp$cpu_time_average
+  cpu_time_summary    <- tmp$cpu_time_summary
   error_message       <- tmp$error_message
   
   weights_default <- list('Sharpe ratio' = 0, 'max drawdown' = 0, 'annual return' = 0, 'annual volatility' = 0,
@@ -57,7 +57,7 @@ portfolioLeaderboard <- function(res = NA, weights = list(), summary_fun = media
   # also show original performance
   error_summary <- error_message[index_sorted]
   leaderboard_performance <- cbind(performance_summary,
-                                   cpu_time_average,
+                                   cpu_time_summary,
                                    failure_ratio)[index_sorted, ]
   
   # add rownames and colnames
