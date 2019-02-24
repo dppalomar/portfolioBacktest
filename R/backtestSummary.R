@@ -25,22 +25,22 @@ backtestSummary <- function(res, portfolio_names = NA, portfolio_indexs = NA,
   result <- list()
   summary_container <- matrix(NA, n_portfolio, length(portfolioPerformance()))
   
-  performance <- failure_rate <- cpu_time_average <- list()
+  performance <- failure_rate <- cpu_time_summary <- list()
   res_table <- backtestTable(res)
   for (portfolio_name in portfolio_names) {
     tmp <- backtestSummarySinglePortfolio(res_table, portfolio_name, summary_fun)
     performance[[portfolio_name]] <- tmp$performance
     failure_rate[[portfolio_name]] <- tmp$failure_rate
-    cpu_time_average[[portfolio_name]] <- tmp$cpu_time_average
+    cpu_time_summary[[portfolio_name]] <- tmp$cpu_time_summary
   }
   
   rt <- list()
   rt$performance_summary <- cbind(Reduce(cbind, performance))
   rt$failure_rate <- unlist(failure_rate)
-  rt$cpu_time_average <- unlist(cpu_time_average)
+  rt$cpu_time_summary <- unlist(cpu_time_summary)
   rt$error_message <- res_table$error_message
   
-  colnames(rt$performance_summary) <- names(rt$failure_rate) <- names(rt$cpu_time_average) <- portfolio_names
+  colnames(rt$performance_summary) <- names(rt$failure_rate) <- names(rt$cpu_time_summary) <- portfolio_names
   rownames(rt$performance_summary) <- names(portfolioPerformance())
   return(rt)
 }
@@ -52,15 +52,15 @@ backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fu
   mask_performance <- names(performance)
   fail_mask <- res_table$error[, portfolio_name]
   failure_rate <- mean(fail_mask)
-  cpu_time_average <- NA
+  cpu_time_summary <- NA
   if (failure_rate < 1) {
     for (metric in mask_performance)
       performance[metric] <- summary_fun(res_table[[metric]][!fail_mask, portfolio_name])
-    cpu_time_average <- mean(res_table$cpu_time[!fail_mask, portfolio_name])
+    cpu_time_summary <- summary_fun(res_table$cpu_time[!fail_mask, portfolio_name])
   }
   return(list(performance = performance, 
               failure_rate = failure_rate,
-              cpu_time_average = cpu_time_average))
+              cpu_time_summary = cpu_time_summary))
 }
 
 #' @title Portfolio Backtest Results in Table form
@@ -102,6 +102,7 @@ backtestTable <- function(res, portfolio_names = NA, portfolio_indexs = NA,
   
   container <- matrix(NA, N_dataset, N_portfolio)
   colnames(container) <- portfolio_names
+  rownames(container) <- names(res[[1]])
   cpu_time <- error <- container
   performance <- error_message <- list()
   
