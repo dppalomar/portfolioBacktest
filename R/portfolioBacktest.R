@@ -52,8 +52,7 @@
 #' mul_res$performance
 #' mul_res$performance_summary
 #' 
-#' @import xts 
-#'         doSNOW
+#' @import xts
 #' @export
 #' 
 portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL, par_portfolio = 1, 
