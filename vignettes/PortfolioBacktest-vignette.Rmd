@@ -134,7 +134,7 @@ We could be more sophisticated and design a Markowitz mean-variance portfolio sa
 ```{r, message=FALSE}
 Markowitz_portfolio_fun <- function(data) {
   library(CVXR) #install.packages("CVXR")
-  X <- diff(log(data$adjusted))[-1]  # compute log returns
+  X <- as.matrix(diff(log(data$adjusted))[-1])  # compute log returns
   mu <- colMeans(X)  # compute mean vector
   Sigma <- cov(X)  # compute the SCM
   # design mean-variance portfolio
@@ -310,7 +310,7 @@ auxiliary_function <- function(x) {
 }
 
 portfolio_fun <- function(prices) {
-  X <- diff(log(prices))[-1]  # compute log returns
+  X <- as.matrix(diff(log(data$adjusted))[-1])  # compute log returns
   mu <- colMeans(X)  # compute mean vector
   Sigma <- cov(X)  # compute the SCM
   # design mean-variance portfolio

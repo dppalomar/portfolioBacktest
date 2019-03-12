@@ -1,5 +1,5 @@
 # define some portfolio functions
-portfolio_fun_Markowitz <- function(prices) {
+portfolio_fun_Markowitz <- function(data, prices = data$adjusted) {
   require(CVXR)
   # compute log returns
   X <- diff(log(prices))[-1]
@@ -16,7 +16,7 @@ portfolio_fun_Markowitz <- function(prices) {
   return(as.vector(result$getValue(w)))
 }
 
-portfolio_fun_GMVP_norm <- function(prices) {
+portfolio_fun_GMVP_norm <- function(data, prices = data$adjusted) {
   X <- diff(log(prices))[-1]  # compute log returns
   Sigma <- cov(X)  # compute SCM
   # design GMVP
@@ -25,7 +25,7 @@ portfolio_fun_GMVP_norm <- function(prices) {
   return(w)
 }
 
-portfolio_fun_GMVP <- function(prices) {
+portfolio_fun_GMVP <- function(data, prices = data$adjusted) {
   X <- diff(log(prices))[-1]  # compute log returns
   Sigma <- cov(X)  # compute SCM
   # design GMVP
@@ -34,7 +34,7 @@ portfolio_fun_GMVP <- function(prices) {
   return(w)
 }
 
-portfolio_fun_uniform <- function(prices) {
+portfolio_fun_uniform <- function(data, prices = data$adjusted) {
   return(rep(1/ncol(prices), ncol(prices)))
 }
 
