@@ -31,11 +31,11 @@ summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", 
   switch(match.arg(type),
          "simple" = performance,
          "DT" = {
-           p <- DT::datatable(performance, options = list(dom = 't', pageLength = 15, scrollX = TRUE, order = list(2, 'asc')))
+           p <- DT::datatable(performance, options = list(dom = 't', pageLength = 15, scrollX = TRUE, order = list(ncol(performance), 'asc')))
            p <- DT::formatStyle(p, 0, target = "row", fontWeight = DT::styleEqual(c("uniform", "index"), c("bold", "bold")))
            if ("annual volatility" %in% colnames(performance))
              p <- DT::formatPercentage(p, "annual volatility", 1)
-           if ("annual volatility" %in% colnames(performance))
+           if ("max drawdown" %in% colnames(performance))
              p <- DT::formatPercentage(p, "max drawdown", 1)
            p
          },
@@ -161,11 +161,14 @@ backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("g
            plot_limits <- c(min(limits["limit_min", ]), max(limits["limit_max", ]))
            df <- as.data.frame.table(res_table[, ncol(res_table):1])
            ggplot(df, aes(x = Var2, y = Freq, fill = factor(Var2))) +
-             geom_boxplot(show.legend = FALSE) +  # outlier.shape = NA, show.legend = FALSE
+             geom_boxplot(show.legend = FALSE) +  # (outlier.shape = NA)
              coord_flip(ylim = plot_limits) + 
              #theme_bw() + #theme(legend.position = "none") + 
              labs(title = measure, x = NULL, y = NULL) +
              scale_fill_manual(values = viridis(ncol(res_table)))
+           #try plotting the points too: 
+           # + geom_boxplot(outlier.shape = NA) + geom_jitter(width = 0.2)
+           # https://stackoverflow.com/questions/41764818/ggplot2-boxplots-with-points-and-fill-separation
          },
          stop("Boxplot type unknown"))
 }
