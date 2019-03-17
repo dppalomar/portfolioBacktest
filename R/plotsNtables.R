@@ -18,11 +18,11 @@
 #' summaryTable(res_summary_median, measures = c("max drawdown", "annual volatility"), type = "DT")
 #' 
 #' @export
-summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", "grid.table")) {
+summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", "grid.table"), order_col = NULL, order_dir = "asc") {  #could be "desc"
   if (is.null(measures)) measures <- rownames(res_summary_median$performance_summary)  # by default use all
   # extract performance measures
   real_measures <- intersect(measures, rownames(res_summary_median$performance_summary))
-  performance <- res_summary$performance_summary[real_measures, ]
+  performance <- res_summary$performance_summary[real_measures, , drop = FALSE]
   if ("cpu time" %in% measures)
     performance <- rbind("cpu time" = res_summary$cpu_time_average, performance)
   performance <- t(round(performance, 4))
@@ -31,7 +31,8 @@ summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", 
   switch(match.arg(type),
          "simple" = performance,
          "DT" = {
-           p <- DT::datatable(performance, options = list(dom = 't', pageLength = 15, scrollX = TRUE, order = list(ncol(performance), 'asc')))
+           if (is.null(order_col)) order_col <- ncol(performance)
+           p <- DT::datatable(performance, options = list(dom = 't', pageLength = 15, scrollX = TRUE, order = list(order_col, order_dir)))
            p <- DT::formatStyle(p, 0, target = "row", fontWeight = DT::styleEqual(c("uniform", "index"), c("bold", "bold")))
            if ("annual volatility" %in% colnames(performance))
              p <- DT::formatPercentage(p, "annual volatility", 1)
@@ -87,11 +88,15 @@ summaryBarPlot <- function(res_summary, measures = NULL, type = c("ggplot2", "si
          },
          "ggplot2" = {
            df <- as.data.frame.table(res_table)
-           ggplot(df, aes(x = Var2, y = Freq, fill = Var1)) + 
-             geom_bar(stat = "identity", color = "black", position = position_dodge()) +
-             labs(title = "Performance of portfolios", x = NULL, y = NULL, fill = NULL) +
-             scale_fill_manual(values = viridis(nrow(res_table)))
-             #scale_fill_viridis(discrete = TRUE)  #this requires viridis instead of viridisLite
+           ggplot(df, aes(x = Var1, y = Freq, fill = Var1)) + 
+             geom_bar(stat = "identity") +
+             scale_x_discrete(breaks = NULL) +
+             facet_wrap(~ Var2, scales = "free_y") +
+             labs(title = "Performance of portfolios", x = NULL, y = NULL, fill = NULL)
+             #scale_fill_manual(values = viridisLite::viridis(nrow(res_table)))
+             #viridis::scale_fill_viridis(discrete = TRUE)  #this requires viridis instead of viridisLite
+           # ggplot(df, aes(x = Var2, y = Freq, fill = Var1)) + 
+           #   geom_bar(stat = "identity", color = "black", position = position_dodge())
          },
          stop("Table type unknown"))
 }
@@ -106,7 +111,9 @@ summaryBarPlot <- function(res_summary, measures = NULL, type = c("ggplot2", "si
 #' # After running a backtest and extracting a performance summary, one would get:
 #' bt <- portfolioBacktest(...)
 #' 
-#' # Here let's generate fake random data for simplicity [Rui: needs to be fixed]:
+#' # Here let's generate fake random data for simplicity  
+#' TODO (Rui): needs to be fixed
+#' 
 #' fun1_1 <- list()
 #' fun1_1$performance <- runif(1)
 #' names(fun1_1$performance) <- "Sharpe ratio"
@@ -159,16 +166,15 @@ backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("g
              c(limit_min = min(x[x > lquartile - 1.6*IQR], na.rm = TRUE), limit_max = max(x[x < uquartile + 1.6*IQR], na.rm = TRUE))
            })
            plot_limits <- c(min(limits["limit_min", ]), max(limits["limit_max", ]))
-           df <- as.data.frame.table(res_table[, ncol(res_table):1])
-           ggplot(df, aes(x = Var2, y = Freq, fill = factor(Var2))) +
+           df <- as.data.frame.table(res_table)
+           ggplot(df, aes(x = Var2, y = Freq, fill = Var2)) +
              geom_boxplot(show.legend = FALSE) +  # (outlier.shape = NA)
+             geom_point(size = 0.5, show.legend = FALSE) +  # geom_jitter(width = 0) +
+             scale_x_discrete(limits = rev(levels(df$Var2))) +
              coord_flip(ylim = plot_limits) + 
+             labs(title = measure, x = NULL, y = NULL)
              #theme_bw() + #theme(legend.position = "none") + 
-             labs(title = measure, x = NULL, y = NULL) +
-             scale_fill_manual(values = viridis(ncol(res_table)))
-           #try plotting the points too: 
-           # + geom_boxplot(outlier.shape = NA) + geom_jitter(width = 0.2)
-           # https://stackoverflow.com/questions/41764818/ggplot2-boxplots-with-points-and-fill-separation
+             #scale_fill_manual(values = viridis(ncol(res_table)))
          },
          stop("Boxplot type unknown"))
 }
