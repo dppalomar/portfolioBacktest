@@ -65,7 +65,6 @@ summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", 
 #' summaryBarPlot(res_summary_median, measures = c("max drawdown", "annual volatility"), type = "ggplot2")
 #' 
 #' @import ggplot2
-#' @import viridisLite 
 #' @export
 summaryBarPlot <- function(res_summary, measures = NULL, type = c("ggplot2", "simple"), 
                            mar = c(3, 3, 3, 11), inset = c(-0.45, 0), legend_loc = "right", ...) {
@@ -128,7 +127,6 @@ summaryBarPlot <- function(res_summary, measures = NULL, type = c("ggplot2", "si
 #' backtestBoxPlot(bt, "Sharpe ratio")
 #' 
 #' @import ggplot2
-#' @import viridisLite
 #' @export
 backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("ggplot2", "simple"), mar = c(3, 10, 3, 1), ...) {
   # extract correct performance measure
