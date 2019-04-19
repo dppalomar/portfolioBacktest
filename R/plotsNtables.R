@@ -18,13 +18,14 @@
 #' summaryTable(res_summary_median, measures = c("max drawdown", "annual volatility"), type = "DT")
 #' 
 #' @export
-summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", "grid.table"), order_col = NULL, order_dir = "asc") {  #could be "desc"
-  if (is.null(measures)) measures <- rownames(res_summary_median$performance_summary)  # by default use all
+summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", "grid.table"), 
+                         order_col = NULL, order_dir = "asc") {  #options for DT, direction could be "desc"
+  if (is.null(measures)) measures <- rownames(res_summary$performance_summary)  # by default use all
   # extract performance measures
-  real_measures <- intersect(measures, rownames(res_summary_median$performance_summary))
+  real_measures <- intersect(measures, rownames(res_summary$performance_summary))
   performance <- res_summary$performance_summary[real_measures, , drop = FALSE]
   if ("cpu time" %in% measures)
-    performance <- rbind("cpu time" = res_summary$cpu_time_average, performance)
+    performance <- rbind("cpu time" = res_summary$cpu_time_summary, performance)
   performance <- t(round(performance, 4))
   
   # show table
