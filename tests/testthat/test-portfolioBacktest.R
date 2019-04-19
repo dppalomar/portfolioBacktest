@@ -1,4 +1,4 @@
-context("Backtest results")
+context("Checking portfolioBacktest and backtestSummary")
 
 data(dataset)  # data in the package
 #dataset_check <- to.monthly(dataset[[1]]$adjusted)$`dataset[[1]]$adjusted.Close`
