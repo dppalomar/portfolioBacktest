@@ -149,6 +149,7 @@ backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("g
            par(old_par)
          },
          "ggplot2" = {
+           if (is.null(params$alpha)) params$alpha <- 0.4  # this is for the points (set to 0 if not want them)
            # res_table_clean <- apply(res_table, 2, function(x) {  # remove outliers for better plotting?
            #   lquartile <- quantile(x, 0.25)
            #   uquartile <- quantile(x, 0.75)
@@ -166,7 +167,7 @@ backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("g
            df <- as.data.frame.table(res_table)
            ggplot2::ggplot(df, aes(x = Var2, y = Freq, fill = Var2)) +
              ggplot2::geom_boxplot(show.legend = FALSE) +  # (outlier.shape = NA)
-             ggplot2::geom_point(size = 0.5, alpha = 0.5, show.legend = FALSE) +  # geom_jitter(width = 0) +
+             ggplot2::geom_point(size = 0.5, alpha = params$alpha, show.legend = FALSE) +  # geom_jitter(width = 0) +
              ggplot2::scale_x_discrete(limits = rev(levels(df$Var2))) +
              ggplot2::coord_flip(ylim = plot_limits) + 
              ggplot2::labs(title = measure, x = NULL, y = NULL)
