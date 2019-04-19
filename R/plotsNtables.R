@@ -65,34 +65,33 @@ summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", 
 #' summaryBarPlot(res_summary_median, measures = c("max drawdown", "annual volatility"))
 #' summaryBarPlot(res_summary_median, measures = c("max drawdown", "annual volatility"), type = "ggplot2")
 #' 
-#' @import ggplot2
 #' @export
 summaryBarPlot <- function(res_summary, measures = NULL, type = c("ggplot2", "simple"), 
-                           mar = c(3, 3, 3, 11), inset = c(-0.45, 0), legend_loc = "right", ...) {
+                           mar = c(3, 3, 3, 11), inset = c(-0.3, 0), legend_loc = "right", ...) {
   # extract table
   res_table <- summaryTable(res_summary, measures)
   
   # plot
+  params <- list(res_table, ...)
+  if (is.null(params$main)) params$main <- "Performance of portfolios"
   switch(match.arg(type),
          "simple" = {
-           params <- list(res_table, ...)
-           if (is.null(params$main)) params$main <- "Performance of portfolios"
            if (is.null(params$cex.names)) params$cex.names <- 0.9
            if (is.null(params$cex.axis)) params$cex.axis <- 0.8
-           if (is.null(params$col)) params$col <- viridisLite::viridis(nrow(res_table))  # topo.colors(nrow(res_table))
+           if (is.null(params$col)) params$col <- topo.colors(nrow(res_table))  # viridisLite::viridis(nrow(res_table))
            if (is.null(params$beside)) params$beside <- TRUE
-           old_par <- par(mar = mar, xpd=TRUE)
+           old_par <- par(mar = mar, xpd = TRUE)
            do.call(barplot, params)
            legend(legend_loc, rownames(res_table), cex = 0.8, fill = params$col, inset = inset)
            par(old_par)
          },
          "ggplot2" = {
            df <- as.data.frame.table(res_table)
-           ggplot(df, aes(x = Var1, y = Freq, fill = Var1)) + 
-             geom_bar(stat = "identity") +
-             scale_x_discrete(breaks = NULL) +
-             facet_wrap(~ Var2, scales = "free_y") +
-             labs(title = "Performance of portfolios", x = NULL, y = NULL, fill = NULL)
+           ggplot2::ggplot(df, aes(x = Var1, y = Freq, fill = Var1)) + 
+             ggplot2::geom_bar(stat = "identity") +
+             ggplot2::scale_x_discrete(breaks = NULL) +
+             ggplot2::facet_wrap(~ Var2, scales = "free_y") +
+             ggplot2::labs(title = params$main, x = NULL, y = NULL, fill = NULL)
              #scale_fill_manual(values = viridisLite::viridis(nrow(res_table)))
              #viridis::scale_fill_viridis(discrete = TRUE)  #this requires viridis instead of viridisLite
            # ggplot(df, aes(x = Var2, y = Freq, fill = Var1)) + 
@@ -127,7 +126,6 @@ summaryBarPlot <- function(res_summary, measures = NULL, type = c("ggplot2", "si
 #' # Now we can plot
 #' backtestBoxPlot(bt, "Sharpe ratio")
 #' 
-#' @import ggplot2
 #' @export
 backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("ggplot2", "simple"), mar = c(3, 10, 3, 1), ...) {
   # extract correct performance measure
@@ -145,7 +143,7 @@ backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("g
            if (is.null(params$cex.axis)) params$cex.axis <- 0.8
            if (is.null(params$horizontal)) params$horizontal <- TRUE
            if (is.null(params$outline)) params$outline <- FALSE
-           if (is.null(params$col)) params$col <- viridisLite::viridis(ncol(res_table))  # topo.colors(ncol(res_table))
+           if (is.null(params$col)) params$col <- topo.colors(ncol(res_table))
            old_par <- par(mar = mar)
            do.call(boxplot, params)  # boxplot(res_table[, ncol(res_table):1], main = measure, las = 1, cex.axis = 0.8, horizontal = TRUE, outline = FALSE, col = viridisLite::viridis(ncol(res_table)))
            par(old_par)
@@ -166,12 +164,12 @@ backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("g
            })
            plot_limits <- c(min(limits["limit_min", ]), max(limits["limit_max", ]))
            df <- as.data.frame.table(res_table)
-           ggplot(df, aes(x = Var2, y = Freq, fill = Var2)) +
-             geom_boxplot(show.legend = FALSE) +  # (outlier.shape = NA)
-             geom_point(size = 0.5, show.legend = FALSE) +  # geom_jitter(width = 0) +
-             scale_x_discrete(limits = rev(levels(df$Var2))) +
-             coord_flip(ylim = plot_limits) + 
-             labs(title = measure, x = NULL, y = NULL)
+           ggplot2::ggplot(df, aes(x = Var2, y = Freq, fill = Var2)) +
+             ggplot2::geom_boxplot(show.legend = FALSE) +  # (outlier.shape = NA)
+             ggplot2::geom_point(size = 0.5, alpha = 0.5, show.legend = FALSE) +  # geom_jitter(width = 0) +
+             ggplot2::scale_x_discrete(limits = rev(levels(df$Var2))) +
+             ggplot2::coord_flip(ylim = plot_limits) + 
+             ggplot2::labs(title = measure, x = NULL, y = NULL)
              #theme_bw() + #theme(legend.position = "none") + 
              #scale_fill_manual(values = viridis(ncol(res_table)))
          },

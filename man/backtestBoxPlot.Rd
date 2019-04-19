@@ -14,7 +14,9 @@ Plots a boxplot from a backtest
 # After running a backtest and extracting a performance summary, one would get:
 bt <- portfolioBacktest(...)
 
-# Here let's generate fake random data for simplicity [Rui: needs to be fixed]:
+# Here let's generate fake random data for simplicity  
+TODO (Rui): needs to be fixed
+
 fun1_1 <- list()
 fun1_1$performance <- runif(1)
 names(fun1_1$performance) <- "Sharpe ratio"

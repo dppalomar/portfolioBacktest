@@ -5,7 +5,7 @@
 \title{Shows a table of a backtest summary}
 \usage{
 summaryTable(res_summary, measures = NULL, type = c("simple", "DT",
-  "grid.table"))
+  "grid.table"), order_col = NULL, order_dir = "asc")
 }
 \description{
 Shows a table of a backtest summary

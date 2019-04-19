@@ -5,7 +5,7 @@
 \title{Plots a barplot of a backtest summary}
 \usage{
 summaryBarPlot(res_summary, measures = NULL, type = c("ggplot2",
-  "simple"), mar = c(3, 3, 3, 11), inset = c(-0.45, 0),
+  "simple"), mar = c(3, 3, 3, 11), inset = c(-0.3, 0),
   legend_loc = "right", ...)
 }
 \description{
