@@ -20,7 +20,7 @@ Authors@R: c(
   )
 Maintainer: Daniel P. Palomar <daniel.p.palomar@gmail.com>
 URL: https://CRAN.R-project.org/package=portfolioBacktest,
-     https://github.com/dppalomar/portfolioBacktest,
+     https://github.com/dppalomar/portfolioBacktest
 BugReports: https://github.com/dppalomar/portfolioBacktest/issues
 Depends: xts
 License: GPL-3 | file LICENSE
@@ -41,5 +41,4 @@ VignetteBuilder:
     knitr,
     prettydoc,
     rmarkdown,
-    R.rsp    
-    
+    R.rsp
