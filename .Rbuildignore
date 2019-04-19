@@ -1,7 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^cran-comments\.md$
-^NEWS\.md$
 ^README\.Rmd$
 ^README\.html$
 ^README_cache$
@@ -9,5 +8,8 @@
 ^R_buildignore$
 ^papers$
 ^data-raw$
-^vignettes/PortfolioBacktest-vignette_cache$
-^vignettes/PortfolioBacktest-vignette_files$
+^vignettes/PortfolioBacktest_cache$
+^vignettes/PortfolioBacktest_files$
+^vignettes/PortfolioBacktest\.Rmd$
+^vignettes/ieee\.csl$
+^vignettes/refs\.bib$

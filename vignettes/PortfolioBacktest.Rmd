@@ -38,14 +38,15 @@ opts_chunk$set(
   fig.align = "center",
   fig.retina = 2,
   out.width = "75%",
-  dpi = 96
+  dpi = 96,
+  pngquant = "--speed=1"
 )
 knit_hooks$set(pngquant = hook_pngquant)
 #Help on bookdown: https://bookdown.org/yihui/bookdown/
-#rmarkdown::render("vignettes/PortfolioBacktest-vignette.Rmd", "all")
-#rmarkdown::render("vignettes/PortfolioBacktest-vignette.Rmd", "bookdown::html_document2")
-#rmarkdown::render("vignettes/PortfolioBacktest-vignette.Rmd", "bookdown::pdf_document2")
-#tools::compactPDF("vignettes/PortfolioBacktest-vignette.pdf", gs_quality = "ebook")
+#rmarkdown::render("vignettes/PortfolioBacktest.Rmd", "all")
+#rmarkdown::render("vignettes/PortfolioBacktest.Rmd", "bookdown::html_document2")
+#rmarkdown::render("vignettes/PortfolioBacktest.Rmd", "bookdown::pdf_document2")
+#tools::compactPDF("vignettes/PortfolioBacktest.pdf", gs_quality = "ebook")
 ```
 
 -----------

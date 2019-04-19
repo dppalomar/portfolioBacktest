@@ -1,4 +1,4 @@
-#' portfolioBacktest: Backtesting of a Portfolio Over Multiple Datasets
+#' portfolioBacktest: Automatic Backtesting of Portfolios Over Multiple Datasets
 #'
 # 'Backtesting of a portfolio in a sliding-window fashion over a 
 # 'dataset of stock prices. Multiple datasets are allowed (e.g., taken 
@@ -19,13 +19,16 @@
 #'
 #' @section Help:
 #' For a quick help see the README file:
-#' \href{https://rawgit.com/dppalomar/portfolioBacktest/master/README.html}{GitHub-README}.
+#' \href{https://CRAN.R-project.org/package=portfolioBacktest/readme/README.html}{CRAN-README} and
+#' \href{https://raw.githack.com/dppalomar/portfolioBacktest/master/README.html}{GitHub-README}.
 #' 
 #' For more details see the vignette:
-#' \href{https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest-vignette.html}{GitHub-html-vignette},
-#' \href{https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest-vignette.pdf}{GitHub-pdf-vignette}.
+#' \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{CRAN-html-vignette},
+#' \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest-pdf.pdf}{CRAN-pdf-vignette},
+#' \href{https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{GitHub-html-vignette}, and
+#' \href{https://docs.google.com/viewer?url=https://github.com/dppalomar/portfolioBacktest/raw/master/vignettes/PortfolioBacktest-pdf.pdf}{GitHub-pdf-vignette}.
 #'
-#' @author Daniel P. Palomar and Rui ZHOU
+#' @author Rui ZHOU and Daniel P. Palomar
 #'
 #' @docType package
 #' @name portfolioBacktest-package

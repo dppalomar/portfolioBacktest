@@ -11,33 +11,54 @@ output:
 
 
 
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/riskParityPortfolio)](https://cran.r-project.org/package=riskParityPortfolio)
+[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/riskParityPortfolio)](https://cran.r-project.org/package=riskParityPortfolio)
+![CRAN Downloads Total](https://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)
+
 # portfolioBacktest
 Backtesting of a portfolio in a rolling-window fashion over a dataset of stock prices. Multiple datasets are allowed (e.g., taken randomly over different markets, different time periods, and different subset of the stock universe). In addition, multiple portfolios can be backtested for a subsequent comparison and ranking on a number of criteria including annual return, annual volatility, Sharpe ratio, maximum drawdown, turnover rate, return on investment, computational time, etc. The portfolio is defined as a function that takes as input a window of the stock prices and outputs the portfolio weights. This package can be useful for a researcher/practitioner who wants to backtest a set of portfolios over a multitude of datasets over different markets. In addition, it can be particularly useful to evaluate students in a portfolio design course where the grading is based on the performance.
 
 
 ## Installation
+To install the latest stable version of ``portfolioBacktest``, run the following commands in R:
 
 ```r
-# install.packages("devtools")
-devtools::install_github("dppalomar/portfolioBacktest")
+install.packages("portfolioBacktest")
+```
 
-# Getting help
+To install the development version of ``portfolioBacktest``, run the following commands in R:
+
+```r
+install.packages("devtools")
+devtools::install_github("dppalomar/portfolioBacktest")
+```
+
+To get help:
+
+```r
 library(portfolioBacktest)
 help(package = "portfolioBacktest")
 package?portfolioBacktest
 ?portfolioBacktest
 ```
 
+To cite ``portfolioBacktest`` in publications:
 
-## Usage of `portfolioBacktest()`
+```r
+citation("portfolioBacktest")
+```
+
+
+
+
+## Usage of `portfolioBacktest`
 We start by loading the package and some random sets of stock market data:
 
 ```r
 library(PerformanceAnalytics)
 library(portfolioBacktest)
-data(dataset) 
 ```
-The dataset `dataset` is a list of data that contains the prices of random sets of stock market data from the S&P 500, over random periods of two years with a random selection of 50 stocks of each universe.
+The package contains a simple dataset called `dataset` containing a list of data with the prices of random sets of stock market data from the S&P 500, over random periods of two years with a random selection of 50 stocks of each universe.
  
 
 ```r
@@ -98,7 +119,7 @@ names(res)
 plot(res$cumPnL[[1]])
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="75%" style="display: block; margin: auto;" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="75%" style="display: block; margin: auto;" />
 
 We can also backtest over multiple data sets 
 
@@ -107,28 +128,28 @@ We can also backtest over multiple data sets
 mul_data_bt <- portfolioBacktest(portfolio_fun, dataset, shortselling = TRUE)
 mul_data_res <- backtestSelector(mul_data_bt, portfolio_index = 1)
 mul_data_res$performance
-#>        Sharpe ratio max drawdown annual return annual volatility
-#> data1    0.43216171   0.02601129   0.018310402        0.04236933
-#> data2    0.45708668   0.04323931   0.024808463        0.05427518
-#> data3    1.41115502   0.02286482   0.046456693        0.03292104
-#> data4   -0.01951969   0.06783961  -0.001085763        0.05562397
-#> data5    0.72256088   0.06083075   0.041099042        0.05687970
-#> data6    2.17578547   0.02212631   0.071331145        0.03278409
-#> data7    4.32024112   0.01591036   0.139474565        0.03228398
-#> data8    1.13401883   0.04077619   0.051204767        0.04515337
-#> data9    0.86003940   0.07066204   0.049092802        0.05708204
-#> data10   1.82664160   0.03751242   0.057249236        0.03134125
-#>        Sterling ratio Omega ratio     ROT bps
-#> data1      0.70394064    1.075537  36.4135924
-#> data2      0.57374788    1.083725  60.4375741
-#> data3      2.03179820    1.251251 122.4139059
-#> data4     -0.01600485    1.001542  -0.7599049
-#> data5      0.67562935    1.142782 108.8563347
-#> data6      3.22381606    1.393876 159.0092504
-#> data7      8.76627360    1.910817 352.9881774
-#> data8      1.25575149    1.222673 129.9534162
-#> data9      0.69475494    1.164732  86.8431384
-#> data10     1.52614101    1.343066 142.6190387
+#>            Sharpe ratio max drawdown annual return annual volatility
+#> dataset 1    0.43216171   0.02601129   0.018310402        0.04236933
+#> dataset 2    0.45708668   0.04323931   0.024808463        0.05427518
+#> dataset 3    1.41115502   0.02286482   0.046456693        0.03292104
+#> dataset 4   -0.01951969   0.06783961  -0.001085763        0.05562397
+#> dataset 5    0.72256088   0.06083075   0.041099042        0.05687970
+#> dataset 6    2.17578547   0.02212631   0.071331145        0.03278409
+#> dataset 7    4.32024112   0.01591036   0.139474565        0.03228398
+#> dataset 8    1.13401883   0.04077619   0.051204767        0.04515337
+#> dataset 9    0.86003940   0.07066204   0.049092802        0.05708204
+#> dataset 10   1.82664160   0.03751242   0.057249236        0.03134125
+#>            Sterling ratio Omega ratio     ROT bps
+#> dataset 1      0.70394064    1.075537  36.4135924
+#> dataset 2      0.57374788    1.083725  60.4375741
+#> dataset 3      2.03179820    1.251251 122.4139059
+#> dataset 4     -0.01600485    1.001542  -0.7599049
+#> dataset 5      0.67562935    1.142782 108.8563347
+#> dataset 6      3.22381606    1.393876 159.0092504
+#> dataset 7      8.76627360    1.910817 352.9881774
+#> dataset 8      1.25575149    1.222673 129.9534162
+#> dataset 9      0.69475494    1.164732  86.8431384
+#> dataset 10     1.52614101    1.343066 142.6190387
 ```
 
 For comparison, we may want some benchmarks. Now the package suppport two benchmarks, which are `uniform portfolio` and `index` of the certain market. We can easily do that 
@@ -150,28 +171,28 @@ names(res_fun1)
 #> [1] "performance"   "error"         "error_message" "cpu_time"     
 #> [5] "portfolio"     "return"        "cumPnL"
 res_fun1$performance
-#>        Sharpe ratio max drawdown annual return annual volatility
-#> data1    0.43216171   0.02601129   0.018310402        0.04236933
-#> data2    0.45708668   0.04323931   0.024808463        0.05427518
-#> data3    1.41115502   0.02286482   0.046456693        0.03292104
-#> data4   -0.01951969   0.06783961  -0.001085763        0.05562397
-#> data5    0.72256088   0.06083075   0.041099042        0.05687970
-#> data6    2.17578547   0.02212631   0.071331145        0.03278409
-#> data7    4.32024112   0.01591036   0.139474565        0.03228398
-#> data8    1.13401883   0.04077619   0.051204767        0.04515337
-#> data9    0.86003940   0.07066204   0.049092802        0.05708204
-#> data10   1.82664160   0.03751242   0.057249236        0.03134125
-#>        Sterling ratio Omega ratio     ROT bps
-#> data1      0.70394064    1.075537  36.4135924
-#> data2      0.57374788    1.083725  60.4375741
-#> data3      2.03179820    1.251251 122.4139059
-#> data4     -0.01600485    1.001542  -0.7599049
-#> data5      0.67562935    1.142782 108.8563347
-#> data6      3.22381606    1.393876 159.0092504
-#> data7      8.76627360    1.910817 352.9881774
-#> data8      1.25575149    1.222673 129.9534162
-#> data9      0.69475494    1.164732  86.8431384
-#> data10     1.52614101    1.343066 142.6190387
+#>            Sharpe ratio max drawdown annual return annual volatility
+#> dataset 1    0.43216171   0.02601129   0.018310402        0.04236933
+#> dataset 2    0.45708668   0.04323931   0.024808463        0.05427518
+#> dataset 3    1.41115502   0.02286482   0.046456693        0.03292104
+#> dataset 4   -0.01951969   0.06783961  -0.001085763        0.05562397
+#> dataset 5    0.72256088   0.06083075   0.041099042        0.05687970
+#> dataset 6    2.17578547   0.02212631   0.071331145        0.03278409
+#> dataset 7    4.32024112   0.01591036   0.139474565        0.03228398
+#> dataset 8    1.13401883   0.04077619   0.051204767        0.04515337
+#> dataset 9    0.86003940   0.07066204   0.049092802        0.05708204
+#> dataset 10   1.82664160   0.03751242   0.057249236        0.03134125
+#>            Sterling ratio Omega ratio     ROT bps
+#> dataset 1      0.70394064    1.075537  36.4135924
+#> dataset 2      0.57374788    1.083725  60.4375741
+#> dataset 3      2.03179820    1.251251 122.4139059
+#> dataset 4     -0.01600485    1.001542  -0.7599049
+#> dataset 5      0.67562935    1.142782 108.8563347
+#> dataset 6      3.22381606    1.393876 159.0092504
+#> dataset 7      8.76627360    1.910817 352.9881774
+#> dataset 8      1.25575149    1.222673 129.9534162
+#> dataset 9      0.69475494    1.164732  86.8431384
+#> dataset 10     1.52614101    1.343066 142.6190387
 
 # extract result of the uniform portfolio function
 res_uniform <- backtestSelector(mul_data_bt, "uniform")
@@ -200,9 +221,14 @@ res_summary$performance_summary
 ```
 
 
-
 ## Links
-Package: [GitHub](https://github.com/dppalomar/portfolioBacktest).  
-README file: [GitHub-readme](https://rawgit.com/dppalomar/portfolioBacktest/master/README.html).  
-Vignette: [GitHub-html-vignette](https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest-vignette.html) and [GitHub-pdf-vignette](https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest-vignette.pdf).
+Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest) and [GitHub](https://github.com/dppalomar/portfolioBacktest).
+
+README file: [CRAN-readme](https://cran.r-project.org/package=portfolioBacktest/readme/README.html)
+and [GitHub-readme](https://raw.githack.com/dppalomar/portfolioBacktest/master/README.html).
+
+Vignette: [CRAN-html-vignette](https://cran.r-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html),
+[CRAN-pdf-vignette](https://cran.r-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest-pdf.pdf),
+[GitHub-html-vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html), and
+[GitHub-pdf-vignette](https://docs.google.com/viewer?url=https://github.com/dppalomar/portfolioBacktest/raw/master/vignettes/PortfolioBacktest-pdf.pdf).
 

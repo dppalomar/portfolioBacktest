@@ -1,5 +1,5 @@
 Package: portfolioBacktest
-Title: Backtesting of a Portfolio Over Multiple Datasets
+Title: Automatic Backtesting of Portfolios Over Multiple Datasets
 Version: 0.1.0
 Description: Backtesting of a portfolio in a rolling-window fashion over a 
     dataset of stock prices. Multiple datasets are allowed (e.g., taken 
@@ -19,24 +19,27 @@ Authors@R: c(
   person(c("Daniel", "P."), "Palomar", role = c("cre", "aut"), email = "daniel.p.palomar@gmail.com")
   )
 Maintainer: Daniel P. Palomar <daniel.p.palomar@gmail.com>
-URL: https://github.com/dppalomar/portfolioBacktest,
+URL: https://CRAN.R-project.org/package=portfolioBacktest,
+     https://github.com/dppalomar/portfolioBacktest,
 BugReports: https://github.com/dppalomar/portfolioBacktest/issues
 Depends: xts
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 6.1.1
 Imports:
     evaluate,
     PerformanceAnalytics,
     R.utils
-RoxygenNote: 6.1.1
 Suggests:
     ggplot2,
     readtext,
     stringi,
     testthat
 VignetteBuilder:
-    knitr,
-    rmarkdown,    
     bookdown,
-    prettydoc
+    knitr,
+    prettydoc,
+    rmarkdown,
+    R.rsp    
+    

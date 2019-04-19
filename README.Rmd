@@ -23,31 +23,49 @@ opts_chunk$set(
 knit_hooks$set(pngquant = hook_pngquant)
 ```
 
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/portfolioBacktest)](https://cran.r-project.org/package=portfolioBacktest)
+[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/portfolioBacktest)](https://cran.r-project.org/package=portfolioBacktest)
+![CRAN Downloads Total](https://cranlogs.r-pkg.org/badges/grand-total/portfolioBacktest?color=brightgreen)
+
 # portfolioBacktest
 Backtesting of a portfolio in a rolling-window fashion over a dataset of stock prices. Multiple datasets are allowed (e.g., taken randomly over different markets, different time periods, and different subset of the stock universe). In addition, multiple portfolios can be backtested for a subsequent comparison and ranking on a number of criteria including annual return, annual volatility, Sharpe ratio, maximum drawdown, turnover rate, return on investment, computational time, etc. The portfolio is defined as a function that takes as input a window of the stock prices and outputs the portfolio weights. This package can be useful for a researcher/practitioner who wants to backtest a set of portfolios over a multitude of datasets over different markets. In addition, it can be particularly useful to evaluate students in a portfolio design course where the grading is based on the performance.
 
 
 ## Installation
+To install the latest stable version of `portfolioBacktest`, run the following commands in R:
 ```{r, eval = FALSE}
-# install.packages("devtools")
-devtools::install_github("dppalomar/portfolioBacktest")
+install.packages("portfolioBacktest")
+```
 
-# Getting help
+To install the development version of `portfolioBacktest`, run the following commands in R:
+```{r, eval = FALSE}
+install.packages("devtools")
+devtools::install_github("dppalomar/portfolioBacktest")
+```
+
+To get help:
+```{r, eval = FALSE}
 library(portfolioBacktest)
 help(package = "portfolioBacktest")
 package?portfolioBacktest
 ?portfolioBacktest
 ```
 
+To cite `portfolioBacktest` in publications:
+```{r, eval = FALSE}
+citation("portfolioBacktest")
+```
 
-## Usage of `portfolioBacktest()`
+
+
+
+## Usage of `portfolioBacktest`
 We start by loading the package and some random sets of stock market data:
 ```{r, message = FALSE}
 library(PerformanceAnalytics)
 library(portfolioBacktest)
-data(dataset) 
 ```
-The dataset `dataset` is a list of data that contains the prices of random sets of stock market data from the S&P 500, over random periods of two years with a random selection of 50 stocks of each universe.
+The package contains a simple dataset called `dataset` containing a list of data with the prices of random sets of stock market data from the S&P 500, over random periods of two years with a random selection of 50 stocks of each universe.
  
 ```{r}
 length(dataset)
@@ -114,9 +132,14 @@ res_summary$performance_summary
 ```
 
 
-
 ## Links
-Package: [GitHub](https://github.com/dppalomar/portfolioBacktest).  
-README file: [GitHub-readme](https://rawgit.com/dppalomar/portfolioBacktest/master/README.html).  
-Vignette: [GitHub-html-vignette](https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest-vignette.html) and [GitHub-pdf-vignette](https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest-vignette.pdf).
+Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest) and [GitHub](https://github.com/dppalomar/portfolioBacktest).
+
+README file: [CRAN-readme](https://cran.r-project.org/package=portfolioBacktest/readme/README.html)
+and [GitHub-readme](https://raw.githack.com/dppalomar/portfolioBacktest/master/README.html).
+
+Vignette: [CRAN-html-vignette](https://cran.r-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html),
+[CRAN-pdf-vignette](https://cran.r-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest-pdf.pdf),
+[GitHub-html-vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html), and
+[GitHub-pdf-vignette](https://docs.google.com/viewer?url=https://github.com/dppalomar/portfolioBacktest/raw/master/vignettes/PortfolioBacktest-pdf.pdf).
 
