@@ -135,9 +135,9 @@ backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("g
   res_table <- res_list_table[[idx]]
   
   # plot boxplot
+  params <- list(res_table[, ncol(res_table):1], ...)
   switch(match.arg(type),
          "simple" = {
-           params <- list(res_table[, ncol(res_table):1], ...)
            if (is.null(params$main)) params$main <- measure
            if (is.null(params$las)) params$las <- 1
            if (is.null(params$cex.axis)) params$cex.axis <- 0.8
