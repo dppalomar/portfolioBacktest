@@ -212,6 +212,7 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
   } else {               ########### parallel mode
     cl <- makeCluster(par_dataset)
     registerDoSNOW(cl)
+    assist_funs <- c(assist_funs, ls(.GlobalEnv, all.names = TRUE))
     result <- foreach(dat = dataset, .combine = c, .packages = packages, .export = assist_funs, .options.snow = opts) %dopar% {
       return(list(singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dat, ...)))
     }
