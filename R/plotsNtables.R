@@ -87,7 +87,7 @@ summaryBarPlot <- function(res_summary, measures = NULL, type = c("ggplot2", "si
          },
          "ggplot2" = {
            df <- as.data.frame.table(res_table)
-           ggplot2::ggplot(df, aes(x = Var1, y = Freq, fill = Var1)) + 
+           ggplot2::ggplot(df, ggplot2::aes(x = Var1, y = Freq, fill = Var1)) + 
              ggplot2::geom_bar(stat = "identity") +
              ggplot2::scale_x_discrete(breaks = NULL) +
              ggplot2::facet_wrap(~ Var2, scales = "free_y") +
@@ -165,7 +165,7 @@ backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("g
            })
            plot_limits <- c(min(limits["limit_min", ]), max(limits["limit_max", ]))
            df <- as.data.frame.table(res_table)
-           ggplot2::ggplot(df, aes(x = Var2, y = Freq, fill = Var2)) +
+           ggplot2::ggplot(df, ggplot2::aes(x = Var2, y = Freq, fill = Var2)) +
              ggplot2::geom_boxplot(show.legend = FALSE) +  # (outlier.shape = NA)
              ggplot2::geom_point(size = 0.5, alpha = params$alpha, show.legend = FALSE) +  # geom_jitter(width = 0) +
              ggplot2::scale_x_discrete(limits = rev(levels(df$Var2))) +
