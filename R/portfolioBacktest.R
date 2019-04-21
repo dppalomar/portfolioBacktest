@@ -59,9 +59,11 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
                               show_progress_bar = FALSE, benchmark = NULL, ...) {
   ####### error control ########
   par_portfolio <- round(par_portfolio)
-  if (par_portfolio < 1) stop("Parallel number must be positive interger")
-  if (par_portfolio > parallel::detectCores()) warning("Parallel number exceeds the hardware limit")
-  if (par_portfolio > 1 && !require(doSNOW, quietly = TRUE)) 
+  par_dataset <- list(...)$par_dataset
+  if (is.null(par_dataset)) par_dataset = 1
+  par_dataset <- round(par_dataset)
+  if (par_portfolio < 1 || par_dataset < 1) stop("Parallel number must be positive interger")
+  if ((par_portfolio > 1 || par_dataset > 1) && !require(doSNOW, quietly = TRUE)) 
     stop("Package \"doSNOW\" needed for parallel mode. Please install it.")
   if (is.null(folder_path) && is.null(portfolio_funs)) stop("The \"folder_path\" and \"portfolio_fun_list\" can not both be NULL")
   if (!is.null(portfolio_funs) && !is.list(portfolio_funs)) portfolio_funs <- list(portfolio_funs)
@@ -85,7 +87,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
     if (par_portfolio == 1) {
       result <- list()
       for (i in 1:length(portfolio_funs)) {
-        if (show_progress_bar) cat(sprintf("Backtesting function %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
+        if (show_progress_bar) cat(sprintf("\n Backtesting function %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
         result[[i]] <- safeEval(portfolio_funs[[i]], dataset, show_progress_bar, ...)
       }
     } else {
@@ -132,7 +134,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
     if (par_portfolio == 1) {
       result <- list()
       for (i in 1:length(files)) {
-        if (show_progress_bar) cat(sprintf("Backtesting file %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
+        if (show_progress_bar) cat(sprintf("\n Backtesting file %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
         result[[i]] <- safeEval(folder_path, files[i], dataset__, show_progress_bar, ...)
       }
     } else {
@@ -173,12 +175,12 @@ benchmarkBacktest <- function(dataset, benchmark, show_progress_bar, ...) {
   
   res <- list()
   if ("uniform" %in% benchmark) {
-    if (show_progress_bar) cat("Evaluating benchmark-uniform\n")
+    if (show_progress_bar) cat("\n Evaluating benchmark-uniform\n")
     res$uniform <- singlePortfolioBacktest(portfolio_fun = uniform_portfolio_fun, dataset = dataset, show_progress_bar = show_progress_bar, ...)
   }
   if ("index" %in% benchmark) {
-    if (show_progress_bar) cat("Evaluating benchmark-index\n")
-    res$index <- singlePortfolioBacktest(market = TRUE, dataset = dataset, show_progress_bar = show_progress_bar, ...)
+    if (show_progress_bar) cat("\n Evaluating benchmark-index\n")
+    res$index <- singlePortfolioBacktest(portfolio_fun = NULL, dataset = dataset, show_progress_bar = show_progress_bar, market = TRUE, ...)
   }
   return(res)
 }
@@ -186,12 +188,8 @@ benchmarkBacktest <- function(dataset, benchmark, show_progress_bar, ...) {
 singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
                                     par_dataset = 1, packages = c(), assist_funs = c(), ...) {
   
-  # check parallel setting
   par_dataset <- round(par_dataset)
-  if (par_dataset < 1) stop("Parallel number must be positive interger")
-  if (par_dataset > parallel::detectCores()) warning("Parallel number exceeds the hardware limit")
-  if (par_dataset > 1 && !require(doSNOW, quietly = TRUE)) 
-    stop("Package \"doSNOW\" needed for parallel mode. Please install it.")
+  if (is.null(assist_funs)) assist_funs <- as.vector(lsf.str(envir = .GlobalEnv))
   
   # creat the progress bar
   if (show_progress_bar) {
@@ -212,7 +210,6 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
   } else {               ########### parallel mode
     cl <- makeCluster(par_dataset)
     registerDoSNOW(cl)
-    assist_funs <- c(assist_funs, ls(.GlobalEnv, all.names = TRUE))
     result <- foreach(dat = dataset, .combine = c, .packages = packages, .export = assist_funs, .options.snow = opts) %dopar% {
       return(list(singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dat, ...)))
     }
