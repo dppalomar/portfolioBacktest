@@ -10,7 +10,7 @@ library(portfolioBacktest)
 help(package = "portfolioBacktest")
 package?portfolioBacktest
 ?portfolioBacktest
-?prices
+?dataset
 
 
 ##
@@ -25,11 +25,10 @@ library(portfolioBacktest)
 # Documentation
 devtools::document()  #to generate all documentation via roxygen
 ?portfolioBacktest
-?prices
+?dataset
 
 
 # Code tests
-#devtools::use_testthat()  # the first time
 devtools::test()
 #covr::package_coverage()  #coverage of tests
 #goodpractice::gp()  # overall checks
