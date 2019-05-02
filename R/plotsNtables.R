@@ -20,7 +20,7 @@
 #' @export
 summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", "grid.table"), 
                          order_col = NULL, order_dir = "asc") {  #options for DT, direction could be "desc"
-  if (is.null(measures)) measures <- rownames(res_summary$performance_summary)  # by default use all
+  if (is.null(measures)) measures <- c("cpu time", rownames(res_summary$performance_summary))  # by default use all
   # extract performance measures
   real_measures <- intersect(measures, rownames(res_summary$performance_summary))
   performance <- res_summary$performance_summary[real_measures, , drop = FALSE]

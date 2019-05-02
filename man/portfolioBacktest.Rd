@@ -5,7 +5,7 @@
 \title{Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices}
 \usage{
 portfolioBacktest(portfolio_funs = NULL, dataset, folder_path = NULL,
-  par_portfolio = 1, show_progress_bar = FALSE, benchmark = NULL,
+  paral_portfolios = 1, show_progress_bar = FALSE, benchmark = NULL,
   ...)
 }
 \arguments{
@@ -17,7 +17,7 @@ portfolioBacktest(portfolio_funs = NULL, dataset, folder_path = NULL,
 
 \item{folder_path}{the path of folder containing the portfolio functions saved in files, only valid when \code{portfolio_fun} is not passed.}
 
-\item{par_portfolio}{an positive interger indicating number of portfolios to be evaluated in parallel (default \code{1}).}
+\item{paral_portfolios}{an positive interger indicating number of portfolios to be evaluated in parallel (default \code{1}).}
 
 \item{show_progress_bar}{logical value indicating whether to show progress bar (default: \code{FALSE}).}
 
@@ -25,7 +25,7 @@ portfolioBacktest(portfolio_funs = NULL, dataset, folder_path = NULL,
 \itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks (default)}
          \item{\code{index} - the market index return, requires pass \code{index} in corresponding dataset}}}
 
-\item{par_dataset}{an positive interger indicating number of datasets to be used per portfolio in parallel (default \code{1}).}
+\item{paral_datasets}{an positive interger indicating number of datasets to be used per portfolio in parallel (default \code{1}).}
 
 \item{shortselling}{logical value indicating whether shortselling is allowed or not (default \code{FALSE}).}
 
