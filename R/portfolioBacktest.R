@@ -7,8 +7,8 @@
 #' \itemize{\item{\code{prices} - an xts object containing the stock prices for backtesting}
 #'          \item{\code{index} - an xts object containing the market index of above \code{prices} with exact same time index}}.
 #' @param folder_path the path of folder containing the portfolio functions saved in files, only valid when \code{portfolio_fun} is not passed.
-#' @param par_portfolio an positive interger indicating number of portfolios to be evaluated in parallel (default \code{1}).
-#' @param par_dataset an positive interger indicating number of datasets to be used per portfolio in parallel (default \code{1}).
+#' @param paral_portfolios an positive interger indicating number of portfolios to be evaluated in parallel (default \code{1}).
+#' @param paral_datasets an positive interger indicating number of datasets to be used per portfolio in parallel (default \code{1}).
 #' @param show_progress_bar logical value indicating whether to show progress bar (default: \code{FALSE}). 
 #' @param benchmark a string vector indicating the benchmark portfolios to be incorporated, now support the follows:
 #' \itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks (default)}
@@ -55,15 +55,15 @@
 #' @import xts
 #' @export
 #' 
-portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL, par_portfolio = 1, 
+portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL, paral_portfolios = 1, 
                               show_progress_bar = FALSE, benchmark = NULL, ...) {
   ####### error control ########
-  par_portfolio <- round(par_portfolio)
-  par_dataset <- list(...)$par_dataset
-  if (is.null(par_dataset)) par_dataset = 1
-  par_dataset <- round(par_dataset)
-  if (par_portfolio < 1 || par_dataset < 1) stop("Parallel number must be positive interger")
-  if ((par_portfolio > 1 || par_dataset > 1) && !require(doSNOW, quietly = TRUE)) 
+  paral_portfolios <- round(paral_portfolios)
+  paral_datasets <- list(...)$paral_datasets
+  if (is.null(paral_datasets)) paral_datasets = 1
+  paral_datasets <- round(paral_datasets)
+  if (paral_portfolios < 1 || paral_datasets < 1) stop("Parallel number must be positive interger")
+  if ((paral_portfolios > 1 || paral_datasets > 1) && !require(doSNOW, quietly = TRUE)) 
     stop("Package \"doSNOW\" needed for parallel mode. Please install it.")
   if (is.null(folder_path) && is.null(portfolio_funs)) stop("The \"folder_path\" and \"portfolio_fun_list\" can not both be NULL")
   if (!is.null(portfolio_funs) && !is.list(portfolio_funs)) portfolio_funs <- list(portfolio_funs)
@@ -84,7 +84,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
       return(res)
     }
     
-    if (par_portfolio == 1) {
+    if (paral_portfolios == 1) {
       result <- list()
       for (i in 1:length(portfolio_funs)) {
         if (show_progress_bar) cat(sprintf("\n Backtesting function %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
@@ -101,7 +101,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
         opts$progress(0)
       } else opts <- list()
       
-      cl <- makeCluster(par_portfolio)
+      cl <- makeCluster(paral_portfolios)
       registerDoSNOW(cl)
       result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .options.snow = opts) %dopar% {
         return(list(safeEval(portfolio_fun, dataset, show_progress_bar, ...)))
@@ -131,7 +131,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
       return(res)
     }
     
-    if (par_portfolio == 1) {
+    if (paral_portfolios == 1) {
       result <- list()
       for (i in 1:length(files)) {
         if (show_progress_bar) cat(sprintf("\n Backtesting file %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
@@ -148,7 +148,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
         opts$progress(0)
       } else opts <- list()
       
-      cl <- makeCluster(par_portfolio)
+      cl <- makeCluster(paral_portfolios)
       registerDoSNOW(cl)
       result <- foreach(file = files, .combine = c, .options.snow = opts) %dopar% {
         return(list(safeEval(folder_path, file, dataset__, show_progress_bar, ...)))
@@ -186,9 +186,9 @@ benchmarkBacktest <- function(dataset, benchmark, show_progress_bar, ...) {
 }
 
 singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
-                                    par_dataset = 1, packages = c(), assist_funs = c(), ...) {
+                                    paral_datasets = 1, packages = c(), assist_funs = c(), ...) {
   
-  par_dataset <- round(par_dataset)
+  paral_datasets <- round(paral_datasets)
   if (is.null(assist_funs)) assist_funs <- as.vector(lsf.str(envir = .GlobalEnv))
   
   # creat the progress bar
@@ -201,14 +201,14 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
   } else opts <- list()
   
   # when price is a list of xts object
-  if (par_dataset == 1) { ########## no-parallel mode
+  if (paral_datasets == 1) { ########## no-parallel mode
     result <- list()
     for (i in 1:length(dataset)) {
       result[[i]] <- singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dataset[[i]], ...)
       if (show_progress_bar) opts$progress(i) # show progress bar
     }
   } else {               ########### parallel mode
-    cl <- makeCluster(par_dataset)
+    cl <- makeCluster(paral_datasets)
     registerDoSNOW(cl)
     result <- foreach(dat = dataset, .combine = c, .packages = packages, .export = assist_funs, .options.snow = opts) %dopar% {
       return(list(singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dat, ...)))
@@ -238,8 +238,8 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
 #' @import xts
 singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, market = FALSE,
                                              return_portfolio = TRUE, return_return = TRUE,
-                                             shortselling = FALSE, leverage = 1, cpu_time_limit = Inf,
-                                             T_rolling_window = 252, optimize_every = 20, rebalance_every = optimize_every) {
+                                             shortselling = TRUE, leverage = Inf, cpu_time_limit = Inf,
+                                             T_rolling_window = 252, optimize_every = 20, rebalance_every = 1) {
   # creat return container
   res <- list(performance = portfolioPerformance(), 
               cpu_time = NA, 
