@@ -103,7 +103,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
       
       cl <- makeCluster(paral_portfolios)
       registerDoSNOW(cl)
-      result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .options.snow = opts) %dopar% {
+      result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .export = ls(envir = .GlobalEnv), .options.snow = opts) %dopar% {
         return(list(safeEval(portfolio_fun, dataset, show_progress_bar, ...)))
       }
       if (show_progress_bar) close(pb)
@@ -150,7 +150,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
       
       cl <- makeCluster(paral_portfolios)
       registerDoSNOW(cl)
-      result <- foreach(file = files, .combine = c, .options.snow = opts) %dopar% {
+      result <- foreach(file = files, .combine = c, .export = ls(envir = .GlobalEnv), .options.snow = opts) %dopar% {
         return(list(safeEval(folder_path, file, dataset__, show_progress_bar, ...)))
       }
       if (show_progress_bar) close(pb)
@@ -186,10 +186,9 @@ benchmarkBacktest <- function(dataset, benchmark, show_progress_bar, ...) {
 }
 
 singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
-                                    paral_datasets = 1, packages = c(), assist_funs = c(), ...) {
+                                    paral_datasets = 1, packages = c(), ...) {
   
   paral_datasets <- round(paral_datasets)
-  if (is.null(assist_funs)) assist_funs <- as.vector(lsf.str(envir = .GlobalEnv))
   
   # creat the progress bar
   if (show_progress_bar) {
@@ -210,7 +209,7 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
   } else {               ########### parallel mode
     cl <- makeCluster(paral_datasets)
     registerDoSNOW(cl)
-    result <- foreach(dat = dataset, .combine = c, .packages = packages, .export = assist_funs, .options.snow = opts) %dopar% {
+    result <- foreach(dat = dataset, .combine = c, .packages = packages, .export = ls(envir = .GlobalEnv), .options.snow = opts) %dopar% {
       return(list(singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dat, ...)))
     }
     stopCluster(cl) 
