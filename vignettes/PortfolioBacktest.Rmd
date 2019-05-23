@@ -67,6 +67,24 @@ package?portfolioBacktest
 ?portfolioBacktest
 ```
 
+# Quick start
+To do the backtest of portoflio, we need load the formated dataset and define the customized portfolio:
+```{r, eval = FALSE}
+# define the uniform portfolio
+portfolio_uniform <- function(dataset, prices = dataset$adjusted) {
+  N <- ncol(prices)
+  return(rep(1/N, N))
+}
+
+# load built-in dataset
+data("dataset")
+
+# do backtest
+bt <- portfolioBacktest(portfolio_uniform, dataset)
+
+# view backtest result
+backtestSelector(bt, 1)$performance
+```
 
 # Usage of the package
 ## Loading data
