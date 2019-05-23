@@ -235,7 +235,7 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
 # Backtesting of one portfolio function on one single xts
 #
 #' @import xts
-singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, market = FALSE,
+singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name = "adjusted", market = FALSE,
                                              return_portfolio = TRUE, return_return = TRUE,
                                              shortselling = TRUE, leverage = Inf, cpu_time_limit = Inf,
                                              T_rolling_window = 252, optimize_every = 20, rebalance_every = 1) {
@@ -259,7 +259,9 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, market = FALSE
     return(res)
   }
   
-  prices <- data$adjusted
+  if (!price_name %in% names(data)) 
+    stop(paste0("fail to find price data with name \"", price_name, "\"" , " in given dataset"))
+  prices <- data[[price_name]]
   
   ######## error control  #########
   if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]]")
