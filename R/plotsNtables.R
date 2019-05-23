@@ -32,6 +32,7 @@ summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", 
   switch(match.arg(type),
          "simple" = performance,
          "DT" = {
+           if (!is.installed("DT")) stop("please install package \"DT\" or choose another table type")
            if (is.null(order_col)) order_col <- ncol(performance)
            p <- DT::datatable(performance, options = list(dom = 't', pageLength = 15, scrollX = TRUE, order = list(order_col, order_dir)))
            p <- DT::formatStyle(p, 0, target = "row", fontWeight = DT::styleEqual(c("uniform", "index"), c("bold", "bold")))
@@ -41,7 +42,10 @@ summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", 
              p <- DT::formatPercentage(p, "max drawdown", 1)
            p
          },
-         "grid.table" = gridExtra::grid.table(performance),
+         "grid.table" = {
+           if (!is.installed("gridExtra")) stop("please install package \"gridExtra\" or choose another table type")
+           gridExtra::grid.table(performance)
+           },
          stop("Table type unknown"))
 }
 
@@ -86,6 +90,7 @@ summaryBarPlot <- function(res_summary, measures = NULL, type = c("ggplot2", "si
            par(old_par)
          },
          "ggplot2" = {
+           if (!is.installed("ggplot2")) stop("please install package \"ggplot2\" or choose another plot type")
            df <- as.data.frame.table(res_table)
            ggplot2::ggplot(df, ggplot2::aes(x = Var1, y = Freq, fill = Var1)) + 
              ggplot2::geom_bar(stat = "identity") +
@@ -149,6 +154,7 @@ backtestBoxPlot <- function(backtest, measure = "Annual volatility", type = c("g
            par(old_par)
          },
          "ggplot2" = {
+           if (!is.installed("ggplot2")) stop("please install package \"ggplot2\" or choose another plot type")
            if (is.null(params$alpha)) params$alpha <- 0.4  # this is for the points (set to 0 if not want them)
            # res_table_clean <- apply(res_table, 2, function(x) {  # remove outliers for better plotting?
            #   lquartile <- quantile(x, 0.25)
