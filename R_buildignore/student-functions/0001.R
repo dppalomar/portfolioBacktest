@@ -1,13 +1,12 @@
 library(CVXR)
 
-# Markowitz mean-variance
+# GMVP
 portfolio_fun <- function(data) {
-  mu <- colMeans(data$adjusted)
-  Sigma <- cov(data$adjusted)
-  lmd = 0.5
+  Sigma <- cov(diff(log(data$adjusted))[-1])
   w <- Variable(nrow(Sigma))
-  prob <- Problem(Maximize(t(mu) %*% w - lmd*quad_form(w, Sigma)),
+  prob <- Problem(Minimize(quad_form(w, Sigma)), 
                   constraints = list(w >= 0, sum(w) == 1))
   result <- solve(prob)
   return(as.vector(result$getValue(w)))
 }
+

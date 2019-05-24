@@ -103,7 +103,8 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
       
       cl <- makeCluster(paral_portfolios)
       registerDoSNOW(cl)
-      result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .export = ls(envir = .GlobalEnv), .packages = .packages(), .options.snow = opts) %dopar% {
+      result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .export = ls(envir = .GlobalEnv), 
+                        .packages = .packages(), .noexport = "dataset", .options.snow = opts) %dopar% {
         return(list(safeEval(portfolio_fun, dataset, show_progress_bar, ...)))
       }
       if (show_progress_bar) close(pb)
