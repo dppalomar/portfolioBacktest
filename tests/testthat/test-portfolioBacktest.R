@@ -1,42 +1,68 @@
-context("Checking portfolioBacktest and backtestSummary")
+context("Checking portfolioBacktest and result handling functions")
 
-data(dataset)  # data in the package
-#dataset_check <- to.monthly(dataset[[1]]$adjusted)$`dataset[[1]]$adjusted.Close`
-#save(dataset_check, file = "dataset_check.RData")
-load("dataset_check.RData")
+data(dataset) 
 
-test_that("the dataset used is the same", {
-  expect_equal(dataset_check, to.monthly(dataset[[1]]$adjusted)$`dataset[[1]]$adjusted.Close`)
-})
-
-
-
-portfolio_fun_uniform <- function(dataset, prices = dataset$adjusted) {
+# define uniform portfolio
+uniform_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
   return(rep(1/ncol(prices), ncol(prices)))
 }
 
+# define GMVP
+GMVP_portfolio_fun <- function(data) {
+  X <- diff(log(data$adjusted))[-1]  # compute log returns
+  Sigma <- cov(X)  # compute SCM
+  # design GMVP
+  w <- solve(Sigma, rep(1, nrow(Sigma)))
+  w <- w/sum(abs(w))  # it may not satisfy w>=0
+  return(w)
+}
+
+portfolios <- list("Uniform"   = uniform_portfolio_fun,
+                   "GMVP"      = GMVP_portfolio_fun)
 
 test_that("backtest results and performance measures coincide with the precomputed ones", {
-  bt <- portfolioBacktest(portfolio_fun_uniform, dataset[1],
-                          shortselling = FALSE, leverage = 1,
+  bt <- portfolioBacktest(portfolios, dataset = dataset,
+                          shortselling = TRUE, leverage = Inf, 
+                          return_portfolio = TRUE, return_return = TRUE, 
+                          benchmark = c("uniform", "index"),
                           T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
-  #bt_check <- bt
-  #save(bt_check, file = "bt_check.RData")
+  # bt_check <- bt$GMVP$`dataset 1`[-2]
+  # save(bt_check, file = "bt_check.RData")
   load("bt_check.RData")
-  expect_equal(bt$fun1$`dataset 1`[-2], bt_check$fun1$`dataset 1`[-2])  # compare except cpu time
+  expect_equal(bt$GMVP$`dataset 1`[-2], bt_check) 
   
-  res_summary_median <- backtestSummary(bt, summary_fun = median)
-  #res_summary_median_check <- res_summary_median
-  #save(res_summary_median_check, file = "res_summary_median_check.RData")
-  load("res_summary_median_check.RData")
+  # bt_selector_check <- backtestSelector(bt, "Uniform")$performance
+  # save(bt_selector_check, file = "bt_selector_check.RData")
+  load("bt_selector_check.RData")
+  expect_equal(backtestSelector(bt, "Uniform")$performance, bt_selector_check) 
   
-  expect_equal(res_summary_median[-3], res_summary_median_check[-3])  # compare except cpu time
+  # bt_table_check <- backtestTable(bt)[1:8]
+  # save(bt_table_check, file = "bt_table_check.RData")
+  load("bt_table_check.RData")
+  expect_equal(backtestTable(bt)[1:8], bt_table_check) 
+  
+  # bt_summary_check <- backtestSummary(bt, summary_fun = median)[1:2]
+  # save(bt_summary_check, file = "bt_summary_check.RData")
+  load("bt_summary_check.RData")
+  bt_summary <- backtestSummary(bt, summary_fun = median)[1:2]
+  expect_equal(backtestSummary(bt, summary_fun = median)[1:2], bt_summary)  # compare except cpu time
 })
 
+test_that("portfolioBacktest under parallel mode", {
+  bt_paral_portfolios <- portfolioBacktest(portfolios, dataset = dataset, paral_portfolios = 2,
+                                           shortselling = TRUE, leverage = Inf, 
+                                           return_portfolio = TRUE, return_return = TRUE, 
+                                           benchmark = c("uniform", "index"),
+                                           T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+  
+  
+  bt_paral_datasets <- portfolioBacktest(portfolios, dataset = dataset, paral_datasets = 5,
+                                         shortselling = TRUE, leverage = Inf, 
+                                         return_portfolio = TRUE, return_return = TRUE, 
+                                         benchmark = c("uniform", "index"),
+                                         T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
 
-# # other test functions:
-# expect_equal(cond$cov_y_diag,  diag(cond$cov_y))
-# expect_error(riskParityPortfolio(Sigma, w_ub = rep(0.01, N)))
-# expect_silent(riskParityPortfolio(Sigma, w_lb = 0.05, w_ub = 0.3))
-# expect_warning(riskParityPortfolio(Sigma, w0 = rep(1, N)))
-# expect_that(all.equal(rpp_mu, rpp, tolerance = 1e-4), is_true())
+  load("bt_table_check.RData")
+  expect_equal(backtestTable(bt_paral_portfolios)[1:8], bt_table_check) 
+  expect_equal(backtestTable(bt_paral_datasets)[1:8], bt_table_check) 
+})

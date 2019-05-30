@@ -103,7 +103,8 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
       
       cl <- makeCluster(paral_portfolios)
       registerDoSNOW(cl)
-      result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .export = ls(envir = .GlobalEnv), .options.snow = opts) %dopar% {
+      result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .export = ls(envir = .GlobalEnv), 
+                        .packages = .packages(), .noexport = "dataset", .options.snow = opts) %dopar% {
         return(list(safeEval(portfolio_fun, dataset, show_progress_bar, ...)))
       }
       if (show_progress_bar) close(pb)
@@ -150,7 +151,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
       
       cl <- makeCluster(paral_portfolios)
       registerDoSNOW(cl)
-      result <- foreach(file = files, .combine = c, .export = ls(envir = .GlobalEnv), .options.snow = opts) %dopar% {
+      result <- foreach(file = files, .combine = c, .options.snow = opts) %dopar% {
         return(list(safeEval(folder_path, file, dataset__, show_progress_bar, ...)))
       }
       if (show_progress_bar) close(pb)
@@ -185,8 +186,7 @@ benchmarkBacktest <- function(dataset, benchmark, show_progress_bar, ...) {
   return(res)
 }
 
-singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
-                                    paral_datasets = 1, packages = c(), ...) {
+singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar, paral_datasets = 1, ...) {
   
   paral_datasets <- round(paral_datasets)
   
@@ -209,7 +209,7 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
   } else {               ########### parallel mode
     cl <- makeCluster(paral_datasets)
     registerDoSNOW(cl)
-    result <- foreach(dat = dataset, .combine = c, .packages = packages, .export = ls(envir = .GlobalEnv), .options.snow = opts) %dopar% {
+    result <- foreach(dat = dataset, .combine = c, .packages = .packages(), .export = ls(envir = .GlobalEnv), .options.snow = opts) %dopar% {
       return(list(singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dat, ...)))
     }
     stopCluster(cl) 
@@ -235,7 +235,7 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar,
 # Backtesting of one portfolio function on one single xts
 #
 #' @import xts
-singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, market = FALSE,
+singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name = "adjusted", market = FALSE,
                                              return_portfolio = TRUE, return_return = TRUE,
                                              shortselling = TRUE, leverage = Inf, cpu_time_limit = Inf,
                                              T_rolling_window = 252, optimize_every = 20, rebalance_every = 1) {
@@ -259,7 +259,9 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, market = FALSE
     return(res)
   }
   
-  prices <- data$adjusted
+  if (!price_name %in% names(data)) 
+    stop(paste0("fail to find price data with name \"", price_name, "\"" , " in given dataset"))
+  prices <- data[[price_name]]
   
   ######## error control  #########
   if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]]")

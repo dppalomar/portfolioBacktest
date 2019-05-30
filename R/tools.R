@@ -50,3 +50,7 @@ detachPackages <- function(items) {
     }
   }
 }
+
+is.installed <- function(pkg){
+  is.element(pkg, installed.packages()[,1])
+} 
