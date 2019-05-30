@@ -54,20 +54,19 @@ knit_hooks$set(pngquant = hook_pngquant)
 It can be used by a researcher/practitioner to check a set of different portfolios, as well as by a course 
 instructor to evaluate the students in their portfolio design in a fully automated and convenient manner.
 
-# Installation
-The package can currently be installed from [GitHub](https://github.com/dppalomar/portfolioBacktest):
-```{r, eval = FALSE}
-# install.packages("devtools")
-devtools::install_github("dppalomar/portfolioBacktest")
 
-# Getting help
-library(portfolioBacktest)
-help(package = "portfolioBacktest")
-package?portfolioBacktest
-?portfolioBacktest
-```
+# Package Snapshot
+This package backtests a list of portfolios over multiple datasets on a rolling-window basis, producing final results as the following:
 
-# Quick start
+datatable
+
+barplot
+
+boxplot
+
+
+
+# Quick Start
 
 Do the backtest on your own portfolio following few steps:
 ```{r, echo = FALSE, include = FALSE}
@@ -98,7 +97,24 @@ bt <- portfolioBacktest(my_portfolio, dataset)
 backtestSelector(bt, 1)$performance
 ```
 
-# Loading Date
+
+
+# Installation
+The package can currently be installed from [GitHub](https://github.com/dppalomar/portfolioBacktest):
+```{r, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("dppalomar/portfolioBacktest")
+
+# Getting help
+library(portfolioBacktest)
+help(package = "portfolioBacktest")
+package?portfolioBacktest
+?portfolioBacktest
+```
+
+
+
+# Loading Data
 
 ## Basic Structure of Dataset
 The main function `portfolioBacktest()` requires argument `dataset` follow the certain format: it should be a collection (list) of several individual data items, with each of them be a list of several xts objects following exactly same date index. Besides, each item must contain an xts recording the historical prices of all stocks. We have embedded a small formated dataset in this package, see follows
@@ -140,13 +156,13 @@ uniform_portfolio_fun <- function(data) {
   return(w)
 }
 
-# define GMVP
+# define GMVP (allowing shorting)
 GMVP_portfolio_fun <- function(data) {
   X <- diff(log(data$adjusted))[-1]  # compute log returns
   Sigma <- cov(X)  # compute SCM
   # design GMVP
   w <- solve(Sigma, rep(1, nrow(Sigma)))
-  w <- w/sum(abs(w))  # it may not satisfy w>=0
+  w <- w/sum(abs(w))
   return(w)
 }
 
@@ -177,8 +193,8 @@ portfolios <- list("Uniform"   = uniform_portfolio_fun,
 bt <- portfolioBacktest(portfolios, dataset)
 ```
 
-## Result Format
 
+## Result Format
 Here `bt` is a list storing all the backtest results according to your passed functions list.
 ```{r}
 names(bt)
@@ -194,23 +210,24 @@ dt$name <- "bt"
 print(dt, limit = 20)
 ```
 
-Feel free to check your backtest results by directly visiting returned `bt`. 
+Feel free to check your backtest results by directly exploring the returned `bt`. 
 
-## Make Your Results In Order
 
-We also provide a serial of functions to conveniently extract results:
+## Formatting Your Results
+We also provide a series of functions to conveniently extract results:
 
-* Select several porformances of one specific portfolio
+* Select several performances of one specific portfolio:
 ```{r}
 # select sharpe ratio and max drawdown performance of uniform portfolio
 backtestSelector(bt, "Uniform", selector = c("Sharpe ratio", "max drawdown"))
 ```
-* Tables of several porformances of several portfolios (classified by performance criterias)
+* Tables of several performance measures of the portfolios (classified by performance criteria):
 ```{r}
 # show the portfolios performance in tables 
-backtestTable(bt, c("Uniform", "GMVP", "Markowitz"), selector = c("Sharpe ratio", "max drawdown"))
+backtestTable(bt, c("Uniform", "GMVP", "Markowitz"), 
+              selector = c("Sharpe ratio", "max drawdown"))
 ```
-* Summary the performances
+* Summary of performance measures:
 ```{r}
 res_sum <- backtestSummary(bt)
 names(res_sum)
@@ -218,8 +235,8 @@ res_sum$performance_summary
 ```
 For more flexible usage of these functions,  you can refer to help pages of these functions. 
 
-## View Your Results In Figures
 
+## Plotting Your Results
 Beside, we also provide some functions to show results in figures:
 
 * Tables
@@ -251,7 +268,7 @@ In order to monitor the backtest progress, we add the progress bar display in al
 bt <- portfolioBacktest(portfolios, dataset, show_progress_bar = TRUE)
 ```
 
-## Parallel mode
+## Parallel computation
 The backtest incurs very heavy computation load when numbers of portfolio functions or dataset go large. Therefore, we add support for parallel mode in this package. Users can choose if they want to parallel evaluate different portfolio functions or in a more fine-grained way, evaluating multiple datasets parallel for each function.
 ```{r, cache=TRUE}
 # parallel = 2 for functions
@@ -308,10 +325,11 @@ bt_all_students <- portfolioBacktest(folder_path = "portfolio_files", dataset = 
 names(bt_all_students)
 ```
 
-## Rank Portfolios Performance By Your Rule
+## Leaderboard of Portfolios with User-Defined Ranking
 Now we can rank the different portfolios/students based on a weighted combination of the rank percentiles (termed scores) of the performance measures:
 ```{r, fig.height=2, fig.width=9, out.width = "90%"}
-leaderboard <- portfolioLeaderboard(bt_all_students, weights = list('Sharpe ratio' = 7, 
+leaderboard <- portfolioLeaderboard(bt_all_students, 
+                                    weights = list('Sharpe ratio' = 7, 
                                                                     'max drawdown' = 1,  
                                                                     'annual return' = 1, 
                                                                     'ROT bps' = 1))
