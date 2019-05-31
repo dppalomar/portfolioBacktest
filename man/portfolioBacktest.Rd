@@ -4,14 +4,14 @@
 \alias{portfolioBacktest}
 \title{Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices}
 \usage{
-portfolioBacktest(portfolio_funs = NULL, dataset, folder_path = NULL,
-  paral_portfolios = 1, show_progress_bar = FALSE, benchmark = NULL,
-  ...)
+portfolioBacktest(portfolio_funs = NULL, dataset_list,
+  folder_path = NULL, paral_portfolios = 1,
+  show_progress_bar = FALSE, benchmark = NULL, ...)
 }
 \arguments{
 \item{portfolio_funs}{function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.}
 
-\item{dataset}{a list with each element be a list of follows:
+\item{dataset_list}{a list with each element be a list of follows:
 \itemize{\item{\code{prices} - an xts object containing the stock prices for backtesting}
          \item{\code{index} - an xts object containing the market index of above \code{prices} with exact same time index}}.}
 

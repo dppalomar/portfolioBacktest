@@ -3,7 +3,7 @@
 #' @description Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
 #'
 #' @param portfolio_funs function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.
-#' @param dataset a list with each element be a list of follows:
+#' @param dataset_list a list with each element be a list of follows:
 #' \itemize{\item{\code{prices} - an xts object containing the stock prices for backtesting}
 #'          \item{\code{index} - an xts object containing the market index of above \code{prices} with exact same time index}}.
 #' @param folder_path the path of folder containing the portfolio functions saved in files, only valid when \code{portfolio_fun} is not passed.
@@ -55,7 +55,7 @@
 #' @import xts
 #' @export
 #' 
-portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL, paral_portfolios = 1, 
+portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path = NULL, paral_portfolios = 1, 
                               show_progress_bar = FALSE, benchmark = NULL, ...) {
   ####### error control ########
   paral_portfolios <- round(paral_portfolios)
@@ -75,9 +75,9 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
     else portfolio_names <- names(portfolio_funs)
     
     # incase the extra packages are loaded
-    safeEval <- function(portfolio_fun, dataset, show_progress_bar, ...) {
+    safeEval <- function(portfolio_fun, dataset_list, show_progress_bar, ...) {
       packages_default <- search() # snap the default packages
-      res <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, dataset = dataset, show_progress_bar = show_progress_bar, ...)
+      res <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, dataset_list = dataset_list, show_progress_bar = show_progress_bar, ...)
       packages_now <- search()# detach the newly loaded packages
       packages_det <- packages_now[!(packages_now %in% packages_default)]
       detachPackages(packages_det)
@@ -88,7 +88,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
       result <- list()
       for (i in 1:length(portfolio_funs)) {
         if (show_progress_bar) cat(sprintf("\n Backtesting function %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
-        result[[i]] <- safeEval(portfolio_funs[[i]], dataset, show_progress_bar, ...)
+        result[[i]] <- safeEval(portfolio_funs[[i]], dataset_list, show_progress_bar, ...)
       }
     } else {
       # creat the progress bar based on function number
@@ -103,9 +103,11 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
       
       cl <- makeCluster(paral_portfolios)
       registerDoSNOW(cl)
-      result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .export = ls(envir = .GlobalEnv), 
-                        .packages = .packages(), .noexport = "dataset", .options.snow = opts) %dopar% {
-        return(list(safeEval(portfolio_fun, dataset, show_progress_bar, ...)))
+      exports <- ls(envir = .GlobalEnv)
+      exports <- exports[! exports %in% c("portfolio_fun", "dataset_list", "show_progress_bar")]
+      result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .export = exports, 
+                        .packages = .packages(), .options.snow = opts) %dopar% {
+        return(list(safeEval(portfolio_fun, dataset_list, show_progress_bar, ...)))
       }
       if (show_progress_bar) close(pb)
       stopCluster(cl) 
@@ -116,12 +118,12 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
     portfolio_names <- gsub(".R", "", files)
     
     # define a safe enviroment to source .R files
-    dataset__ <- dataset # backup dataset in case of being covered by sourced files
-    safeEval <- function(folder_path, file, dataset__, show_progress_bar, ...) {
+    dataset_list__ <- dataset_list # backup dataset_list in case of being covered by sourced files
+    safeEval <- function(folder_path, file, dataset_list__, show_progress_bar, ...) {
       packages_default <- search() # snap the default packages
       source_error <- FALSE; source_error_message <- NA
       tryCatch(expr    = {suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
-                          res <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, dataset = dataset__, 
+                          res <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, dataset_list = dataset_list__, 
                                                          show_progress_bar = show_progress_bar, ...)}, 
                warning = function(w){source_error <<- TRUE; source_error_message <<- w$message}, 
                error   = function(e){source_error <<- TRUE; source_error_message <<- e$message})
@@ -136,7 +138,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
       result <- list()
       for (i in 1:length(files)) {
         if (show_progress_bar) cat(sprintf("\n Backtesting file %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
-        result[[i]] <- safeEval(folder_path, files[i], dataset__, show_progress_bar, ...)
+        result[[i]] <- safeEval(folder_path, files[i], dataset_list__, show_progress_bar, ...)
       }
     } else {
       # creat the progress bar based on files number
@@ -152,7 +154,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
       cl <- makeCluster(paral_portfolios)
       registerDoSNOW(cl)
       result <- foreach(file = files, .combine = c, .options.snow = opts) %dopar% {
-        return(list(safeEval(folder_path, file, dataset__, show_progress_bar, ...)))
+        return(list(safeEval(folder_path, file, dataset_list__, show_progress_bar, ...)))
       }
       if (show_progress_bar) close(pb)
       stopCluster(cl) 
@@ -162,7 +164,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
   names(result) <- portfolio_names
   
   # add benchmark and return result
-  res_benchmark <- benchmarkBacktest(dataset = dataset, benchmark = benchmark, show_progress_bar = show_progress_bar, ...)
+  res_benchmark <- benchmarkBacktest(dataset_list = dataset_list, benchmark = benchmark, show_progress_bar = show_progress_bar, ...)
   result <- c(result, res_benchmark)
   attr(result, 'portfolio_index') <- 1:length(portfolio_names)
   attr(result, 'contain_benchmark') <- length(res_benchmark) > 0
@@ -172,28 +174,28 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset, folder_path = NULL
 
 # benchmark portfolio backtest
 
-benchmarkBacktest <- function(dataset, benchmark, show_progress_bar, ...) {
+benchmarkBacktest <- function(dataset_list, benchmark, show_progress_bar, ...) {
   
   res <- list()
   if ("uniform" %in% benchmark) {
     if (show_progress_bar) cat("\n Evaluating benchmark-uniform\n")
-    res$uniform <- singlePortfolioBacktest(portfolio_fun = uniform_portfolio_fun, dataset = dataset, show_progress_bar = show_progress_bar, ...)
+    res$uniform <- singlePortfolioBacktest(portfolio_fun = uniform_portfolio_fun, dataset_list = dataset_list, show_progress_bar = show_progress_bar, ...)
   }
   if ("index" %in% benchmark) {
     if (show_progress_bar) cat("\n Evaluating benchmark-index\n")
-    res$index <- singlePortfolioBacktest(portfolio_fun = NULL, dataset = dataset, show_progress_bar = show_progress_bar, market = TRUE, ...)
+    res$index <- singlePortfolioBacktest(portfolio_fun = NULL, dataset_list = dataset_list, show_progress_bar = show_progress_bar, market = TRUE, ...)
   }
   return(res)
 }
 
-singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar, paral_datasets = 1, ...) {
+singlePortfolioBacktest <- function(portfolio_fun, dataset_list, show_progress_bar, paral_datasets = 1, ...) {
   
   paral_datasets <- round(paral_datasets)
   
   # creat the progress bar
   if (show_progress_bar) {
     sink(file = tempfile())
-    pb <- txtProgressBar(max = length(dataset), style = 3)
+    pb <- txtProgressBar(max = length(dataset_list), style = 3)
     sink()
     opts <- list(progress = function(n) setTxtProgressBar(pb, n))
     opts$progress(0)
@@ -202,23 +204,25 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset, show_progress_bar, p
   # when price is a list of xts object
   if (paral_datasets == 1) { ########## no-parallel mode
     result <- list()
-    for (i in 1:length(dataset)) {
-      result[[i]] <- singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dataset[[i]], ...)
+    for (i in 1:length(dataset_list)) {
+      result[[i]] <- singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dataset_list[[i]], ...)
       if (show_progress_bar) opts$progress(i) # show progress bar
     }
   } else {               ########### parallel mode
     cl <- makeCluster(paral_datasets)
     registerDoSNOW(cl)
-    result <- foreach(dat = dataset, .combine = c, .packages = .packages(), .export = ls(envir = .GlobalEnv), .options.snow = opts) %dopar% {
+    exports <- ls(envir = .GlobalEnv)
+    exports <- exports[! exports %in% c("portfolio_fun", "dat")]
+    result <- foreach(dat = dataset_list, .combine = c, .packages = .packages(), .export = ls(envir = .GlobalEnv), .options.snow = opts) %dopar% {
       return(list(singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dat, ...)))
     }
     stopCluster(cl) 
   }
   
-  if (is.null(names(dataset)))
-    names(result) <- paste0("data", 1:length(dataset))
+  if (is.null(names(dataset_list)))
+    names(result) <- paste0("data", 1:length(dataset_list))
   else
-    names(result) <- names(dataset)
+    names(result) <- names(dataset_list)
   
   return(result)
 }
@@ -260,7 +264,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name = "
   }
   
   if (!price_name %in% names(data)) 
-    stop(paste0("fail to find price data with name \"", price_name, "\"" , " in given dataset"))
+    stop(paste0("fail to find price data with name \"", price_name, "\"" , " in given dataset_list"))
   prices <- data[[price_name]]
   
   ######## error control  #########
