@@ -37,7 +37,7 @@ opts_chunk$set(
   comment = "#>",
   fig.align = "center",
   fig.retina = 2,
-  out.width = "75%",
+  out.width = "85%",
   dpi = 96,
   pngquant = "--speed=1"
 )
@@ -57,14 +57,29 @@ instructor to evaluate the students in their portfolio design in a fully automat
 
 # Package Snapshot
 This package backtests a list of portfolios over multiple datasets on a rolling-window basis, producing final results as the following:
-
-datatable
-
-barplot
-
-boxplot
+```{r, echo = FALSE}
+library(portfolioBacktest)
+load("figures/bt.RData")
+```
 
 
+* table
+
+```{r, echo = FALSE}
+res_sum <- backtestSummary(bt)
+summaryTable(res_sum, type = "DT")
+```
+
+* barplot
+
+```{r, echo = FALSE}
+summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"))
+```
+* boxplot
+
+```{r, echo = FALSE}
+backtestBoxPlot(bt)
+```
 
 # Quick Start
 
@@ -78,7 +93,7 @@ library(CVXR)
 * **Step 1** - load package & dataset
 ```{r, echo = TRUE, results = 'hide'}
 library(portfolioBacktest)
-data("dataset")
+data("dataset10")
 ```
 * **Step 2** - define your own portfolio
 ```{r}
@@ -90,11 +105,11 @@ my_portfolio <- function(dataset) {
 ```
 * **Step 3** - do backtest
 ```{r, results = 'hide'}
-bt <- portfolioBacktest(my_portfolio, dataset)
+bt <- portfolioBacktest(my_portfolio, dataset10)
 ```
 * **Step 4** - check your portfolio performance
 ```{r}
-backtestSelector(bt, 1)$performance
+backtestSummary(bt)$performance
 ```
 
 
@@ -116,43 +131,47 @@ package?portfolioBacktest
 
 # Loading Data
 
-## Basic Structure of Dataset
-The main function `portfolioBacktest()` requires argument `dataset` follow the certain format: it should be a collection (list) of several individual data items, with each of them be a list of several xts objects following exactly same date index. Besides, each item must contain an xts recording the historical prices of all stocks. We have embedded a small formated dataset in this package, see follows
+## Basic structure of `dataset_list`
+The main function `portfolioBacktest()` requires argument `dataset_list` follow the certain format: it should be a list of several individual datasets, with each of them be a list of several xts objects following exactly same date index. Besides, each item must contain an xts recording the historical prices of all stocks. We have embedded a small formated dataset in this package, see follows
 ```{r}
-data("dataset")  # load the embedded dataset
-class(dataset)  # show dataset class
-names(dataset)  # show names of (10) individual data items
-str(dataset$`dataset 1`)  # show structure of one data item
+data("dataset10")  # load the embedded dataset
+class(dataset10)  # show dataset class
+names(dataset10$`dataset 1`)  # structure of one dataset
+head(dataset10$`dataset 1`$adjusted[,1:3], 5)  
 ```
 Note that each data item contains an xts object called `"adjusted"` (adjusted prices). By default, `portfolioBacktest()` will use such `"adjusted"` prices to calculate the portfolio performance. But you can change this setting by passing another argument `price_name` to tell function which xts you want to use in calculating portfolio performance.
 
-## Obtain More Data
+## Obtain more data
 We notice that 10 data is not enough in evaluating or comparing your portfolio functions. In this package, we provide a function `stockDataDownload()` to download online data resources. Its results will naturally follow our required data format. Function `stockDataResample()` can help do resampling from on a formated data and return a formated dataset, which can be directly passed to `portfolioBacktest()`. We recommend you to use these two functions in generating your own dataset, e.g.,
 ```{r, eval = FALSE}
 data("SP500_symbols")  # load the SP500 symbols
 # download data from internet
-SP500 <- stockDataDownload(stock_symbols = SP500_symbols, from = "2008-12-01", to = "2018-12-01")
+SP500 <- stockDataDownload(stock_symbols = SP500_symbols, 
+                           from = "2008-12-01", to = "2018-12-01")
 # resample from SP500, each with 50 stcoks and 2-year continuous data 
-my_dataset <- stockDataResample(SP500_YAHOO, N_stock = 50, T_sample = 252*2, N_dataset = 10)
+my_dataset_list <- stockDataResample(SP500_YAHOO, N_stock = 50, T_sample = 252*2, N_dataset = 10)
 ```
 In each individual data item, you will get the 7 xts objects with name: `open`, `high`, `low`, `close`,   `volumn`, `adjusted`, `index`. You can save the dataset and use it everywhere as you want.
 
-## Expand Dataset
+## Expand dataset
 
 Knowing more can be helpful in designing portfolios. You are allowed to add as many other xts objects in each data item as you want. For example, if Moving Average Convergence Divergence (MACD) information is desired by portfolio functions, you can manually add it to dataset by
 ```{r, eval = FALSE}
-for (i in 1:length(dataset))
-  dataset[[i]]$MACD <- apply(dataset[[i]]$adjusted, 2, function(x){TTR::MACD(x)[ ,'macd']})
+for (i in 1:length(dataset10))
+  dataset10[[i]]$MACD <- apply(dataset10[[i]]$adjusted, 2, function(x){TTR::MACD(x)[ ,'macd']})
 ```
 
-# Defining Portfolios
+# Defining portfolios
 
 The portfolio are required to be given in form of function, which will be fed with splited data and required to return a numerical vector of the same length to stocks number. We give the examples for **uniform portfolio**, **global minimum variance portfolio (GMVP)** and **Markowitz mean-variance portfolio** as follows (under practical constraints $\mathbf{w} \ge \mathbf{0}$ and $\mathbf{1}^{T} \mathbf{w} =1$)
 ```{r, echo = TRUE, results = 'hide'}
-# define uniform portfolio
-uniform_portfolio_fun <- function(data) {
-  N <- ncol(data$adjusted)
-  w <- rep(1/N, N)
+# define quintile portfolio
+quintile_portfolio_fun <- function(data) {
+  X <- diff(log(data$adjusted))[-1]  
+  N <- ncol(X)
+  ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
+  w <- rep(0, N)
+  w[ranking[1:round(N/5)]] <- 1/round(N/5)
   return(w)
 }
 
@@ -183,18 +202,18 @@ Markowitz_portfolio_fun <- function(data) {
 
 # Backtesting and Plots
 
-## Backtest Your Portfolios
+## Backtest your portfolios
 
 With the dataset and portfolios ready, we can now do the backtest easily. For example, to obtain the three portfolios' performance over embedded dataset, we just need combine them in a list and finish all following work in one line
 ```{r, results = 'hide'}
-portfolios <- list("Uniform"   = uniform_portfolio_fun,
+portfolios <- list("Quintile"  = quintile_portfolio_fun,
                    "GMVP"      = GMVP_portfolio_fun,
                    "Markowitz" = Markowitz_portfolio_fun)
-bt <- portfolioBacktest(portfolios, dataset)
+bt <- portfolioBacktest(portfolios, dataset10, benchmark = c("uniform", "index"))
 ```
 
 
-## Result Format
+## Result format
 Here `bt` is a list storing all the backtest results according to your passed functions list.
 ```{r}
 names(bt)
@@ -213,19 +232,18 @@ print(dt, limit = 20)
 Feel free to check your backtest results by directly exploring the returned `bt`. 
 
 
-## Formatting Your Results
+## Shaping your results
 We also provide a series of functions to conveniently extract results:
 
 * Select several performances of one specific portfolio:
 ```{r}
 # select sharpe ratio and max drawdown performance of uniform portfolio
-backtestSelector(bt, "Uniform", selector = c("Sharpe ratio", "max drawdown"))
+backtestSelector(bt, portfolio_name = "Quintile", selector = c("Sharpe ratio", "max drawdown"))
 ```
 * Tables of several performance measures of the portfolios (classified by performance criteria):
 ```{r}
 # show the portfolios performance in tables 
-backtestTable(bt, c("Uniform", "GMVP", "Markowitz"), 
-              selector = c("Sharpe ratio", "max drawdown"))
+backtestTable(bt, selector = c("Sharpe ratio", "max drawdown"))
 ```
 * Summary of performance measures:
 ```{r}
@@ -233,19 +251,19 @@ res_sum <- backtestSummary(bt)
 names(res_sum)
 res_sum$performance_summary 
 ```
-For more flexible usage of these functions,  you can refer to help pages of these functions. 
+For more flexible usage of these functions, you can refer to help pages of these functions. 
 
 
-## Plotting Your Results
+## Plotting your results
 Beside, we also provide some functions to show results in figures:
 
 * Tables
 ```{r}
-summaryTable(res_sum, measures = c("cpu time", "Sharpe ratio", "max drawdown"), type = "grid.table")
+summaryTable(res_sum, type = "DT")
 ```
 * Barplot
 ```{r}
-summaryBarPlot(res_sum)
+summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"))
 ```
 * BoxPlot
 ```{r}
@@ -258,27 +276,36 @@ backtestBoxPlot(bt)
 ## Incoporate benchmarks
 When perform the backtest of our designed portfolio functions, we may want to incorporate some benchmarks. Now the package suppport two benchmarks, which are `uniform portfolio` and `index` of the certain market. (Note that incorporating `index` benchmark requires each data item contain the index prices in an xts named `index`). We can easily do that in any case by passing corresponding value to argument `benchmark`.
 ```{r, cache=TRUE}
-bt <- portfolioBacktest(portfolios, dataset, benchmark = c('uniform', 'index'))
+bt <- portfolioBacktest(portfolios, dataset10, benchmark = c('uniform', 'index'))
 names(bt)
 ```
 
 ## Progress bar
 In order to monitor the backtest progress, we add the progress bar display in all cases. Users can turn on the progress bar by setting argument `show_progress_bar` be `TRUE`.
 ```{r, eval = FALSE}
-bt <- portfolioBacktest(portfolios, dataset, show_progress_bar = TRUE)
+bt <- portfolioBacktest(portfolios, dataset10, show_progress_bar = TRUE)
 ```
 
-## Parallel computation
+## Parallel backtest
 The backtest incurs very heavy computation load when numbers of portfolio functions or dataset go large. Therefore, we add support for parallel mode in this package. Users can choose if they want to parallel evaluate different portfolio functions or in a more fine-grained way, evaluating multiple datasets parallel for each function.
 ```{r, cache=TRUE}
+portfun <- Markowitz_portfolio_fun
+
 # parallel = 2 for functions
-system.time(bt_nopar <- portfolioBacktest(list(Markowitz_portfolio_fun, Markowitz_portfolio_fun), dataset))
-system.time(bt_parfuns <- portfolioBacktest(list(Markowitz_portfolio_fun, Markowitz_portfolio_fun), dataset,
-                                            paral_portfolios = 2))
+system.time(
+  bt_nopar <- portfolioBacktest(list(portfun, portfun), dataset10)
+  )
+system.time(
+  bt_parfuns <- portfolioBacktest(list(portfun, portfun), dataset10, paral_portfolios = 2)
+  )
 
 # parallel = 5 for datasets
-system.time(bt_nopar <- portfolioBacktest(Markowitz_portfolio_fun, dataset))
-system.time(bt_pardata <- portfolioBacktest(Markowitz_portfolio_fun, dataset, paral_datasets = 5))
+system.time(
+  bt_nopar <- portfolioBacktest(portfun, dataset10)
+  )
+system.time(
+  bt_pardata <- portfolioBacktest(portfun, dataset10, paral_datasets = 5)
+  )
 ```
 It is obvious that the evaluation time for backtesting has been significantly reduced. Note that the parallel evaluation time can not be exactly equal to the original time divided by parallel cores because starting new R sessions also takes extra time. 
 
@@ -303,7 +330,7 @@ wrong_portfolio_fun <- function(data) {
 ```
 Then, we pass the above portfolio function into `portfolioBacktest()` and show how to check the error trace:
 ```{r}
-bt <- portfolioBacktest(wrong_portfolio_fun, dataset[1:5])
+bt <- portfolioBacktest(wrong_portfolio_fun, dataset10)
 res <- backtestSelector(bt, portfolio_index = 1)
 
 # information of 1st error
@@ -317,22 +344,22 @@ cat(attr(error1, "error_stack")$at)
 cat(attr(error1, "error_stack")$stack)
 ```
 
-## Backtest Over Files: Usage for Grading Students in A Course
+## Backtest over files: usage for grading students
 When you have numbers of portfolio or some of them have conflicting dependencies, loading all of them into  your environment may not be a reasonable approach. Hence, we add support on doing backtest over files in our package. It suffices write each portfolio function into a .R script (with unique filename) containing the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). Then all thees files should be put into a file folder, whose path will be passed to `portfolioBacktest()` through argument `folder_path`.
 If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily by requiring each student submit a .R script with unique filenames like `STUDENTNUMBER.R`. For example, we have put three files in folder `portfolio_files`, namely `0001.R`, `0002.R`, `0003.R`.
 ```{r, cache=TRUE}
-bt_all_students <- portfolioBacktest(folder_path = "portfolio_files", dataset = dataset)
+bt_all_students <- portfolioBacktest(folder_path = "portfolio_files", dataset = dataset10)
 names(bt_all_students)
 ```
 
-## Leaderboard of Portfolios with User-Defined Ranking
+## Leaderboard of portfolios with user-defined ranking
 Now we can rank the different portfolios/students based on a weighted combination of the rank percentiles (termed scores) of the performance measures:
 ```{r, fig.height=2, fig.width=9, out.width = "90%"}
 leaderboard <- portfolioLeaderboard(bt_all_students, 
-                                    weights = list('Sharpe ratio' = 7, 
-                                                                    'max drawdown' = 1,  
-                                                                    'annual return' = 1, 
-                                                                    'ROT bps' = 1))
+                                    weights = list("Sharpe ratio"  = 7, 
+                                                   "max drawdown"  = 1, 
+                                                   "annual return" = 1, 
+                                                   "ROT bps"       = 1))
 
 # show leaderboard
 library(gridExtra)
@@ -380,7 +407,12 @@ The definition of performance criteria used in this package is listed as below
  
  - **Return over Turnover (ROT):** the sum of cummulative return over the sum of turnover.
 
+## Future features
 
+We are going to add the following features into our package:
+
+ - **Transaction Cost**: the transaction cost will be deducted in calculating portfolio returns.
+ - **Turnover Constraint**: compared with latest portfolio vector $\mathbf{w}_{t-1}$, your current portfolio $\mathbf{w}_{t}$ should be constrainted with limited changing, e.g., $\lVert \mathbf{w}_{t-1} - \mathbf{w}_{t} \rVert _{1} \le c$.
 
 
 
