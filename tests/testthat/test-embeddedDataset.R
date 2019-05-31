@@ -1,6 +1,6 @@
 context("Checking embedded dataset")
 
-data("dataset")  # data in the package
+data("dataset10")  # data in the package
 # to reduce required storage, only check sample mean and standard variance
 # dataset_check <- sapply(dataset, function(x){sapply(x, function(x) {return(list(mean(x), mean(cov(x))))})})
 # dataset_features_check <- unlist(dataset_check)
@@ -9,7 +9,7 @@ data("dataset")  # data in the package
 load("dataset_features_check.RData")
 
 test_that("the dataset used is the same", {
-  dataset_check <- sapply(dataset, function(x){sapply(x, function(x) {return(list(mean(x), mean(cov(x))))})})
+  dataset_check <- sapply(dataset10, function(x){sapply(x, function(x) {return(list(mean(x), mean(cov(x))))})})
   dataset_features <- unlist(dataset_check)
   expect_equal(dataset_features, dataset_features_check)
 })

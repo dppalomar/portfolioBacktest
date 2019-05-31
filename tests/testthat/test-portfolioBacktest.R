@@ -1,6 +1,6 @@
 context("Checking portfolioBacktest and result handling functions")
 
-data(dataset) 
+data("dataset10") 
 
 # define uniform portfolio
 uniform_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
@@ -21,7 +21,7 @@ portfolios <- list("Uniform"   = uniform_portfolio_fun,
                    "GMVP"      = GMVP_portfolio_fun)
 
 test_that("backtest results and performance measures coincide with the precomputed ones", {
-  bt <- portfolioBacktest(portfolios, dataset = dataset,
+  bt <- portfolioBacktest(portfolios, dataset_list = dataset10,
                           shortselling = TRUE, leverage = Inf, 
                           return_portfolio = TRUE, return_return = TRUE, 
                           benchmark = c("uniform", "index"),
@@ -49,14 +49,14 @@ test_that("backtest results and performance measures coincide with the precomput
 })
 
 test_that("portfolioBacktest under parallel mode", {
-  bt_paral_portfolios <- portfolioBacktest(portfolios, dataset = dataset, paral_portfolios = 2,
+  bt_paral_portfolios <- portfolioBacktest(portfolios, dataset_list = dataset10, paral_portfolios = 2,
                                            shortselling = TRUE, leverage = Inf, 
                                            return_portfolio = TRUE, return_return = TRUE, 
                                            benchmark = c("uniform", "index"),
                                            T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
   
   
-  bt_paral_datasets <- portfolioBacktest(portfolios, dataset = dataset, paral_datasets = 5,
+  bt_paral_datasets <- portfolioBacktest(portfolios, dataset_list = dataset10, paral_datasets = 5,
                                          shortselling = TRUE, leverage = Inf, 
                                          return_portfolio = TRUE, return_return = TRUE, 
                                          benchmark = c("uniform", "index"),
