@@ -40,5 +40,4 @@ VignetteBuilder:
     bookdown,
     knitr,
     prettydoc,
-    rmarkdown,
-    R.rsp
+    rmarkdown

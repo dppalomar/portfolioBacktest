@@ -56,28 +56,33 @@ instructor to evaluate the students in their portfolio design in a fully automat
 
 
 # Package Snapshot
-This package backtests a list of portfolios over multiple datasets on a rolling-window basis, producing final results as the following:
+This package backtests a list of portfolios over multiple datasets on a rolling-window basis, producing final results as in the following.
 ```{r, echo = FALSE}
 library(portfolioBacktest)
 load("figures/bt.RData")
 ```
 
 
-* table
+* Performance table:
 
 ```{r, echo = FALSE}
 res_sum <- backtestSummary(bt)
 summaryTable(res_sum, type = "DT")
 ```
 
-* barplot
+<br>
 
-```{r, echo = FALSE}
+* Barplot:
+
+```{r, echo = FALSE, out.width="75%"}
 summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"))
 ```
-* boxplot
 
-```{r, echo = FALSE}
+<br>
+
+* Boxplot:
+
+```{r, echo = FALSE, out.width="75%"}
 backtestBoxPlot(bt)
 ```
 
@@ -131,29 +136,29 @@ package?portfolioBacktest
 
 # Loading Data
 
-## Basic structure of `dataset_list`
+## Basic structure of datasets
 The main function `portfolioBacktest()` requires argument `dataset_list` follow the certain format: it should be a list of several individual datasets, with each of them be a list of several xts objects following exactly same date index. Besides, each item must contain an xts recording the historical prices of all stocks. We have embedded a small formated dataset in this package, see follows
 ```{r}
 data("dataset10")  # load the embedded dataset
 class(dataset10)  # show dataset class
 names(dataset10$`dataset 1`)  # structure of one dataset
-head(dataset10$`dataset 1`$adjusted[,1:3], 5)  
+head(dataset10$`dataset 1`$adjusted[, 1:3])  
 ```
 Note that each data item contains an xts object called `"adjusted"` (adjusted prices). By default, `portfolioBacktest()` will use such `"adjusted"` prices to calculate the portfolio performance. But you can change this setting by passing another argument `price_name` to tell function which xts you want to use in calculating portfolio performance.
 
-## Obtain more data
-We notice that 10 data is not enough in evaluating or comparing your portfolio functions. In this package, we provide a function `stockDataDownload()` to download online data resources. Its results will naturally follow our required data format. Function `stockDataResample()` can help do resampling from on a formated data and return a formated dataset, which can be directly passed to `portfolioBacktest()`. We recommend you to use these two functions in generating your own dataset, e.g.,
+## Obtaining more data
+We emphasize that 10 data is not enough in evaluating or comparing your portfolio functions. In this package, we provide a function `stockDataDownload()` to download online data resources. Its results will naturally follow our required data format. Function `stockDataResample()` can help do resampling from on a formated data and return a formated dataset, which can be directly passed to `portfolioBacktest()`. We recommend you to use these two functions in generating your own dataset, e.g.,
 ```{r, eval = FALSE}
 data("SP500_symbols")  # load the SP500 symbols
 # download data from internet
 SP500 <- stockDataDownload(stock_symbols = SP500_symbols, 
                            from = "2008-12-01", to = "2018-12-01")
 # resample from SP500, each with 50 stcoks and 2-year continuous data 
-my_dataset_list <- stockDataResample(SP500_YAHOO, N_stock = 50, T_sample = 252*2, N_dataset = 10)
+my_dataset_list <- stockDataResample(SP500_YAHOO, N = 50, T = 252*2, num_datasets = 10)
 ```
-In each individual data item, you will get the 7 xts objects with name: `open`, `high`, `low`, `close`,   `volumn`, `adjusted`, `index`. You can save the dataset and use it everywhere as you want.
+In each individual data item, you will get the 7 xts objects with name: `open`, `high`, `low`, `close`, `volume`, `adjusted`, `index`. You can save the dataset and use it everywhere as you want.
 
-## Expand dataset
+## Expanding the datasets
 
 Knowing more can be helpful in designing portfolios. You are allowed to add as many other xts objects in each data item as you want. For example, if Moving Average Convergence Divergence (MACD) information is desired by portfolio functions, you can manually add it to dataset by
 ```{r, eval = FALSE}
@@ -161,7 +166,7 @@ for (i in 1:length(dataset10))
   dataset10[[i]]$MACD <- apply(dataset10[[i]]$adjusted, 2, function(x){TTR::MACD(x)[ ,'macd']})
 ```
 
-# Defining portfolios
+# Defining Portfolios
 
 The portfolio are required to be given in form of function, which will be fed with splited data and required to return a numerical vector of the same length to stocks number. We give the examples for **uniform portfolio**, **global minimum variance portfolio (GMVP)** and **Markowitz mean-variance portfolio** as follows (under practical constraints $\mathbf{w} \ge \mathbf{0}$ and $\mathbf{1}^{T} \mathbf{w} =1$)
 ```{r, echo = TRUE, results = 'hide'}
@@ -202,7 +207,7 @@ Markowitz_portfolio_fun <- function(data) {
 
 # Backtesting and Plots
 
-## Backtest your portfolios
+## Backtesting your portfolios
 
 With the dataset and portfolios ready, we can now do the backtest easily. For example, to obtain the three portfolios' performance over embedded dataset, we just need combine them in a list and finish all following work in one line
 ```{r, results = 'hide'}
@@ -238,7 +243,8 @@ We also provide a series of functions to conveniently extract results:
 * Select several performances of one specific portfolio:
 ```{r}
 # select sharpe ratio and max drawdown performance of uniform portfolio
-backtestSelector(bt, portfolio_name = "Quintile", selector = c("Sharpe ratio", "max drawdown"))
+backtestSelector(bt, portfolio_name = "Quintile", 
+                 selector = c("Sharpe ratio", "max drawdown"))
 ```
 * Tables of several performance measures of the portfolios (classified by performance criteria):
 ```{r}
@@ -255,16 +261,22 @@ For more flexible usage of these functions, you can refer to help pages of these
 
 
 ## Plotting your results
-Beside, we also provide some functions to show results in figures:
+Besides, we also provide some functions to show results in figures.
 
-* Tables
+* Performance table:
 ```{r}
 summaryTable(res_sum, type = "DT")
 ```
+
+<br>
+
 * Barplot
 ```{r}
 summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"))
 ```
+
+<br>
+
 * BoxPlot
 ```{r}
 backtestBoxPlot(bt)
@@ -396,7 +408,7 @@ portfolio_fun <- function(prices) {
 
 The definition of performance criteria used in this package is listed as below
 
- - **expetced return:** the [annualized return](https://www.investopedia.com/terms/a/annualized-total-return.asp)
+ - **expected return:** the [annualized return](https://www.investopedia.com/terms/a/annualized-total-return.asp)
  - **volatility:** the [annualized standard deviation](https://www.fool.com/knowledge-center/how-to-calculate-annualized-volatility.aspx) of returns 
  - **max drawdown:** the maximum loss from a peak to a trough of a portfolio, see also [here](https://www.investopedia.com/terms/m/maximum-drawdown-mdd.asp)
  - **Sharpe ratio:** [annualized Sharpe ratio](https://en.wikipedia.org/wiki/Sharpe_ratio), the ratio between `annualized return` and `annualized standard deviation`
@@ -409,7 +421,7 @@ The definition of performance criteria used in this package is listed as below
 
 ## Future features
 
-We are going to add the following features into our package:
+We plan to add the following features in our package:
 
  - **Transaction Cost**: the transaction cost will be deducted in calculating portfolio returns.
  - **Turnover Constraint**: compared with latest portfolio vector $\mathbf{w}_{t-1}$, your current portfolio $\mathbf{w}_{t}$ should be constrainted with limited changing, e.g., $\lVert \mathbf{w}_{t-1} - \mathbf{w}_{t} \rVert _{1} \le c$.

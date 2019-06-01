@@ -5,7 +5,7 @@
 #' @param portfolio_funs function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.
 #' @param dataset_list a list with each element be a list of follows:
 #' \itemize{\item{\code{prices} - an xts object containing the stock prices for backtesting}
-#'          \item{\code{index} - an xts object containing the market index of above \code{prices} with exact same time index}}.
+#'          \item{\code{index} - an xts object containing the market index of above \code{prices} with exact same time index.}}
 #' @param folder_path the path of folder containing the portfolio functions saved in files, only valid when \code{portfolio_fun} is not passed.
 #' @param paral_portfolios an positive interger indicating number of portfolios to be evaluated in parallel (default \code{1}).
 #' @param paral_datasets an positive interger indicating number of datasets to be used per portfolio in parallel (default \code{1}).
