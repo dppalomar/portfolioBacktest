@@ -75,7 +75,7 @@ summaryTable(res_sum, type = "DT")
 * Barplot:
 
 ```{r, echo = FALSE, out.width="75%"}
-summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"))
+summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"), type = "ggplot2")
 ```
 
 <br>
@@ -83,7 +83,7 @@ summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"))
 * Boxplot:
 
 ```{r, echo = FALSE, out.width="75%"}
-backtestBoxPlot(bt)
+backtestBoxPlot(bt, measure = "Sharpe ratio")
 ```
 
 # Quick Start
@@ -154,7 +154,7 @@ data("SP500_symbols")  # load the SP500 symbols
 SP500 <- stockDataDownload(stock_symbols = SP500_symbols, 
                            from = "2008-12-01", to = "2018-12-01")
 # resample from SP500, each with 50 stcoks and 2-year continuous data 
-my_dataset_list <- stockDataResample(SP500_YAHOO, N = 50, T = 252*2, num_datasets = 10)
+my_dataset_list <- stockDataResample(SP500_YAHOO, N_sample = 50, T_sample = 252*2, num_datasets = 10)
 ```
 In each individual data item, you will get the 7 xts objects with name: `open`, `high`, `low`, `close`, `volume`, `adjusted`, `index`. You can save the dataset and use it everywhere as you want.
 
@@ -272,20 +272,21 @@ summaryTable(res_sum, type = "DT")
 
 * Barplot
 ```{r}
-summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"))
+summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"),
+               type = "ggplot2")
 ```
 
 <br>
 
 * BoxPlot
 ```{r}
-backtestBoxPlot(bt)
+backtestBoxPlot(bt, measure = "Sharpe ratio")
 ```
 
 
 # Advanced Usage
 
-## Incoporate benchmarks
+## Incoporating benchmarks
 When perform the backtest of our designed portfolio functions, we may want to incorporate some benchmarks. Now the package suppport two benchmarks, which are `uniform portfolio` and `index` of the certain market. (Note that incorporating `index` benchmark requires each data item contain the index prices in an xts named `index`). We can easily do that in any case by passing corresponding value to argument `benchmark`.
 ```{r, cache=TRUE}
 bt <- portfolioBacktest(portfolios, dataset10, benchmark = c('uniform', 'index'))
@@ -321,7 +322,7 @@ system.time(
 ```
 It is obvious that the evaluation time for backtesting has been significantly reduced. Note that the parallel evaluation time can not be exactly equal to the original time divided by parallel cores because starting new R sessions also takes extra time. 
 
-## Trace where execution error happens
+## Tracing where execution error happens
 The execution error might happen without any clue. While our function is robustly designed to not be stopped by any error from the user defined function. To help user trace where the execution error happens, we also report the call stack when a execution error happens. Such information is given as the attribution `error_stack` of returned `error_message`.
 For example, let's define a portfolio function which will throw a error:
 ```{r}
@@ -356,7 +357,7 @@ cat(attr(error1, "error_stack")$at)
 cat(attr(error1, "error_stack")$stack)
 ```
 
-## Backtest over files: usage for grading students
+## Backtesting over files: usage for grading students
 When you have numbers of portfolio or some of them have conflicting dependencies, loading all of them into  your environment may not be a reasonable approach. Hence, we add support on doing backtest over files in our package. It suffices write each portfolio function into a .R script (with unique filename) containing the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). Then all thees files should be put into a file folder, whose path will be passed to `portfolioBacktest()` through argument `folder_path`.
 If an instructor wants to evaluate the students of a course in their portfolio design, it can also be done very easily by requiring each student submit a .R script with unique filenames like `STUDENTNUMBER.R`. For example, we have put three files in folder `portfolio_files`, namely `0001.R`, `0002.R`, `0003.R`.
 ```{r, cache=TRUE}
