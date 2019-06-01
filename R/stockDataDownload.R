@@ -16,6 +16,16 @@
 #' 
 #' @author Rui Zhou and Daniel P. Palomar
 #' 
+#' @examples
+#' \dontrun{
+#' library(portfolioBacktest)
+#' data("SP500_symbols")
+#' 
+#' # download data from internet
+#' SP500 <- stockDataDownload(stock_symbols = SP500_symbols,
+#'                            from = "2008-12-01", to = "2018-12-01")
+#' }
+#' 
 #' @import xts 
 #'         quantmod
 #' @export
@@ -91,15 +101,28 @@ multipleXTSMerge <- function(xts_list) {
 #' @param X a list of xts objects matching the return of function `stockDataDownload()`.
 #' @param N_sample the number of stocks in each sample.
 #' @param T_sample the length of observation.
-#' @param N_datasets the number of wanted data sets.
+#' @param num_datasets the number of wanted data sets.
 #' @param check_monotone a logical value indicating whether to check the monotone missing pattern of `X`.
 #' 
 #' @return a list of subsets randomly resampled from `X`.
 #' 
 #' @author Rui ZHOU & Daniel P. Palomar
+#' 
+#' @examples 
+#' \dontrun{
+#' library(portfolioBacktest)
+#' data("SP500_symbols")
+#' 
+#' # download data from internet
+#' SP500 <- stockDataDownload(stock_symbols = SP500_symbols,
+#'                            from = "2008-12-01", to = "2018-12-01")
+#' # resample from downloaded, each with 50 stcoks and 2-year continuous data
+#' my_dataset_list <- stockDataResample(SP500, N = 50, T = 252*2, num_datasets = 10)
+#' }
+#' 
 #' @import xts
 #' @export
-stockDataResample <- function(X, N_stock = 50, T_sample = 252*2, N_dataset = 10, check_monotone = TRUE) {
+stockDataResample <- function(X, N_sample = 50, T_sample = 252*2, num_datasets = 10, check_monotone = TRUE) {
   # check data time zone
   if (any(index(X$open) != index(X$index))) stop("The date indexes of X are not matched.")
   # check if the data is Monotone Missing
@@ -108,7 +131,7 @@ stockDataResample <- function(X, N_stock = 50, T_sample = 252*2, N_dataset = 10,
   N <- ncol(X[[1]])
   T <- nrow(X[[1]])
   dataset <- list()
-  for (i in 1:N_dataset) {
+  for (i in 1:num_datasets) {
     if (T <= T_sample) {
       t_start <- 1
       t_mask <- 1:T
@@ -119,10 +142,10 @@ stockDataResample <- function(X, N_stock = 50, T_sample = 252*2, N_dataset = 10,
     }
     
     mask <- rep(1:N)[!is.na(X[[1]][t_start, ])]
-    if (length(mask) <= N_stock)
+    if (length(mask) <= N_sample)
       stock_mask <- mask
     else
-      stock_mask <- sample(mask, N_stock)
+      stock_mask <- sample(mask, N_sample)
     dataset[[i]] <- lapply(X[1:6], function(x){x[t_mask, stock_mask]})
     dataset[[i]]$index <- X$index[t_mask, ]
   }

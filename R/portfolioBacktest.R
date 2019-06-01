@@ -2,11 +2,11 @@
 #'
 #' @description Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
 #'
-#' @param portfolio_funs function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.
-#' @param dataset_list a list with each element be a list of follows:
-#' \itemize{\item{\code{prices} - an xts object containing the stock prices for backtesting}
-#'          \item{\code{index} - an xts object containing the market index of above \code{prices} with exact same time index.}}
-#' @param folder_path the path of folder containing the portfolio functions saved in files, only valid when \code{portfolio_fun} is not passed.
+#' @param portfolio_funs a function that takes as input a list of \code{xts} objects containing the stock prices, 
+#'                       see \href{https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{GitHub-vignette}
+#' @param dataset_list a list with each element be a list of \code{xts} objects, 
+#'                     see \href{https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{GitHub-vignette}
+#' @param folder_path the path of folder containing the portfolio functions saved in files, only valid when \code{portfolio_funs} is not passed.
 #' @param paral_portfolios an positive interger indicating number of portfolios to be evaluated in parallel (default \code{1}).
 #' @param paral_datasets an positive interger indicating number of datasets to be used per portfolio in parallel (default \code{1}).
 #' @param show_progress_bar logical value indicating whether to show progress bar (default: \code{FALSE}). 
@@ -25,32 +25,20 @@
 #' @return A list containing the portfolio backtest results to be further handled by \code{backtestSelector()} and \code{backtestSummary()}.
 #' @author Daniel P. Palomar and Rui Zhou
 #' @examples
-#' library(xts)
-#' library(backtestPortfolio)
-#'
-#' # load data
-#' data(prices)
-#'
-#' # define portfolio function
-#' portfolio_fun <- function(prices) {
-#'   X <- diff(log(prices))[-1]  # compute log returns
-#'   Sigma <- cov(X)  # compute SCM
-#'   # design GMVP
-#'   w <- solve(Sigma, rep(1, nrow(Sigma)))
-#'   w <- w/sum(abs(w))  # normalized to have ||w||_1=1
-#'   return(w)
+#' library(portfolioBacktest)
+#' data("dataset10")  # load dataset
+#' 
+#' # define your own portfolio function
+#' uniform_portfolio <- function(dataset) {
+#'   N <- ncol(dataset$adjusted)
+#'   return(rep(1/N, N))
 #' }
 #' 
-#' # perform backtesting on one xts
-#' res <- portfolioBacktest(portfolio_fun, prices[[1]], shortselling = TRUE)
-#' names(res)
-#' plot(res$cumPnL)
-#' res$performance
-#'
-#' # perform backtesting on a list of xts
-#' mul_res <- portfolioBacktest(portfolio_fun, prices, shortselling = TRUE)
-#' mul_res$performance
-#' mul_res$performance_summary
+#' # do backtest
+#' bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
+#' 
+#' # check your result
+#' names(bt)
 #' 
 #' @import xts
 #' @export
@@ -188,6 +176,7 @@ benchmarkBacktest <- function(dataset_list, benchmark, show_progress_bar, ...) {
   return(res)
 }
 
+# Backtesting of one portfolio function
 singlePortfolioBacktest <- function(portfolio_fun, dataset_list, show_progress_bar, paral_datasets = 1, ...) {
   
   paral_datasets <- round(paral_datasets)
@@ -226,14 +215,6 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, show_progress_b
   
   return(result)
 }
-
-
-# singlePortfolioSingleDataBacktest <- function(portfolio_fun, benchmark = c(), dat, ...) {
-#   res <- singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, prices = dat$prices, ...)
-#   if ("uniform" %in% benchmark) res$benchmark$uniform <- singlePortfolioSingleXTSBacktest(portfolio_fun = uniform_portfolio_fun, prices = dat$prices, ...)
-#   if ("index" %in% benchmark) res$benchmark$index <- singlePortfolioSingleXTSBacktest(market = dat$index, ...)
-#   return(res)
-# }
 
 
 # Backtesting of one portfolio function on one single xts
@@ -352,11 +333,9 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name = "
   return(res)
 }
 
-# analyse the performance of a portfolio
+# analyse the performance of portfolio returns
 #   rets: is an xts recording portfolio's return
-#   weights: is an xts with the normalized dollar allocation (wrt NAV, typically with sum=1) where
-#            - each row represents a rebalancing date (with portfolio computed with info up to and including that day)
-#            - dates with no rows means no rebalancing (note that the portfolio may then violate some margin constraints...)
+#   ROT_bips
 #
 portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
   performance <- rep(NA, 7)

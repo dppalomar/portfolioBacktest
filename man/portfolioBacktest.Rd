@@ -9,13 +9,13 @@ portfolioBacktest(portfolio_funs = NULL, dataset_list,
   show_progress_bar = FALSE, benchmark = NULL, ...)
 }
 \arguments{
-\item{portfolio_funs}{function that takes as input an \code{xts} containing the stock prices and returns the portfolio weights.}
+\item{portfolio_funs}{a function that takes as input a list of \code{xts} objects containing the stock prices, 
+see \href{https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{GitHub-vignette}}
 
-\item{dataset_list}{a list with each element be a list of follows:
-\itemize{\item{\code{prices} - an xts object containing the stock prices for backtesting}
-         \item{\code{index} - an xts object containing the market index of above \code{prices} with exact same time index}}.}
+\item{dataset_list}{a list with each element be a list of \code{xts} objects, 
+see \href{https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{GitHub-vignette}}
 
-\item{folder_path}{the path of folder containing the portfolio functions saved in files, only valid when \code{portfolio_fun} is not passed.}
+\item{folder_path}{the path of folder containing the portfolio functions saved in files, only valid when \code{portfolio_funs} is not passed.}
 
 \item{paral_portfolios}{an positive interger indicating number of portfolios to be evaluated in parallel (default \code{1}).}
 
@@ -50,32 +50,20 @@ A list containing the portfolio backtest results to be further handled by \code{
 Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
 }
 \examples{
-library(xts)
-library(backtestPortfolio)
+library(portfolioBacktest)
+data("dataset10")  # load dataset
 
-# load data
-data(prices)
-
-# define portfolio function
-portfolio_fun <- function(prices) {
-  X <- diff(log(prices))[-1]  # compute log returns
-  Sigma <- cov(X)  # compute SCM
-  # design GMVP
-  w <- solve(Sigma, rep(1, nrow(Sigma)))
-  w <- w/sum(abs(w))  # normalized to have ||w||_1=1
-  return(w)
+# define your own portfolio function
+uniform_portfolio <- function(dataset) {
+  N <- ncol(dataset$adjusted)
+  return(rep(1/N, N))
 }
 
-# perform backtesting on one xts
-res <- portfolioBacktest(portfolio_fun, prices[[1]], shortselling = TRUE)
-names(res)
-plot(res$cumPnL)
-res$performance
+# do backtest
+bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
 
-# perform backtesting on a list of xts
-mul_res <- portfolioBacktest(portfolio_fun, prices, shortselling = TRUE)
-mul_res$performance
-mul_res$performance_summary
+# check your result
+names(bt)
 
 }
 \author{

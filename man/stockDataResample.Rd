@@ -4,25 +4,38 @@
 \alias{stockDataResample}
 \title{Generate random resamples from the passed datasets}
 \usage{
-stockDataResample(X, N_stock = 50, T_sample = 252 * 2,
-  N_dataset = 10, check_monotone = TRUE)
+stockDataResample(X, N_sample = 50, T_sample = 252 * 2,
+  num_datasets = 10, check_monotone = TRUE)
 }
 \arguments{
 \item{X}{a list of xts objects matching the return of function `stockDataDownload()`.}
 
-\item{T_sample}{the length of observation.}
-
-\item{check_monotone}{a logical value indicating whether to check the monotone missing pattern of `X`.}
-
 \item{N_sample}{the number of stocks in each sample.}
 
-\item{N_datasets}{the number of wanted data sets.}
+\item{T_sample}{the length of observation.}
+
+\item{num_datasets}{the number of wanted data sets.}
+
+\item{check_monotone}{a logical value indicating whether to check the monotone missing pattern of `X`.}
 }
 \value{
 a list of subsets randomly resampled from `X`.
 }
 \description{
 Generate random resamples from the passed datasets
+}
+\examples{
+\dontrun{
+library(portfolioBacktest)
+data("SP500_symbols")
+
+# download data from internet
+SP500 <- stockDataDownload(stock_symbols = SP500_symbols,
+                           from = "2008-12-01", to = "2018-12-01")
+# resample from downloaded, each with 50 stcoks and 2-year continuous data
+my_dataset_list <- stockDataResample(SP500, N = 50, T = 252*2, num_datasets = 10)
+}
+
 }
 \author{
 Rui ZHOU & Daniel P. Palomar

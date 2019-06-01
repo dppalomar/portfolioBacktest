@@ -11,21 +11,22 @@ backtestBoxPlot(backtest, measure = "Annual volatility",
 Plots a boxplot from a backtest
 }
 \examples{
-# After running a backtest and extracting a performance summary, one would get:
-bt <- portfolioBacktest(...)
+library(portfolioBacktest)
+data("dataset10")  # load dataset
 
-# Here let's generate fake random data for simplicity  
-TODO (Rui): needs to be fixed
+# define your own portfolio function
+quintile_portfolio <- function(data) {
+  X <- diff(log(data$adjusted))[-1]  
+  N <- ncol(X)
+  ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
+  w <- rep(0, N)
+  w[ranking[1:round(N/5)]] <- 1/round(N/5)
+  return(w)
+}
 
-fun1_1 <- list()
-fun1_1$performance <- runif(1)
-names(fun1_1$performance) <- "Sharpe ratio"
-fun1_2 <- list()
-fun1_2$performance <- runif(1)
-names(fun1_2$performance) <- "Sharpe ratio"
-fun1 <- list(fun1_1, fun1_1)
-fun2 <- list(fun1_1, fun1_1)
-bt <- list("fun1" = fun1, "fun2" = fun2)
+# do backtest
+bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
+                        benchmark = c("uniform", "index"))
 
 # Now we can plot
 backtestBoxPlot(bt, "Sharpe ratio")

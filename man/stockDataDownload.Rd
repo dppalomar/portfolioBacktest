@@ -29,6 +29,17 @@ a list of 7 xts objects which are `open`, `high`, `low`, `close`, `volume`, `adj
 \description{
 Use package "quantmod" to download stocks prices data.
 }
+\examples{
+\dontrun{
+library(portfolioBacktest)
+data("SP500_symbols")
+
+# download data from internet
+SP500 <- stockDataDownload(stock_symbols = SP500_symbols,
+                           from = "2008-12-01", to = "2018-12-01")
+}
+
+}
 \author{
 Rui Zhou and Daniel P. Palomar
 }

@@ -24,6 +24,24 @@ a list of desired results
 \description{
 Show the results from portfolio backtest in tables
 }
+\examples{
+library(portfolioBacktest)
+data("dataset10")  # load dataset
+
+# define your own portfolio function
+uniform_portfolio <- function(dataset) {
+  N <- ncol(dataset$adjusted)
+  return(rep(1/N, N))
+}
+
+# do backtest
+bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
+
+# show the backtest results in table
+bt_tab <- backtestTable(bt)
+bt_tab[c("Sharpe ratio", "max drawdown")]
+
+}
 \author{
 Daniel P. Palomar and Rui Zhou
 }

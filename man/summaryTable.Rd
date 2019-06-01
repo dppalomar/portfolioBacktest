@@ -11,17 +11,25 @@ summaryTable(res_summary, measures = NULL, type = c("simple", "DT",
 Shows a table of a backtest summary
 }
 \examples{
-# After running a backtest and extracting a performance summary, one would get:
-bt <- portfolioBacktest(...)
-res_summary_median <- backtestSummary(bt, summary_fun = median)
+library(portfolioBacktest)
+data("dataset10")  # load dataset
 
-# Here let's generate fake random data for simplicity:
-mat <- matrix(runif(4*6), 4, 6)
-rownames(mat) <- c("Sharpe ratio", "max drawdown", "annual return", "annual volatility")
-colnames(mat) <- c("portfolio 1", "portfolio 2", "portfolio 3", "portfolio 4", "portfolio 5", "portfolio 6")
-res_summary_median <- list(performance_summary = mat)
+# define your own portfolio function
+quintile_portfolio <- function(data) {
+  X <- diff(log(data$adjusted))[-1]  
+  N <- ncol(X)
+  ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
+  w <- rep(0, N)
+  w[ranking[1:round(N/5)]] <- 1/round(N/5)
+  return(w)
+}
+
+# do backtest
+bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
+                        benchmark = c("uniform", "index"))
 
 # Now we can obtain the table
+res_summary_median <- backtestSummary(bt)
 summaryTable(res_summary_median, measures = c("max drawdown", "annual volatility"))
 summaryTable(res_summary_median, measures = c("max drawdown", "annual volatility"), type = "DT")
 

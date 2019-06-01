@@ -19,6 +19,32 @@ a matrix as the leaderboard
 \description{
 Ranking the portfolio functions according to passed criteria
 }
+\examples{
+library(portfolioBacktest)
+data("dataset10")  # load dataset
+
+# define your own portfolio function
+quintile_portfolio <- function(data) {
+  X <- diff(log(data$adjusted))[-1]  
+  N <- ncol(X)
+  ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
+  w <- rep(0, N)
+  w[ranking[1:round(N/5)]] <- 1/round(N/5)
+  return(w)
+}
+
+# do backtest
+bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
+                        benchmark = c("uniform", "index"))
+
+# show leaderboard
+leaderboard <- portfolioLeaderboard(bt, weights = list("Sharpe ratio"  = 7,
+                                                       "max drawdown"  = 1,
+                                                       "annual return" = 1,
+                                                       "ROT bps"       = 1))
+leaderboard$leaderboard_scores
+
+}
 \author{
 Daniel P. Palomar and Rui Zhou
 }

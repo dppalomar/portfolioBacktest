@@ -24,6 +24,24 @@ a list of desired results
 \description{
 Summarize the results from portfolio backtest
 }
+\examples{
+library(portfolioBacktest)
+data("dataset10")  # load dataset
+
+# define your own portfolio function
+uniform_portfolio <- function(dataset) {
+  N <- ncol(dataset$adjusted)
+  return(rep(1/N, N))
+}
+
+# do backtest
+bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
+
+# show the summary
+bt_sum <- backtestSummary(bt)
+bt_sum$performance_summary
+
+}
 \author{
 Daniel P. Palomar and Rui Zhou
 }

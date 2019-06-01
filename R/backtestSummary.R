@@ -11,7 +11,24 @@
 #' @return a list of desired results
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
-#'
+#' 
+#' @examples
+#' library(portfolioBacktest)
+#' data("dataset10")  # load dataset
+#' 
+#' # define your own portfolio function
+#' uniform_portfolio <- function(dataset) {
+#'   N <- ncol(dataset$adjusted)
+#'   return(rep(1/N, N))
+#' }
+#' 
+#' # do backtest
+#' bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
+#' 
+#' # show the summary
+#' bt_sum <- backtestSummary(bt)
+#' bt_sum$performance_summary
+#' 
 #' @export  
 
 
@@ -75,7 +92,24 @@ backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fu
 #' @return a list of desired results
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
-#'
+#' 
+#' @examples 
+#' library(portfolioBacktest)
+#' data("dataset10")  # load dataset
+#' 
+#' # define your own portfolio function
+#' uniform_portfolio <- function(dataset) {
+#'   N <- ncol(dataset$adjusted)
+#'   return(rep(1/N, N))
+#' }
+#' 
+#' # do backtest
+#' bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
+#' 
+#' # show the backtest results in table
+#' bt_tab <- backtestTable(bt)
+#' bt_tab[c("Sharpe ratio", "max drawdown")]
+#' 
 #' @export  
 #' 
 backtestTable <- function(res, portfolio_names = NA, portfolio_indexs = NA, 
@@ -161,7 +195,25 @@ backtestTable <- function(res, portfolio_names = NA, portfolio_indexs = NA,
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
+#' @examples 
+#' library(portfolioBacktest)
+#' data("dataset10")  # load dataset
+#' 
+#' # define your own portfolio function
+#' uniform_portfolio <- function(dataset) {
+#'   N <- ncol(dataset$adjusted)
+#'   return(rep(1/N, N))
+#' }
+#' 
+#' # do backtest
+#' bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
+#' 
+#' # extract your interested portfolio result
+#' bt_sel <- backtestSelector(bt, "Uniform")
+#' names(bt_sel)
+#' 
 #' @export
+#' 
 backtestSelector <- function(res, portfolio_name = NA, portfolio_index = NA, selector = NULL) {
   selector_range <- c(names(portfolioPerformance()), 'error', 'error_message', 'cpu_time', 'return', 'portfolio')
   if (is.null(selector)) selector <- selector_range

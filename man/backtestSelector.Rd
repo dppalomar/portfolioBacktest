@@ -22,6 +22,24 @@ a list of desired results
 \description{
 Select the results from portfolio backtest and return as a matrix
 }
+\examples{
+library(portfolioBacktest)
+data("dataset10")  # load dataset
+
+# define your own portfolio function
+uniform_portfolio <- function(dataset) {
+  N <- ncol(dataset$adjusted)
+  return(rep(1/N, N))
+}
+
+# do backtest
+bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
+
+# extract your interested portfolio result
+bt_sel <- backtestSelector(bt, "Uniform")
+names(bt_sel)
+
+}
 \author{
 Daniel P. Palomar and Rui Zhou
 }
