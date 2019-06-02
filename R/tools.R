@@ -1,11 +1,6 @@
-#' @title Checking uninstalled packages written in the portfolio functions defined by customer
-#'
-#' @description Checke uninstalled packages of portfolio functions written in format form
-#'
-#' @param folder_path Path for a folder which contains all (and only) functions to be evaluated
-#' 
-#' @author Daniel P. Palomar and Rui Zhou
-#' 
+#
+# Checking uninstalled packages written in the portfolio functions defined by customer
+#
 checkUninstalledPackages <- function(folder_path, show_detail = FALSE) {
   if (!require("readtext")) stop("Package \"readtext\" is required to run this function!")
   if (!require("stringi")) stop("Package \"stringi\" is required to run this function!")

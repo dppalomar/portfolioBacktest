@@ -1,4 +1,4 @@
-#' @title Backtesting Portfolio Design on a Rolling-Window Basis of Set of Prices
+#' @title Backtest Portfolios over Multiple Datasets on a Rolling-Window Basis
 #'
 #' @description Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
 #'
@@ -7,6 +7,7 @@
 #' @param dataset_list a list with each element be a list of \code{xts} objects, 
 #'                     see \href{https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{GitHub-vignette}
 #' @param folder_path the path of folder containing the portfolio functions saved in files, only valid when \code{portfolio_funs} is not passed.
+#' @param price_name name of the xts column in each dataset that contains the prices to be used in the portfolio return computation (default \code{"adjusted"}).
 #' @param paral_portfolios an positive interger indicating number of portfolios to be evaluated in parallel (default \code{1}).
 #' @param paral_datasets an positive interger indicating number of datasets to be used per portfolio in parallel (default \code{1}).
 #' @param show_progress_bar logical value indicating whether to show progress bar (default: \code{FALSE}). 
@@ -43,17 +44,20 @@
 #' @import xts
 #' @export
 #' 
-portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path = NULL, paral_portfolios = 1, 
-                              show_progress_bar = FALSE, benchmark = NULL, ...) {
+portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path = NULL, price_name = "adjusted",
+                              paral_portfolios = 1, paral_datasets = 1,
+                              show_progress_bar = FALSE, benchmark = NULL, 
+                              shortselling = TRUE, leverage = Inf,
+                              T_rolling_window = 252, optimize_every = 20, rebalance_every = 1,
+                              cpu_time_limit = Inf,
+                              return_portfolio = TRUE, return_return = TRUE) {
   ####### error control ########
   paral_portfolios <- round(paral_portfolios)
-  paral_datasets <- list(...)$paral_datasets
-  if (is.null(paral_datasets)) paral_datasets = 1
   paral_datasets <- round(paral_datasets)
-  if (paral_portfolios < 1 || paral_datasets < 1) stop("Parallel number must be positive interger")
+  if (paral_portfolios < 1 || paral_datasets < 1) stop("Parallel number must be a positive interger.")
   if ((paral_portfolios > 1 || paral_datasets > 1) && !require(doSNOW, quietly = TRUE)) 
     stop("Package \"doSNOW\" needed for parallel mode. Please install it.")
-  if (is.null(folder_path) && is.null(portfolio_funs)) stop("The \"folder_path\" and \"portfolio_fun_list\" can not both be NULL")
+  if (is.null(folder_path) && is.null(portfolio_funs)) stop("The \"folder_path\" and \"portfolio_fun_list\" cannot be both NULL.")
   if (!is.null(portfolio_funs) && !is.list(portfolio_funs)) portfolio_funs <- list(portfolio_funs)
   ##############################
   
@@ -62,10 +66,20 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
     if (is.null(names(portfolio_funs))) portfolio_names <- paste0("fun", 1:length(portfolio_funs))
     else portfolio_names <- names(portfolio_funs)
     
-    # incase the extra packages are loaded
-    safeEval <- function(portfolio_fun, dataset_list, show_progress_bar, ...) {
+    # in case the extra packages are loaded
+    safeEval <- function(portfolio_fun, dataset_list, price_name,
+                         paral_datasets, show_progress_bar,
+                         shortselling, leverage,
+                         T_rolling_window, optimize_every, rebalance_every,
+                         cpu_time_limit,
+                         return_portfolio, return_return) {
       packages_default <- search() # snap the default packages
-      res <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, dataset_list = dataset_list, show_progress_bar = show_progress_bar, ...)
+      res <- singlePortfolioBacktest(portfolio_fun, dataset_list, price_name, market = FALSE,
+                                     paral_datasets, show_progress_bar,
+                                     shortselling, leverage,
+                                     T_rolling_window, optimize_every, rebalance_every,
+                                     cpu_time_limit,
+                                     return_portfolio, return_return)
       packages_now <- search()# detach the newly loaded packages
       packages_det <- packages_now[!(packages_now %in% packages_default)]
       detachPackages(packages_det)
@@ -76,10 +90,15 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       result <- list()
       for (i in 1:length(portfolio_funs)) {
         if (show_progress_bar) cat(sprintf("\n Backtesting function %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
-        result[[i]] <- safeEval(portfolio_funs[[i]], dataset_list, show_progress_bar, ...)
+        result[[i]] <- safeEval(portfolio_funs[[i]], dataset_list, price_name,
+                                paral_datasets, show_progress_bar,
+                                shortselling, leverage,
+                                T_rolling_window, optimize_every, rebalance_every,
+                                cpu_time_limit,
+                                return_portfolio, return_return)
       }
     } else {
-      # creat the progress bar based on function number
+      # create the progress bar based on function number
       if (show_progress_bar) {
         sink(file = tempfile())
         pb <- txtProgressBar(max = length(portfolio_funs), style = 3)
@@ -95,7 +114,12 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       exports <- exports[! exports %in% c("portfolio_fun", "dataset_list", "show_progress_bar")]
       result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .export = exports, 
                         .packages = .packages(), .options.snow = opts) %dopar% {
-        return(list(safeEval(portfolio_fun, dataset_list, show_progress_bar, ...)))
+        return(list(safeEval(portfolio_fun, dataset_list, price_name,
+                             paral_datasets, show_progress_bar,
+                             shortselling, leverage,
+                             T_rolling_window, optimize_every, rebalance_every,
+                             cpu_time_limit,
+                             return_portfolio, return_return)))
       }
       if (show_progress_bar) close(pb)
       stopCluster(cl) 
@@ -106,13 +130,22 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
     portfolio_names <- gsub(".R", "", files)
     
     # define a safe enviroment to source .R files
-    dataset_list__ <- dataset_list # backup dataset_list in case of being covered by sourced files
-    safeEval <- function(folder_path, file, dataset_list__, show_progress_bar, ...) {
-      packages_default <- search() # snap the default packages
+    dataset_list__ <- dataset_list  # backup dataset_list in case of being covered by sourced files
+    safeEval <- function(folder_path, file, dataset_list__, price_name,
+                         paral_datasets, show_progress_bar,
+                         shortselling, leverage,
+                         T_rolling_window, optimize_every, rebalance_every,
+                         cpu_time_limit,
+                         return_portfolio, return_return) {
+      packages_default <- search()  # snap the default packages
       source_error <- FALSE; source_error_message <- NA
       tryCatch(expr    = {suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
-                          res <- singlePortfolioBacktest(portfolio_fun = portfolio_fun, dataset_list = dataset_list__, 
-                                                         show_progress_bar = show_progress_bar, ...)}, 
+                          res <- singlePortfolioBacktest(portfolio_fun, dataset_list__, price_name, market = FALSE,
+                                                         paral_datasets, show_progress_bar,
+                                                         shortselling, leverage,
+                                                         T_rolling_window, optimize_every, rebalance_every,
+                                                         cpu_time_limit,
+                                                         return_portfolio, return_return)}, 
                warning = function(w){source_error <<- TRUE; source_error_message <<- w$message}, 
                error   = function(e){source_error <<- TRUE; source_error_message <<- e$message})
       packages_now <- search()# detach the newly loaded packages
@@ -126,7 +159,12 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       result <- list()
       for (i in 1:length(files)) {
         if (show_progress_bar) cat(sprintf("\n Backtesting file %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
-        result[[i]] <- safeEval(folder_path, files[i], dataset_list__, show_progress_bar, ...)
+        result[[i]] <- safeEval(folder_path, files[i], dataset_list__, price_name,
+                                paral_datasets, show_progress_bar,
+                                shortselling, leverage,
+                                T_rolling_window, optimize_every, rebalance_every,
+                                cpu_time_limit,
+                                return_portfolio, return_return)
       }
     } else {
       # creat the progress bar based on files number
@@ -142,7 +180,12 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       cl <- makeCluster(paral_portfolios)
       registerDoSNOW(cl)
       result <- foreach(file = files, .combine = c, .options.snow = opts) %dopar% {
-        return(list(safeEval(folder_path, file, dataset_list__, show_progress_bar, ...)))
+        return(list(safeEval(folder_path, file, dataset_list__, price_name,
+                             paral_datasets, show_progress_bar,
+                             shortselling, leverage,
+                             T_rolling_window, optimize_every, rebalance_every,
+                             cpu_time_limit,
+                             return_portfolio, return_return)))
       }
       if (show_progress_bar) close(pb)
       stopCluster(cl) 
@@ -152,7 +195,12 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   names(result) <- portfolio_names
   
   # add benchmark and return result
-  res_benchmark <- benchmarkBacktest(dataset_list = dataset_list, benchmark = benchmark, show_progress_bar = show_progress_bar, ...)
+  res_benchmark <- benchmarkBacktest(dataset_list, benchmark, price_name,
+                                     paral_datasets, show_progress_bar,
+                                     shortselling, leverage,
+                                     T_rolling_window, optimize_every, rebalance_every,
+                                     cpu_time_limit,
+                                     return_portfolio, return_return)
   result <- c(result, res_benchmark)
   attr(result, 'portfolio_index') <- 1:length(portfolio_names)
   attr(result, 'contain_benchmark') <- length(res_benchmark) > 0
@@ -160,28 +208,47 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   return(result)
 }
 
-# benchmark portfolio backtest
 
-benchmarkBacktest <- function(dataset_list, benchmark, show_progress_bar, ...) {
-  
+
+# benchmark portfolio backtest
+benchmarkBacktest <- function(dataset_list, benchmark, price_name,
+                              paral_datasets, show_progress_bar,
+                              shortselling, leverage,
+                              T_rolling_window, optimize_every, rebalance_every,
+                              cpu_time_limit,
+                              return_portfolio, return_return) {
   res <- list()
   if ("uniform" %in% benchmark) {
     if (show_progress_bar) cat("\n Evaluating benchmark-uniform\n")
-    res$uniform <- singlePortfolioBacktest(portfolio_fun = uniform_portfolio_fun, dataset_list = dataset_list, show_progress_bar = show_progress_bar, ...)
+    res$uniform <- singlePortfolioBacktest(uniform_portfolio_fun, dataset_list, price_name, market = FALSE,
+                                           paral_datasets, show_progress_bar,
+                                           shortselling, leverage,
+                                           T_rolling_window, optimize_every, rebalance_every,
+                                           cpu_time_limit,
+                                           return_portfolio, return_return)
   }
   if ("index" %in% benchmark) {
     if (show_progress_bar) cat("\n Evaluating benchmark-index\n")
-    res$index <- singlePortfolioBacktest(portfolio_fun = NULL, dataset_list = dataset_list, show_progress_bar = show_progress_bar, market = TRUE, ...)
+    res$index <- singlePortfolioBacktest(portfolio_fun = NULL, dataset_list, price_name, market = TRUE,
+                                         paral_datasets, show_progress_bar,
+                                         shortselling, leverage,
+                                         T_rolling_window, optimize_every, rebalance_every,
+                                         cpu_time_limit,
+                                         return_portfolio, return_return)
   }
   return(res)
 }
 
+
+
 # Backtesting of one portfolio function
-singlePortfolioBacktest <- function(portfolio_fun, dataset_list, show_progress_bar, paral_datasets = 1, ...) {
-  
-  paral_datasets <- round(paral_datasets)
-  
-  # creat the progress bar
+singlePortfolioBacktest <- function(portfolio_fun, dataset_list, price_name, market,
+                                    paral_datasets, show_progress_bar,
+                                    shortselling, leverage,
+                                    T_rolling_window, optimize_every, rebalance_every,
+                                    cpu_time_limit,
+                                    return_portfolio, return_return) {
+  # create the progress bar
   if (show_progress_bar) {
     sink(file = tempfile())
     pb <- txtProgressBar(max = length(dataset_list), style = 3)
@@ -194,7 +261,11 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, show_progress_b
   if (paral_datasets == 1) { ########## no-parallel mode
     result <- list()
     for (i in 1:length(dataset_list)) {
-      result[[i]] <- singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dataset_list[[i]], ...)
+      result[[i]] <- singlePortfolioSingleXTSBacktest(portfolio_fun, dataset_list[[i]], price_name, market,
+                                                      shortselling, leverage,
+                                                      T_rolling_window, optimize_every, rebalance_every,
+                                                      cpu_time_limit,
+                                                      return_portfolio, return_return)
       if (show_progress_bar) opts$progress(i) # show progress bar
     }
   } else {               ########### parallel mode
@@ -203,7 +274,11 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, show_progress_b
     exports <- ls(envir = .GlobalEnv)
     exports <- exports[! exports %in% c("portfolio_fun", "dat")]
     result <- foreach(dat = dataset_list, .combine = c, .packages = .packages(), .export = ls(envir = .GlobalEnv), .options.snow = opts) %dopar% {
-      return(list(singlePortfolioSingleXTSBacktest(portfolio_fun = portfolio_fun, data = dat, ...)))
+      return(list(singlePortfolioSingleXTSBacktest(portfolio_fun, dat, price_name, market,
+                                                   shortselling, leverage,
+                                                   T_rolling_window, optimize_every, rebalance_every,
+                                                   cpu_time_limit,
+                                                   return_portfolio, return_return)))
     }
     stopCluster(cl) 
   }
@@ -217,14 +292,16 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, show_progress_b
 }
 
 
+
 # Backtesting of one portfolio function on one single xts
 #
 #' @import xts
-singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name = "adjusted", market = FALSE,
-                                             return_portfolio = TRUE, return_return = TRUE,
-                                             shortselling = TRUE, leverage = Inf, cpu_time_limit = Inf,
-                                             T_rolling_window = 252, optimize_every = 20, rebalance_every = 1) {
-  # creat return container
+singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, market,
+                                             shortselling, leverage,
+                                             T_rolling_window, optimize_every, rebalance_every,
+                                             cpu_time_limit,
+                                             return_portfolio, return_return) {
+  # create return container
   res <- list(performance = portfolioPerformance(), 
               cpu_time = NA, 
               error = FALSE, 
@@ -317,7 +394,6 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name = "
     }
   }
   
-  
   # compute returns of portfolio
   R_lin <- PerformanceAnalytics::CalculateReturns(prices)
   ret_port <- returnPortfolio(R = R_lin, weights = w)
@@ -332,6 +408,8 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name = "
   
   return(res)
 }
+
+
 
 # analyse the performance of portfolio returns
 #   rets: is an xts recording portfolio's return
@@ -355,6 +433,8 @@ portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
   
   return(performance)
 }
+
+
 
 #
 # Computes the returns of a portfolio of several assets (ignoring transaction costs):

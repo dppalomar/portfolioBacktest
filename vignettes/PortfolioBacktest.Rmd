@@ -13,14 +13,6 @@ output:
     number_sections: no
     toc: yes
     toc_depth: 2
-  bookdown::pdf_document2:
-    fig_caption: yes
-    number_sections: yes
-    toc: yes
-    toc_depth: 2
-header-includes:
-  \allowdisplaybreaks
-indent: yes
 csl: ieee.csl
 bibliography: refs.bib
 vignette: >
@@ -43,10 +35,7 @@ opts_chunk$set(
 )
 knit_hooks$set(pngquant = hook_pngquant)
 #Help on bookdown: https://bookdown.org/yihui/bookdown/
-#rmarkdown::render("vignettes/PortfolioBacktest.Rmd", "all")
 #rmarkdown::render("vignettes/PortfolioBacktest.Rmd", "bookdown::html_document2")
-#rmarkdown::render("vignettes/PortfolioBacktest.Rmd", "bookdown::pdf_document2")
-#tools::compactPDF("vignettes/PortfolioBacktest.pdf", gs_quality = "ebook")
 ```
 
 -----------
@@ -57,7 +46,7 @@ instructor to evaluate the students in their portfolio design in a fully automat
 
 # Package Snapshot
 This package backtests a list of portfolios over multiple datasets on a rolling-window basis, producing final results as in the following.
-```{r, echo = FALSE}
+```{r, echo=FALSE}
 library(portfolioBacktest)
 load("figures/bt.RData")
 ```
@@ -65,7 +54,7 @@ load("figures/bt.RData")
 
 * Performance table:
 
-```{r, echo = FALSE}
+```{r, echo=FALSE}
 res_sum <- backtestSummary(bt)
 summaryTable(res_sum, type = "DT")
 ```
@@ -74,7 +63,7 @@ summaryTable(res_sum, type = "DT")
 
 * Barplot:
 
-```{r, echo = FALSE, out.width="75%"}
+```{r, echo=FALSE, out.width="75%"}
 summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"), type = "ggplot2")
 ```
 
@@ -82,21 +71,21 @@ summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"), type = "gg
 
 * Boxplot:
 
-```{r, echo = FALSE, out.width="75%"}
+```{r, echo=FALSE, out.width="75%"}
 backtestBoxPlot(bt, measure = "Sharpe ratio")
 ```
 
 # Quick Start
 
 Do the backtest on your own portfolio following few steps:
-```{r, echo = FALSE, include = FALSE}
+```{r, echo=FALSE, message=FALSE}
 library(portfolioBacktest)
 library(PerformanceAnalytics)
 library(CVXR)
 ```
 
 * **Step 1** - load package & dataset
-```{r, echo = TRUE, results = 'hide'}
+```{r, results="hide"}
 library(portfolioBacktest)
 data("dataset10")
 ```
@@ -109,7 +98,7 @@ my_portfolio <- function(dataset) {
 }
 ```
 * **Step 3** - do backtest
-```{r, results = 'hide'}
+```{r, results="hide"}
 bt <- portfolioBacktest(my_portfolio, dataset10)
 ```
 * **Step 4** - check your portfolio performance
@@ -121,7 +110,7 @@ backtestSummary(bt)$performance
 
 # Installation
 The package can currently be installed from [GitHub](https://github.com/dppalomar/portfolioBacktest):
-```{r, eval = FALSE}
+```{r, eval=FALSE}
 # install.packages("devtools")
 devtools::install_github("dppalomar/portfolioBacktest")
 
@@ -272,8 +261,7 @@ summaryTable(res_sum, type = "DT")
 
 * Barplot
 ```{r}
-summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"),
-               type = "ggplot2")
+summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"))
 ```
 
 <br>

@@ -85,7 +85,7 @@ summaryTable <- function(res_summary, measures = NULL, type = c("simple", "DT", 
 #' summaryBarPlot(res_summary_median, measures = c("max drawdown", "annual volatility"), type = "ggplot2")
 #' 
 #' @export
-summaryBarPlot <- function(res_summary, measures = NULL, type = c( "simple", "ggplot2"), 
+summaryBarPlot <- function(res_summary, measures = NULL, type = c("ggplot2", "simple"), 
                            mar = c(3, 3, 3, 11), inset = c(-0.3, 0), legend_loc = "right", ...) {
   # extract table
   res_table <- summaryTable(res_summary, measures)
