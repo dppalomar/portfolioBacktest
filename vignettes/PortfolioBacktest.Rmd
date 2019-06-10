@@ -46,7 +46,7 @@ instructor to evaluate the students in their portfolio design in a fully automat
 
 # Package Snapshot
 This package backtests a list of portfolios over multiple datasets on a rolling-window basis, producing final results as in the following.
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE}
 library(portfolioBacktest)
 load("figures/bt.RData")
 ```
