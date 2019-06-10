@@ -5,12 +5,14 @@ author: |
   | Hong Kong University of Science and Technology (HKUST)
 date: "`r Sys.Date()`"
 output:
-  bookdown::html_document2:
-    base_format: prettydoc::html_pretty
+  prettydoc::html_pretty:
     theme: tactile
     highlight: vignette
-    fig_caption: yes
-    number_sections: no
+    toc: yes
+    toc_depth: 2
+  html_document:
+    theme: flatly
+    highlight: pygments  
     toc: yes
     toc_depth: 2
 csl: ieee.csl
@@ -34,8 +36,8 @@ opts_chunk$set(
   pngquant = "--speed=1"
 )
 knit_hooks$set(pngquant = hook_pngquant)
-#Help on bookdown: https://bookdown.org/yihui/bookdown/
-#rmarkdown::render("vignettes/PortfolioBacktest.Rmd", "bookdown::html_document2")
+# Help on bookdown: https://bookdown.org/yihui/bookdown/
+# rmarkdown::render("vignettes/PortfolioBacktest.Rmd", "prettydoc::html_pretty")
 ```
 
 -----------
