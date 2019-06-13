@@ -3,7 +3,7 @@
 \docType{package}
 \name{portfolioBacktest-package}
 \alias{portfolioBacktest-package}
-\title{portfolioBacktest: Automatic Backtesting of Portfolios Over Multiple Datasets}
+\title{portfolioBacktest: Automated Backtesting of Portfolios over Multiple Datasets}
 \description{
 Automated backtesting of multiple portfolios over multiple 
 datasets of stock prices in a rolling-window fashion. Intended for 

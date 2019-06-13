@@ -18,8 +18,8 @@ Description: Automated backtesting of multiple portfolios over multiple
     on investment, computational time, etc.), as well as plotted in a number of 
     ways with nice barplots and boxplots.
 Authors@R: c(
-  person("Rui", "ZHOU", role =  "aut", email = "rzhouae@connect.ust.hk"),
-  person(c("Daniel", "P."), "Palomar", role = c("cre", "aut"), email = "daniel.p.palomar@gmail.com")
+  person(c("Daniel", "P."), "Palomar", role = c("cre", "aut"), email = "daniel.p.palomar@gmail.com"),
+  person("Rui", "ZHOU", role =  "aut", email = "rzhouae@connect.ust.hk")
   )
 Maintainer: Daniel P. Palomar <daniel.p.palomar@gmail.com>
 URL: https://CRAN.R-project.org/package=portfolioBacktest,
