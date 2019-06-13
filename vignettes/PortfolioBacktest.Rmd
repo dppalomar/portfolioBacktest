@@ -41,9 +41,10 @@ knit_hooks$set(pngquant = hook_pngquant)
 ```
 
 -----------
-> This vignette illustrates the usage of the package `portfolioBacktest` for automated portfolio backtesting.
-It can be used by a researcher/practitioner to check a set of different portfolios, as well as by a course 
-instructor to evaluate the students in their portfolio design in a fully automated and convenient manner.
+> This vignette illustrates the usage of the package `portfolioBacktest` for automated portfolio backtesting
+over multiple datasets on a rolling-window basis. It can be used by a researcher/practitioner to backtest a set 
+of different portfolios, as well as by a course instructor to assess the students in their portfolio design 
+in a fully automated and convenient manner. The results are conveniently formatted in tables and plots.
 
 
 # Package Snapshot

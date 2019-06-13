@@ -1,34 +1,41 @@
-#' portfolioBacktest: Automatic Backtesting of Portfolios Over Multiple Datasets
+#' portfolioBacktest: Automated Backtesting of Portfolios over Multiple Datasets
 #'
-# 'Backtesting of a portfolio in a sliding-window fashion over a 
-# 'dataset of stock prices. Multiple datasets are allowed (e.g., taken 
-# 'randomly over different markets, different time periods, and different
-# 'subset of the stock universe). In addition, multiple portfolios can be
-# 'backtested for a subsequent comparison and ranking on a number of 
-# 'criteria including expected return, volatility, Sharpe ratio, maximum 
-# 'drawdown, turnover rate, return on investment, computational time, etc.
-# 'The portfolio is defined as a function that takes as input a window of 
-# 'the stock prices and outputs the portfolio weights. This package can be 
-# 'useful for a researcher/practitioner who wants to backtest a set of 
-# 'portfolios over a multitude of datasets over different markets. In 
-# 'addition, it can be particularly useful to evaluate students in a 
-# 'portfolio design course where the grading is based on the performance.
-
+#' Automated backtesting of multiple portfolios over multiple 
+#' datasets of stock prices in a rolling-window fashion. Intended for 
+#' researchers and practitioners to backtest a set of different portfolios, 
+#' as well as by a course instructor to assess the students in their portfolio 
+#' design in a fully automated and convenient manner, with results conveniently 
+#' formatted in tables and plots. Each portfolio design is easily defined as a
+#' function that takes as input a window of the stock prices and outputs the 
+#' portfolio weights. Multiple portfolios can be easily specified as a list 
+#' of functions or as files in a folder. Multiple datasets can be conveniently 
+#' extracted randomly from different markets, different time periods, and 
+#' different subsets of the stock universe. The results can be later assessed 
+#' and ranked on tables based on a number of performance criteria (e.g., 
+#' expected return, volatility, Sharpe ratio, drawdown, turnover rate, return 
+#' on investment, computational time, etc.), as well as plotted in a number of 
+#' ways with nice barplots and boxplots.
+#' 
 #' @section Functions:
-#' \code{\link{portfolioBacktest}}, \code{\link{multiplePortfolioBacktest}}
+#' \code{\link{stockDataDownload}}, \code{\link{stockDataResample}},
+#' \code{\link{portfolioBacktest}}, \code{\link{backtestSelector}},
+#' \code{\link{backtestTable}}, \code{\link{backtestBoxPlot}},
+#' \code{\link{backtestSummary}}, \code{\link{summaryTable}},
+#' \code{\link{summaryBarPlot}}, \code{\link{portfolioLeaderboard}}
+#'
+#' @section Data:
+#' \code{\link{dataset10}}
 #'
 #' @section Help:
 #' For a quick help see the README file:
 #' \href{https://CRAN.R-project.org/package=portfolioBacktest/readme/README.html}{CRAN-README} and
-#' \href{https://raw.githack.com/dppalomar/portfolioBacktest/master/README.html}{GitHub-README}.
-#' 
-#' For more details see the vignette:
-#' \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{CRAN-html-vignette},
-#' \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest-pdf.pdf}{CRAN-pdf-vignette},
-#' \href{https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{GitHub-html-vignette}, and
-#' \href{https://docs.google.com/viewer?url=https://github.com/dppalomar/portfolioBacktest/raw/master/vignettes/PortfolioBacktest-pdf.pdf}{GitHub-pdf-vignette}.
+#' \href{https://github.com/dppalomar/portfolioBacktest/blob/master/README.md}{GitHub-README}.
 #'
-#' @author Rui ZHOU and Daniel P. Palomar
+#' For more details see the vignette:
+#' \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{CRAN-vignette} and
+#' \href{https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{GitHub-vignette}.
+#'
+#' @author Daniel P. Palomar and Rui ZHOU
 #'
 #' @docType package
 #' @name portfolioBacktest-package

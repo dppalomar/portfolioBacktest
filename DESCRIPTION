@@ -1,19 +1,22 @@
 Package: portfolioBacktest
-Title: Automatic Backtesting of Portfolios Over Multiple Datasets
+Title: Automated Backtesting of Portfolios over Multiple Datasets
 Version: 0.1.0
-Description: Backtesting of a portfolio in a rolling-window fashion over a 
-    dataset of stock prices. Multiple datasets are allowed (e.g., taken 
-    randomly over different markets, different time periods, and different
-    subset of the stock universe). In addition, multiple portfolios can be
-    backtested for a subsequent comparison and ranking on a number of 
-    criteria including expected return, volatility, Sharpe ratio, maximum 
-    drawdown, turnover rate, return on investment, computational time, etc.
-    The portfolio is defined as a function that takes as input a window of 
-    the stock prices and outputs the portfolio weights. This package can be 
-    useful for a researcher/practitioner who wants to backtest a set of 
-    portfolios over a multitude of datasets over different markets. In 
-    addition, it can be particularly useful to evaluate students in a 
-    portfolio design course where the grading is based on the performance.
+Date: 2019-06-18
+Description: Automated backtesting of multiple portfolios over multiple 
+    datasets of stock prices in a rolling-window fashion. Intended for 
+    researchers and practitioners to backtest a set of different portfolios, 
+    as well as by a course instructor to assess the students in their portfolio 
+    design in a fully automated and convenient manner, with results conveniently 
+    formatted in tables and plots. Each portfolio design is easily defined as a
+    function that takes as input a window of the stock prices and outputs the 
+    portfolio weights. Multiple portfolios can be easily specified as a list 
+    of functions or as files in a folder. Multiple datasets can be conveniently 
+    extracted randomly from different markets, different time periods, and 
+    different subsets of the stock universe. The results can be later assessed 
+    and ranked on tables based on a number of performance criteria (e.g., 
+    expected return, volatility, Sharpe ratio, drawdown, turnover rate, return 
+    on investment, computational time, etc.), as well as plotted in a number of 
+    ways with nice barplots and boxplots.
 Authors@R: c(
   person("Rui", "ZHOU", role =  "aut", email = "rzhouae@connect.ust.hk"),
   person(c("Daniel", "P."), "Palomar", role = c("cre", "aut"), email = "daniel.p.palomar@gmail.com")
@@ -32,12 +35,12 @@ Imports:
     PerformanceAnalytics,
     R.utils
 Suggests:
+    bookdown,
     ggplot2,
+    prettydoc,
     readtext,
     stringi,
     testthat
 VignetteBuilder:
-    bookdown,
     knitr,
-    prettydoc,
     rmarkdown
