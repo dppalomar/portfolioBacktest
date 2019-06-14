@@ -1,35 +1,45 @@
-#' @title Stocks data download from Internet
+#' @title Download stock data from the Internet.
 #'
-#' @description Use package "quantmod" to download stocks prices data.
+#' @description This function is basically a robust wrapper for 
+#' \code{\link[quantmod:getSymbols]{quantmod:getSymbols}} to download stock 
+#' data from the internet. It will return 6 \code{xts} objects of the same 
+#' dimensions named `open`, `high`, `low`, `close`, `volume`, `adjusted` 
+#' and `index`. Additionally, it can return an \code{xts} object with an 
+#' index. If the download for some stock fails after a few attempts they 
+#' will be ignored and reported. Also, \code{NA}s representing missing 
+#' values can be optionally removed.
 #' 
-#' @param stock_symbols a string vector containing symbols of stocks to be downloaded.
+#' @param stock_symbols String vector containing the symbols of the stocks to be downloaded.
 #'                      User can pass the market index symbol as its attribute "index_symbol" 
 #'                      (only considered when argument `index_symbol` is not passed).
-#' @param index_symbol a string as the market index symbol of stocks included in `stock_symbols`. 
-#' @param check_monotone a logical value indicating whether to check and delete data not satisfying monotone missing pattern.
-#' @param from a string as the starting date, e.g., "2017-08-17".
-#' @param to a string as the ending date (not included), e.g., "2017-09-17".
-#' @param ... additional arguments to be passed to `quantmod::getSymbols()``
+#' @param index_symbol String with the market index symbol. 
+#' @param rm_na Logical value indicating whether to remove missing values (initial and trailing 
+#'              missing values are ignored). Default is \code{TRUE}.
+#' @param from String containing the starting date, e.g., "2017-08-17".
+#' @param to String containing the ending date (not included), e.g., "2017-09-17".
+#' @param ... Additional arguments to be passed to \code{\link[quantmod:getSymbols]{quantmod:getSymbols}}.
 #'
-#' @return a list of 7 xts objects which are `open`, `high`, `low`, `close`, `volume`, `adjusted` and `index`.
-#'         Note that `index` will only be returned when correct index symbols is passed.
+#' @return List of 7 \code{xts} objects named `open`, `high`, `low`, `close`, `volume`, 
+#'         `adjusted` and `index`. Note that `index` will only be returned when correct index symbols is passed.
 #' 
 #' @author Rui Zhou and Daniel P. Palomar
+#' 
+#' @seealso \code{\link{stockDataResample}}
 #' 
 #' @examples
 #' \dontrun{
 #' library(portfolioBacktest)
-#' data("SP500_symbols")
+#' data(SP500_symbols)
 #' 
 #' # download data from internet
-#' SP500 <- stockDataDownload(stock_symbols = SP500_symbols,
-#'                            from = "2008-12-01", to = "2018-12-01")
+#' SP500_data <- stockDataDownload(stock_symbols = SP500_symbols,
+#'                                 from = "2008-12-01", to = "2018-12-01")
 #' }
 #' 
 #' @import xts 
 #'         quantmod
 #' @export
-stockDataDownload <- function(stock_symbols, index_symbol = NULL, check_monotone = TRUE, from, to, ...) {
+stockDataDownload <- function(stock_symbols, index_symbol = NULL, rm_na = TRUE, from, to, ...) {
   
   if (!require(quantmod, quietly = TRUE)) 
     stop("Package \"quantmod\" needed for this function to work. Please install it.")
@@ -75,15 +85,16 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, check_monotone
              "adjusted" = multipleXTSMerge(adjusted))
   
   # remove non-monotone missing data
-  monotone_mask <- apply(rt$open, 2, function(x){any(diff(is.na(x)) > 0)})
-  if (check_monotone) rt <- lapply(rt, function(x){x[, !monotone_mask]})
+  if (rm_na) {
+    monotone_mask <- apply(rt$open, 2, function(x){any(diff(is.na(x)) > 0)})
+    rt <- lapply(rt, function(x){x[, !monotone_mask]})
+  }
   
   # also download index data
   if (is.null(index_symbol)) index_symbol <- attr(stock_symbols, "index_symbol")
   if (!is.null(index_symbol)) 
     rt$index <- tryCatch(Ad(suppressWarnings(getSymbols(index_symbol, from = from, to = to, auto.assign = FALSE, ...))),
                          error = function(e) {cat("Fail to download index \"", index_symbol, "\"\n", sep = "")})
-  
   
   return(rt)
 }
@@ -96,28 +107,40 @@ multipleXTSMerge <- function(xts_list) {
   return(res)
 }
 
-#' @title Generate random resamples from the passed datasets
+
+
+#' @title Generate random resamples from stock data.
 #' 
-#' @param X a list of xts objects matching the return of function `stockDataDownload()`.
-#' @param N_sample the number of stocks in each sample.
-#' @param T_sample the length of observation.
-#' @param num_datasets the number of wanted data sets.
-#' @param check_monotone a logical value indicating whether to check the monotone missing pattern of `X`.
+#' @description This function resamples the stock data downloaded by
+#' \code{\link{stockDataDownload}} to obtain many datasets for a 
+#' subsequent backtesting with \code{\link{portfolioBacktest}}.
+#' Given the original data, each resample is obtained by randomly
+#' choosing a subset of the stock names and randomly choosing a
+#' time period over the available long period.
 #' 
-#' @return a list of subsets randomly resampled from `X`.
+#' @param X List of \code{xts} objects matching the structure returned by the function \code{\link{stockDataDownload}}.
+#' @param N_sample Number of stocks in each resample.
+#' @param T_sample Length of each resample (consecutive samples with a random initial time).
+#' @param num_datasets Number of resampled datasets (chosen randomly among the stock universe).
+#' @param check_monotone Logical value indicating whether to check the monotone missing pattern of `X`.
 #' 
-#' @author Rui ZHOU & Daniel P. Palomar
+#' @return List of datasets resampled from `X`.
+#' 
+#' @author Rui Zhou and Daniel P. Palomar
+#' 
+#' @seealso \code{\link{stockDataDownload}}, \code{\link{portfolioBacktest}}
 #' 
 #' @examples 
 #' \dontrun{
 #' library(portfolioBacktest)
-#' data("SP500_symbols")
+#' data(SP500_symbols)
 #' 
 #' # download data from internet
-#' SP500 <- stockDataDownload(stock_symbols = SP500_symbols,
-#'                            from = "2008-12-01", to = "2018-12-01")
-#' # resample from downloaded, each with 50 stcoks and 2-year continuous data
-#' my_dataset_list <- stockDataResample(SP500, N = 50, T = 252*2, num_datasets = 10)
+#' SP500_data <- stockDataDownload(stock_symbols = SP500_symbols,
+#'                                 from = "2008-12-01", to = "2018-12-01")
+#'                            
+#' # resample from downloaded, each with 50 stocks and 2-year continuous data
+#' my_dataset_list <- stockDataResample(SP500_data, N = 50, T = 252*2, num_datasets = 10)
 #' }
 #' 
 #' @import xts

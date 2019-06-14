@@ -1,4 +1,4 @@
-#' portfolioBacktest: Automated Backtesting of Portfolios over Multiple Datasets
+#' portfolioBacktest: Automated Backtesting of Portfolios over Multiple Datasets.
 #'
 #' Automated backtesting of multiple portfolios over multiple 
 #' datasets of stock prices in a rolling-window fashion. Intended for 
@@ -11,7 +11,7 @@
 #' of functions or as files in a folder. Multiple datasets can be conveniently 
 #' extracted randomly from different markets, different time periods, and 
 #' different subsets of the stock universe. The results can be later assessed 
-#' and ranked on tables based on a number of performance criteria (e.g., 
+#' and ranked with tables based on a number of performance criteria (e.g., 
 #' expected return, volatility, Sharpe ratio, drawdown, turnover rate, return 
 #' on investment, computational time, etc.), as well as plotted in a number of 
 #' ways with nice barplots and boxplots.
@@ -24,7 +24,7 @@
 #' \code{\link{summaryBarPlot}}, \code{\link{portfolioLeaderboard}}
 #'
 #' @section Data:
-#' \code{\link{dataset10}}
+#' \code{\link{dataset10}}, \code{\link{SP500_symbols}}
 #'
 #' @section Help:
 #' For a quick help see the README file:

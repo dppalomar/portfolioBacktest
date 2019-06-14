@@ -1,18 +1,28 @@
-#' @title The leaderboard of portfolio function or students
+#' @title Leaderboard of portfolios from the backtest results.
 #' 
-#' @description Ranking the portfolio functions according to passed criteria
+#' @description Leaderboard of portfolios according to the backtesting results 
+#' and a ranking based on the combination of several performance criteria.
+#' Since the different performance measures hava different ranges and distributions, 
+#' each is first transformed according to its empirical distribution function (along 
+#' the empirical distribution of the portfolios being ranked) to obtain percentile 
+#' scores. After that transformation, each of the measures has an empirical uniform 
+#' distribution in the interval [0,100] and can be weighted to obtain the final ranking.
 #' 
-#' @param res Returned result from function \code{multiplePortfolioBacktest}
-#' @param weights a list of weights for \code{Sharpe ratio}, \code{max drawdown}, \code{expected return}, \code{volatility} 
-#'                \code{Sterling ratio}, \code{Omega ratio}, \code{ROT}, \code{cpu time} and \code{failure ratio}
-#'
-#' @return a matrix as the leaderboard
+#' @param bt Backtest results as produced by function \code{\link{portfolioBacktest}}.
+#' @param weights List of weights for the different performance measures as obtained 
+#'                in \code{\link{backtestSummary}()$performance} (i.e., 
+#'                \code{Sharpe ratio}, \code{max drawdown}, \code{expected return}, 
+#'                \code{volatility}, \code{Sterling ratio}, \code{Omega ratio}, 
+#'                \code{ROT}, \code{cpu time}, \code{failure ratio}).
+#'                For example: \code{weights = list("Sharpe ratio" = 8, "max drawdown" = 4)}.
+#'                
+#' @return Matrix with the ranking.
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
 #' @examples 
 #' library(portfolioBacktest)
-#' data("dataset10")  # load dataset
+#' data(dataset10)  # load dataset
 #' 
 #' # define your own portfolio function
 #' quintile_portfolio <- function(data) {
@@ -28,6 +38,9 @@
 #' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
 #'                         benchmark = c("uniform", "index"))
 #' 
+#' # see all performance measures available for the ranking
+#' backtestSummary(bt)$performance
+#' 
 #' # show leaderboard
 #' leaderboard <- portfolioLeaderboard(bt, weights = list("Sharpe ratio"  = 7,
 #'                                                        "max drawdown"  = 1,
@@ -36,19 +49,19 @@
 #' leaderboard$leaderboard_scores
 #'
 #' @export
-portfolioLeaderboard <- function(res = NA, weights = list(), summary_fun = median, show_benchmark = TRUE) {
+portfolioLeaderboard <- function(bt = NA, weights = list(), summary_fun = median, show_benchmark = TRUE) {
   if (!is.list(weights)) stop("argument \"weights\" must be a list")
   if (any(unlist(weights) < 0)) stop("all weights must be non-negative")
   if (all(unlist(weights) == 0)) stop("cannot set all weights be zero")
   
-  tmp <- backtestSummary(res = res, summary_fun = summary_fun, show_benchmark = show_benchmark)
+  tmp <- backtestSummary(bt, summary_fun = summary_fun, show_benchmark = show_benchmark)
   performance_summary <- t(tmp[[1]])
   failure_ratio       <- tmp$failure_rate
   cpu_time_summary    <- tmp$cpu_time_summary
   error_message       <- tmp$error_message
   
-  weights_default <- list('Sharpe ratio' = 0, 'max drawdown' = 0, 'annual return' = 0, 'annual volatility' = 0,
-                          'Sterling ratio' = 0, 'Omega ratio' = 0, 'ROT bps' = 0, 'cpu time' = 0, 'failure rate' = 0)
+  weights_default <- list("Sharpe ratio" = 0, "max drawdown" = 0, "annual return" = 0, "annual volatility" = 0,
+                          "Sterling ratio" = 0, "Omega ratio" = 0, "ROT bps" = 0, "cpu time" = 0, "failure rate" = 0)
   weights_comb <- modifyList(weights_default, weights)
   if (length(weights_comb) != length(weights_default)) stop("contain invalid elements in \"weights\"")
   
@@ -102,4 +115,7 @@ rank_percentile <- function(x) {
   rank_pctl <- (rank_pctl - 1/N)/(1 - 1/N)
   return (100*rank_pctl)
 }
+# sanity check: hist(rank_percentile(rnorm(10000)), breaks = 100)
   
+
+

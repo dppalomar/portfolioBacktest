@@ -1,33 +1,62 @@
-#' @title Backtest Portfolios over Multiple Datasets on a Rolling-Window Basis
+#' @title Backtest multiple portfolios over multiple datasets of stock prices in a rolling-window basis.
 #'
-#' @description Backtest a portfolio design contained in a function on a rolling-window basis of a set of prices.
+#' @description Automated backtesting of multiple portfolios over multiple 
+#' datasets of stock prices in a rolling-window fashion. 
+#' Each portfolio design is easily defined as a
+#' function that takes as input a window of the stock prices and outputs the 
+#' portfolio weights. Multiple portfolios can be easily specified as a list 
+#' of functions or as files in a folder. Multiple datasets can be conveniently 
+#' obtained with the function \code{\link{stockDataResample}} that resamples
+#' the data downloaded with the function \code{\link{stockDataDownload}}.
+#' The results can be later assessed and arranged with tables and plots.
+#' The backtesting can be highly time-consuming depending on the number of 
+#' portfolios and datasets can be performed with parallel computation over
+#' multiple cores. Errors in functions are properly catched and handled so
+#' that the execution of the overal backtesting is not stopped (error messages
+#' are stored for debugging purposes). See 
+#' \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{vignette}
+#' for a detailed explanation.
 #'
-#' @param portfolio_funs a function that takes as input a list of \code{xts} objects containing the stock prices, 
-#'                       see \href{https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{GitHub-vignette}
-#' @param dataset_list a list with each element be a list of \code{xts} objects, 
-#'                     see \href{https://rawgit.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{GitHub-vignette}
-#' @param folder_path the path of folder containing the portfolio functions saved in files, only valid when \code{portfolio_funs} is not passed.
-#' @param price_name name of the xts column in each dataset that contains the prices to be used in the portfolio return computation (default \code{"adjusted"}).
-#' @param paral_portfolios an positive interger indicating number of portfolios to be evaluated in parallel (default \code{1}).
-#' @param paral_datasets an positive interger indicating number of datasets to be used per portfolio in parallel (default \code{1}).
-#' @param show_progress_bar logical value indicating whether to show progress bar (default: \code{FALSE}). 
-#' @param benchmark a string vector indicating the benchmark portfolios to be incorporated, now support the follows:
-#' \itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks (default)}
-#'          \item{\code{index} - the market index return, requires pass \code{index} in corresponding dataset}}
-#' @param shortselling logical value indicating whether shortselling is allowed or not (default \code{FALSE}).
-#' @param leverage amount of leverage (default is 1, so no leverage) (default \code{1}).
-#' @param T_rolling_window length of the rolling window (default \code{252}).
-#' @param optimize_every how often the portfolio is to be optimized (default \code{20}).
-#' @param rebalance_every how often the portfolio is to be rebalanced (default \code{20}).
-#' @param cpu_time_limit time limit for executing portfolio function once on a single data set (default \code{Inf}).
-#' @param return_portfolio logical value indicating whether to return portfolios (default \code{TRUE}).
-#' @param return_return logical value indicating whether to return the portfolio returns (default \code{TRUE}).
+#' @param portfolio_funs List of functions (can also be a single function), each of them taking as input 
+#'                       a dataset containing a list of \code{xts} objects (following the format of each 
+#'                       element of the argument \code{dataset_list}) properly windowed (following the
+#'                       rolling-window approach) and returning the portfolio as a vector of normalized
+#'                       weights. See 
+#'                       \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{vignette}
+#'                       for details.
+#' @param dataset_list List of datasets, each containing a list of \code{xts} objects, as generated
+#'                     by the function \code{\link{stockDataResample}}.
+#' @param folder_path If \code{portfolio_funs} is not defined, this should contain the path to a folder 
+#'                    containing the portfolio functions saved in files. See 
+#'                    \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{vignette}
+#'                    for details.
+#' @param price_name Name of the \code{xts} column in each dataset that contains the prices to be used in the portfolio return 
+#'                   computation (default is \code{"adjusted"}).
+#' @param paral_portfolios Interger indicating number of portfolios to be evaluated in parallel (default is \code{1}).
+#' @param paral_datasets Interger indicating number of datasets to be evaluated in parallel (default is \code{1}).
+#' @param show_progress_bar Logical value indicating whether to show progress bar (default is \code{FALSE}). 
+#' @param benchmark String vector indicating the benchmark portfolios to be incorporated, currently supports:
+#' \itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks}
+#'          \item{\code{index} - the market index, requires an \code{xts} names \code{"index"} in the datasets.}}
+#' @param shortselling Logical value indicating whether shortselling is allowed or not 
+#'                     (default is \code{TRUE}, so no control for shorselling in the backtesting).
+#' @param leverage Amount of leverage as in \eqn{||w||_1 <= leverage} 
+#'                 (default is \code{Inf}, so no control for leverage in the backtesting).
+#' @param T_rolling_window Length of the lookback rolling window (default is \code{252}).
+#' @param optimize_every How often the portfolio is to be optimized (default is \code{20}).
+#' @param rebalance_every How often the portfolio is to be rebalanced (default is \code{1}).
+#' @param cpu_time_limit Time limit for executing each portfolio function over a single data set 
+#'                       (default is \code{Inf}, so no time limit).
+#' @param return_portfolio Logical value indicating whether to return portfolios (default is \code{TRUE}).
+#' @param return_return Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).
 #' 
-#' @return A list containing the portfolio backtest results to be further handled by \code{backtestSelector()} and \code{backtestSummary()}.
+#' @return List containing the portfolio backtest results to be further handled by \code{backtestSelector} and \code{backtestSummary}.
+#' 
 #' @author Daniel P. Palomar and Rui Zhou
+#' 
 #' @examples
 #' library(portfolioBacktest)
-#' data("dataset10")  # load dataset
+#' data(dataset10)  # load dataset
 #' 
 #' # define your own portfolio function
 #' uniform_portfolio <- function(dataset) {
@@ -40,10 +69,13 @@
 #' 
 #' # check your result
 #' names(bt)
+#' backtestSelector(bt, portfolio_name = "Uniform", selector = c("Sharpe ratio", "max drawdown"))
+#' backtestTable(bt, selector = c("Sharpe ratio", "max drawdown"))
+#' bt_summary <- backtestSummary(bt)
+#' summaryTable(bt_summary)
 #' 
 #' @import xts
 #' @export
-#' 
 portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path = NULL, price_name = "adjusted",
                               paral_portfolios = 1, paral_datasets = 1,
                               show_progress_bar = FALSE, benchmark = NULL, 
