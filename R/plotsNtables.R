@@ -61,7 +61,7 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
   switch(match.arg(type),
          "simple" = performance,
          "DT" = {
-           if (!is.installed("DT")) stop("please install package \"DT\" or choose another table type")
+           if (!requireNamespace("DT")) stop("please install package \"DT\" or choose another table type")
            if (is.null(order_col)) order_col <- ncol(performance)
            order_dir <- match.arg(order_dir)
            p <- DT::datatable(performance, options = list(dom = 't', pageLength = 15, scrollX = TRUE, order = list(order_col, order_dir)))
@@ -152,7 +152,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
            par(old_par)
          },
          "ggplot2" = {
-           if (!is.installed("ggplot2")) stop("please install package \"ggplot2\" or choose another plot type")
+           if (!requireNamespace("ggplot2")) stop("please install package \"ggplot2\" or choose another plot type")
            df <- as.data.frame.table(res_table)
            ggplot2::ggplot(df, ggplot2::aes(x = Var1, y = Freq, fill = Var1)) + 
              ggplot2::geom_bar(stat = "identity") +
@@ -235,7 +235,7 @@ backtestBoxPlot <- function(backtest, measure = "Sharpe ratio", type = c("ggplot
            par(old_par)
          },
          "ggplot2" = {
-           if (!is.installed("ggplot2")) stop("please install package \"ggplot2\" or choose another plot type")
+           if (!requireNamespace("ggplot2")) stop("please install package \"ggplot2\" or choose another plot type")
            if (is.null(params$alpha)) params$alpha <- 0.4  # this is for the points (set to 0 if not want them)
            limits <- apply(res_table, 2, function(x) {
              lquartile <- quantile(x, 0.25, na.rm = TRUE)

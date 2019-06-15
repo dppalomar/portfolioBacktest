@@ -75,6 +75,7 @@
 #' summaryTable(bt_summary)
 #' 
 #' @import xts
+#'         zoo
 #' @export
 portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path = NULL, price_name = "adjusted",
                               paral_portfolios = 1, paral_datasets = 1,
@@ -97,6 +98,9 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   if (!is.null(portfolio_funs)) {
     if (is.null(names(portfolio_funs))) portfolio_names <- paste0("fun", 1:length(portfolio_funs))
     else portfolio_names <- names(portfolio_funs)
+    
+    if ("" %in% portfolio_names) stop("Each element of \"portfolio_funs\" must has a unique name.")
+    if (length(portfolio_names) != length(unique(portfolio_names))) stop("\"portfolio_funs\" contains repeated names.")
     
     # in case the extra packages are loaded
     safeEval <- function(portfolio_fun, dataset_list, price_name,
@@ -133,7 +137,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       # create the progress bar based on function number
       if (show_progress_bar) {
         sink(file = tempfile())
-        pb <- txtProgressBar(max = length(portfolio_funs), style = 3)
+        pb <- utils::txtProgressBar(max = length(portfolio_funs), style = 3)
         sink()
         opts <- list(progress = function(n) setTxtProgressBar(pb, n))
         cat(paste0("Evaluating overall ", length(portfolio_funs), " portfolio functions parallel \n"))
@@ -202,7 +206,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       # creat the progress bar based on files number
       if (show_progress_bar) {
         sink(file = tempfile())
-        pb <- txtProgressBar(max = length(files), style = 3)
+        pb <- utils::txtProgressBar(max = length(files), style = 3)
         sink()
         opts <- list(progress = function(n) setTxtProgressBar(pb, n))
         cat(paste0("Evaluating overall ", length(files), " portfolio functions (from file) parallel \n"))
@@ -283,7 +287,7 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, price_name, mar
   # create the progress bar
   if (show_progress_bar) {
     sink(file = tempfile())
-    pb <- txtProgressBar(max = length(dataset_list), style = 3)
+    pb <- utils::txtProgressBar(max = length(dataset_list), style = 3)
     sink()
     opts <- list(progress = function(n) setTxtProgressBar(pb, n))
     opts$progress(0)
@@ -451,17 +455,21 @@ portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
   performance <- rep(NA, 7)
   names(performance) <- c("Sharpe ratio", "max drawdown", "annual return", "annual volatility", 
                           "Sterling ratio", "Omega ratio", "ROT bps")
+  # "judge" means how to judge the performance, 1: the bigger the better, -1: the smaller the better
+  attr(performance, "judge") <- c(1, -1, 1, -1, 1, 1, 1)
+  
   # return blank vector if no need computation
   if (anyNA(rets)) return(performance)
   
   # fill the elements one by one
-  performance['Sharpe ratio']      <- PerformanceAnalytics::SharpeRatio.annualized(rets)
-  performance['max drawdown']      <- PerformanceAnalytics::maxDrawdown(rets)
-  performance['annual return']     <- PerformanceAnalytics::Return.annualized(rets)
-  performance['annual volatility'] <- PerformanceAnalytics::StdDev.annualized(rets)
-  performance['Sterling ratio']    <- PerformanceAnalytics::Return.annualized(rets) / PerformanceAnalytics::maxDrawdown(rets)
-  performance['Omega ratio']       <- PerformanceAnalytics::Omega(rets)
-  performance['ROT bps']           <- ROT_bips
+  performance["Sharpe ratio"]      <- PerformanceAnalytics::SharpeRatio.annualized(rets)
+  performance["max drawdown"]      <- PerformanceAnalytics::maxDrawdown(rets)
+  performance["annual return"]     <- PerformanceAnalytics::Return.annualized(rets)
+  performance["annual volatility"] <- PerformanceAnalytics::StdDev.annualized(rets)
+  performance["Sterling ratio"]    <- PerformanceAnalytics::Return.annualized(rets) / PerformanceAnalytics::maxDrawdown(rets)
+  performance["Omega ratio"]       <- PerformanceAnalytics::Omega(rets)
+  performance["ROT bps"]           <- ROT_bips
+  
   
   return(performance)
 }

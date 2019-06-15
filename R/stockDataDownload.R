@@ -39,9 +39,9 @@
 #' @import xts 
 #'         quantmod
 #' @export
-stockDataDownload <- function(stock_symbols, index_symbol = NULL, rm_na = TRUE, from, to, ...) {
+stockDataDownload <- function(stock_symbols, index_symbol = NULL, only_monotone = TRUE, from, to, ...) {
   
-  if (!require(quantmod, quietly = TRUE)) 
+  if (!requireNamespace(quantmod, quietly = TRUE)) 
     stop("Package \"quantmod\" needed for this function to work. Please install it.")
   
   open <- high <- low <- close <- volume <- adjusted <- list()
@@ -84,17 +84,20 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, rm_na = TRUE, 
              "volume"   = multipleXTSMerge(volume),
              "adjusted" = multipleXTSMerge(adjusted))
   
-  # remove non-monotone missing data
-  if (rm_na) {
+  # remove non-monotone missing data if required
+  if (only_monotone) {
     monotone_mask <- apply(rt$open, 2, function(x){any(diff(is.na(x)) > 0)})
     rt <- lapply(rt, function(x){x[, !monotone_mask]})
   }
   
   # also download index data
-  if (is.null(index_symbol)) index_symbol <- attr(stock_symbols, "index_symbol")
   if (!is.null(index_symbol)) 
     rt$index <- tryCatch(Ad(suppressWarnings(getSymbols(index_symbol, from = from, to = to, auto.assign = FALSE, ...))),
                          error = function(e) {cat("Fail to download index \"", index_symbol, "\"\n", sep = "")})
+  
+  # check if the date of stock prices and market index match
+  if (any(index(rt$open) != index(rt$index)))
+    warning("Date of stocks prices and market index do not match.")
   
   return(rt)
 }
@@ -144,25 +147,22 @@ multipleXTSMerge <- function(xts_list) {
 #' }
 #' 
 #' @import xts
+#'         zoo
 #' @export
 stockDataResample <- function(X, N_sample = 50, T_sample = 252*2, num_datasets = 10, check_monotone = TRUE) {
   # check data time zone
-  if (any(index(X$open) != index(X$index))) stop("The date indexes of X are not matched.")
+  if (any(index(X$open) != index(X$index))) stop("The date indexes of \"X\" are not matched.")
   # check if the data is Monotone Missing
   monotone_mask <- apply(X$open, 2, function(x){any(diff(is.na(x)) > 0)})
-  if (check_monotone && any(monotone_mask)) stop("X does not satisfy monotone missing-data pattern.")
+  if (check_monotone && any(monotone_mask)) stop("\"X\" does not satisfy monotone missing-data pattern.")
   N <- ncol(X[[1]])
   T <- nrow(X[[1]])
+  if (T < T_sample) stop("\"T_sample\" can not be greater than the date length of \"X\".")
   dataset <- list()
   for (i in 1:num_datasets) {
-    if (T <= T_sample) {
-      t_start <- 1
-      t_mask <- 1:T
-    }
-    else {
-      t_start <- sample(T-T_sample+1, 1)
-      t_mask <- t_start:(t_start+T_sample-1)
-    }
+    
+    t_start <- sample(T-T_sample+1, 1)
+    t_mask <- t_start:(t_start+T_sample-1)
     
     mask <- rep(1:N)[!is.na(X[[1]][t_start, ])]
     if (length(mask) <= N_sample)
@@ -172,5 +172,6 @@ stockDataResample <- function(X, N_sample = 50, T_sample = 252*2, num_datasets =
     dataset[[i]] <- lapply(X[1:6], function(x){x[t_mask, stock_mask]})
     dataset[[i]]$index <- X$index[t_mask, ]
   }
+  names(dataset) <- paste("dataset", 1:num_datasets)
   return(dataset)
 }
