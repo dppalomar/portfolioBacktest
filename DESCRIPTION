@@ -25,16 +25,18 @@ Maintainer: Daniel P. Palomar <daniel.p.palomar@gmail.com>
 URL: https://CRAN.R-project.org/package=portfolioBacktest,
      https://github.com/dppalomar/portfolioBacktest
 BugReports: https://github.com/dppalomar/portfolioBacktest/issues
-Depends: xts
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
 Imports:
-    evaluate,
+    xts,
+    zoo,
     PerformanceAnalytics,
-    R.utils
+    R.utils,
+    utils
 Suggests:
+    doSNOW,
     bookdown,
     ggplot2,
     prettydoc,
