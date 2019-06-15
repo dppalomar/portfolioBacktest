@@ -34,7 +34,8 @@ Imports:
     zoo,
     PerformanceAnalytics,
     R.utils,
-    utils
+    utils,
+    quantmod
 Suggests:
     doSNOW,
     bookdown,

@@ -12,9 +12,10 @@
 #' @param stock_symbols String vector containing the symbols of the stocks to be downloaded.
 #'                      User can pass the market index symbol as its attribute "index_symbol" 
 #'                      (only considered when argument `index_symbol` is not passed).
-#' @param index_symbol String with the market index symbol. 
-#' @param rm_na Logical value indicating whether to remove missing values (initial and trailing 
-#'              missing values are ignored). Default is \code{TRUE}.
+#' @param index_symbol String as the market index symbol. 
+#' @param only_monotone Logical value indicating whether to only allow monotone missing pattern (only initial missing values). 
+#'                      If set \code{TRUE}, then the stock failing to satisfying monotone missing pattern will be removed.
+#'                      Default is \code{TRUE}.
 #' @param from String containing the starting date, e.g., "2017-08-17".
 #' @param to String containing the ending date (not included), e.g., "2017-09-17".
 #' @param ... Additional arguments to be passed to \code{\link[quantmod:getSymbols]{quantmod:getSymbols}}.
@@ -41,7 +42,7 @@
 #' @export
 stockDataDownload <- function(stock_symbols, index_symbol = NULL, only_monotone = TRUE, from, to, ...) {
   
-  if (!requireNamespace(quantmod, quietly = TRUE)) 
+  if (!requireNamespace("quantmod", quietly = TRUE)) 
     stop("Package \"quantmod\" needed for this function to work. Please install it.")
   
   open <- high <- low <- close <- volume <- adjusted <- list()
@@ -50,7 +51,7 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, only_monotone 
   cat("Start downloading", n_stocks, "stocks...\n")
   
   sink(file = tempfile())
-  pb <- txtProgressBar(max = n_stocks, style = 3)
+  pb <- utils::txtProgressBar(max = n_stocks, style = 3)
   sink()
   
   stocks_fail <- c()
@@ -69,7 +70,7 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, only_monotone 
       volume[[valid_count]]   <- tmp[, 5]
       adjusted[[valid_count]] <- tmp[, 6]
     }
-    setTxtProgressBar(pb, i)
+    utils::setTxtProgressBar(pb, i)
   }
   
   # show download information
