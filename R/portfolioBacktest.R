@@ -361,18 +361,18 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
   }
   
   if (!price_name %in% names(data)) 
-    stop(paste0("fail to find price data with name \"", price_name, "\"" , " in given dataset_list"))
+    stop(paste0("Fail to find price data with name \"", price_name, "\"" , " in given dataset_list."))
   prices <- data[[price_name]]
   
   ######## error control  #########
-  if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]]")
-  if (!is.xts(prices)) stop("prices have to be xts")
+  if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]].")
+  if (!is.xts(prices)) stop("prices have to be xts.")
   N <- ncol(prices)
   T <- nrow(prices)
-  if (T_rolling_window >= T) stop("T is not large enough for the given sliding window length")
-  if (optimize_every%%rebalance_every != 0) stop("The reoptimization period has to be a multiple of the rebalancing period")
-  if (anyNA(prices)) stop("prices contain NAs")
-  if (!is.function(portfolio_fun)) stop("portfolio_fun is not a function")
+  if (T_rolling_window >= T) stop("T is not large enough for the given sliding window length.")
+  if (optimize_every%%rebalance_every != 0) stop("The reoptimization period has to be a multiple of the rebalancing period.")
+  if (anyNA(prices)) stop("prices contain NAs.")
+  if (!is.function(portfolio_fun)) stop("portfolio_fun is not a function.")
   #################################
   
   # indices

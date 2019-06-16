@@ -150,7 +150,7 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
   # check selector
   selector_range <- c(names(portfolioPerformance()), 'error', 'error_message', 'cpu_time')
   if (is.null(selector)) selector <- selector_range
-  if (any(!(selector %in% selector_range))) stop("\"selector\" contains invalid element")
+  if (any(!(selector %in% selector_range))) stop("\"selector\" contains invalid element.")
   
   # check if source_error happen
   valid_mask <- sapply(bt[portfolio_names], function(x){is.null(x$source_error_message)})
@@ -260,9 +260,9 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
 backtestSelector <- function(bt, portfolio_index = NA, portfolio_name = NA, selector = NULL) {
   selector_range <- c(names(portfolioPerformance()), 'error', 'error_message', 'cpu_time', 'return', 'portfolio')
   if (is.null(selector)) selector <- selector_range
-  if (any(!(selector %in% selector_range))) stop("\"selector\" contains invalid element")
-  if (length(selector) == 0) stop("\"selector\" must have length > 1")
-  if (is.na(portfolio_name) && is.na(portfolio_index)) stop("must select a portfolio") 
+  if (any(!(selector %in% selector_range))) stop("\"selector\" contains invalid element.")
+  if (length(selector) == 0) stop("\"selector\" must have length > 1.")
+  if (is.na(portfolio_name) && is.na(portfolio_index)) stop("must select a portfolio.") 
   if (!is.na(portfolio_index)) portfolio_name <- names(bt)[portfolio_index]
   if (length(portfolio_name) > 1) stop("Only one portfolio can be selected.")
   if (!is.null(bt[[portfolio_name]]$source_error_message)) return(bt[[portfolio_name]])

@@ -55,9 +55,9 @@
 #'
 #' @export
 backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median, show_benchmark = TRUE) {
-  if (!is.list(weights)) stop("argument \"weights\" must be a list")
-  if (any(unlist(weights) < 0)) stop("all weights must be non-negative")
-  if (all(unlist(weights) == 0)) stop("cannot set all weights be zero")
+  if (!is.list(weights)) stop("Argument \"weights\" must be a list.")
+  if (any(unlist(weights) < 0)) stop("All weights must be non-negative.")
+  if (all(unlist(weights) == 0)) stop("Cannot set all weights be zero.")
   
   tmp <- backtestSummary(bt, summary_fun = summary_fun, show_benchmark = show_benchmark)
   performance_summary <- t(tmp[[1]])
@@ -69,7 +69,7 @@ backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median,
   weights_default <- as.list(rep(0, length(weights_defname)))
   names(weights_default) <- weights_defname
   weights_comb <- modifyList(weights_default, weights)
-  if (length(weights_comb) != length(weights_default)) stop("contain invalid elements in \"weights\"")
+  if (length(weights_comb) != length(weights_default)) stop("Contain invalid elements in \"weights\".")
   
   weights_comb <- unlist(weights_comb)
   mask_criteria <- weights_comb > 0
