@@ -327,7 +327,7 @@ system.time(
                                   paral_datasets = 5)
   )
 ```
-It is obvious that the evaluation time for backtesting has been significantly reduced. Note that the parallel evaluation time can not be exactly equal to the original time divided by parallel cores because starting new R sessions also takes extra time. 
+It is obvious that the evaluation time for backtesting has been significantly reduced. Note that the parallel evaluation time can not be exactly equal to the original time divided by parallel cores because starting new R sessions also takes extra time. Besides, the two parallel modes can be simultaneous used.
 
 
 ## Tracing where execution errors happen
@@ -381,8 +381,8 @@ names(bt_all_students)
 ## Leaderboard of portfolios with user-defined ranking
 Now we can rank the different portfolios/students based on a weighted combination of the rank percentiles (termed scores) of the performance measures:
 ```{r, fig.height=2, fig.width=9, out.width = "90%"}
-leaderboard <- portfolioLeaderboard(bt_all_students, 
-                                    weights = list("Sharpe ratio"  = 7, 
+leaderboard <- backtestLeaderboard(bt_all_students, 
+                                   weights = list("Sharpe ratio"  = 7, 
                                                    "max drawdown"  = 1, 
                                                    "annual return" = 1, 
                                                    "ROT bps"       = 1))
