@@ -50,7 +50,10 @@
 #' @param return_portfolio Logical value indicating whether to return portfolios (default is \code{TRUE}).
 #' @param return_return Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).
 #' 
-#' @return List containing the portfolio backtest results to be further handled by \code{backtestSelector} and \code{backtestSummary}.
+#' @return List as the portfolio backtest results, see 
+#'         \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#result-format}{vignette-result-format}
+#'         for details. It can be accessed directly. But we highly recommend our functions, e.g., \code{\link{backtestTable}}, \code{\link{backtestBoxPlot}},
+#'         to extract whatever you want.
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 

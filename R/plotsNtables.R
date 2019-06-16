@@ -169,7 +169,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 
 
 
-#' @title Create boxplot from backtest.
+#' @title Create boxplot from backtest results.
 #' 
 #' @description After performing a backtest with \code{portfolioBacktest()},
 #' this function creates a boxplot. By default the boxplot is based on the package 

@@ -6,18 +6,18 @@
 #' dimensions named `open`, `high`, `low`, `close`, `volume`, `adjusted` 
 #' and `index`. Additionally, it can return an \code{xts} object with an 
 #' index. If the download for some stock fails after a few attempts they 
-#' will be ignored and reported. Also, \code{NA}s representing missing 
-#' values can be optionally removed.
+#' will be ignored and reported. Also, stocks with non-monotone missing 
+#' pattern (\code{NA}s appear after valid data) can be optionally removed.
 #' 
 #' @param stock_symbols String vector containing the symbols of the stocks to be downloaded.
 #'                      User can pass the market index symbol as its attribute "index_symbol" 
 #'                      (only considered when argument `index_symbol` is not passed).
 #' @param index_symbol String as the market index symbol. 
 #' @param only_monotone Logical value indicating whether to only allow monotone missing pattern (only initial missing values). 
-#'                      If set \code{TRUE}, then the stock failing to satisfying monotone missing pattern will be removed.
-#'                      Default is \code{TRUE}.
-#' @param from String containing the starting date, e.g., "2017-08-17".
-#' @param to String containing the ending date (not included), e.g., "2017-09-17".
+#'                      If set \code{TRUE}, then the stock failing to satisfying monotone missing pattern will be removed
+#'                      (default is \code{TRUE}).
+#' @param from String as the starting date, e.g., "2017-08-17".
+#' @param to String as the ending date (not included), e.g., "2017-09-17".
 #' @param ... Additional arguments to be passed to \code{\link[quantmod:getSymbols]{quantmod:getSymbols}}.
 #'
 #' @return List of 7 \code{xts} objects named `open`, `high`, `low`, `close`, `volume`, 

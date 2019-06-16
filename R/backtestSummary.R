@@ -8,10 +8,11 @@
 #'                          in the \code{bt}.
 #' @param portfolio_names String vector as desired names of portfolios, whose performance will be summarized, 
 #'                        e.g., c("Uniform", "GMVP") means to summary the performance of portfolios with names "Uniform"
-#'                        and "GMVP" in the \code{bt}. Only valid when \code{portfolio_indexes} is not passed.
-#'                        Default is \code{names(bt)} except benchmark names.
+#'                        and "GMVP" in the \code{bt} (default is \code{names(bt)} except benchmark names). 
+#'                        Only considered when \code{portfolio_indexes} is not passed.
+#'                        
 #' @param summary_funs Summary function to be employed (e.g., \code{median} or \code{mean}).
-#' @param show_benchmark Logical value indicating whether to include benchmark in the summary. Default is \code{TRUE}.
+#' @param show_benchmark Logical value indicating whether to include benchmark in the summary (default is \code{TRUE}).
 #' 
 #' @return List with the following elements:
 #' \item{\code{performance_summary}}{performance criteria like expected return, volatility, 
@@ -101,15 +102,14 @@ backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fu
 #' 
 #' @param bt Backtest results as produced by function \code{\link{portfolioBacktest}}.
 #' @param portfolio_indexes Numerical vector as indexes of portfolios, whose performance will be summarized, 
-#'                          e.g., c(1, 2) means to show the performance of first and second portfolios recorded
+#'                          e.g., c(1, 2) means to summary the performance of first and second portfolios recorded
 #'                          in the \code{bt}.
 #' @param portfolio_names String vector as desired names of portfolios, whose performance will be summarized, 
-#'                        e.g., c("Uniform", "GMVP") means to show the performance of portfolios with names "Uniform"
-#'                        and "GMVP" in the \code{bt}. Only valid when \code{portfolio_indexes} is not passed.
-#'                        Default is \code{names(bt)} except benchmark names.
-#' @param show_benchmark Logical value indicating whether to include benchmark in the summary. Default is \code{TRUE}.
-#' 
-#' @param selector String vector as chosen performance criteria. Default is all performance criteria.
+#'                        e.g., c("Uniform", "GMVP") means to summary the performance of portfolios with names "Uniform"
+#'                        and "GMVP" in the \code{bt} (default is \code{names(bt)} except benchmark names). 
+#'                        Only considered when \code{portfolio_indexes} is not passed.
+#' @param show_benchmark Logical value indicating whether to include benchmark in the table (default is \code{TRUE}).
+#' @param selector String vector indicating which parts will be choosen (default is to choose everything).
 #' 
 #' @return List with the following elements (some might be missing, depending on argument \code{selector}):
 #' \item{\code{<performance criterion>}}{Performance criteria like expected return, volatility, 
@@ -214,15 +214,15 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
 
 #' @title Selector of portfolio backtest results.
 #' 
-#' @description Select the results from a portfolio backtest and return as a matrix.
+#' @description Select the results from a portfolio backtest.
 #' 
 #' @param bt Backtest results as produced by function \code{\link{portfolioBacktest}}.
-#' @param portfolio_index Number as index of portfolio, e.g., 1 means to select the performance 
+#' @param portfolio_index Number as index of a portfolio, e.g., \code{1} means to select the performance 
 #'                        of first portfolio recorded in the \code{bt}.
-#' @param portfolio_name String as name of portfolio, e.g., "GMVP" means to select the performance 
-#'                       of portfolio with names "GMVP" in the \code{bt}. Only valid when \code{portfolio_index} is not passed.
-#'                       Default is \code{names(bt)} except benchmark names.
-#' @param selector Vector of strings to choose performance criteria (by default all).
+#' @param portfolio_name String as name of a portfolio, e.g., "GMVP" means to select the performance 
+#'                       of portfolio with names "GMVP" in the \code{bt} (default is \code{names(bt)} except all benchmark names). 
+#'                       Only considered when \code{portfolio_index} is not passed.
+#' @param selector String vector indicating which parts will be choosen (default is to choose everything).
 #' 
 #' @return List with the following elements (some might be missing, depending on argument \code{selector}):
 #' \item{\code{performance}}{Performance results like expected return, volatility,
