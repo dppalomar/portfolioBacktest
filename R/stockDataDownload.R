@@ -92,13 +92,13 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, only_monotone 
   }
   
   # also download index data
-  if (!is.null(index_symbol)) 
+  if (!is.null(index_symbol)) {
     rt$index <- tryCatch(Ad(suppressWarnings(getSymbols(index_symbol, from = from, to = to, auto.assign = FALSE, ...))),
                          error = function(e) {cat("Fail to download index \"", index_symbol, "\"\n", sep = "")})
-  
-  # check if the date of stock prices and market index match
-  if (any(index(rt$open) != index(rt$index)))
-    warning("Date of stocks prices and market index do not match.")
+    # check if the date of stock prices and market index match
+    if (any(index(rt$open) != index(rt$index)))
+      warning("Date of stocks prices and market index do not match.")
+  }
   
   return(rt)
 }
