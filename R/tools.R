@@ -2,8 +2,8 @@
 # Checking uninstalled packages written in the portfolio functions defined by customer
 #
 checkUninstalledPackages <- function(folder_path, show_detail = FALSE) {
-  if (!require("readtext")) stop("Package \"readtext\" is required to run this function!")
-  if (!require("stringi")) stop("Package \"stringi\" is required to run this function!")
+  if (!requireNamespace("readtext", quietly = TRUE)) stop("Package \"readtext\" is required to run this function!")
+  if (!requireNamespace("stringi", quietly = TRUE)) stop("Package \"stringi\" is required to run this function!")
   uninstalled_pkgs_all <- c()
   files <- list.files(folder_path)
   for (file in files) {

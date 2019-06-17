@@ -33,6 +33,7 @@ Depends: R (>= 2.10)
 Imports:
     xts,
     zoo,
+    evaluate,
     PerformanceAnalytics,
     R.utils,
     utils,

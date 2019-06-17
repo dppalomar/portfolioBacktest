@@ -48,10 +48,11 @@
 #' backtestSummary(bt)$performance
 #' 
 #' # show leaderboard
-#' leaderboard <- backtestLeaderboard(bt, weights = list("Sharpe ratio"  = 7,
+#' leaderboard <- backtestLeaderboard(bt, weights = list("Sharpe ratio"  = 6,
 #'                                                       "max drawdown"  = 1,
-#'                                                       "annual return" = 1,
-#'                                                       "ROT bps"       = 1))
+#'                                                       "ROT bps"       = 1,
+#'                                                       "cpu time"      = 1,
+#'                                                       "failure rate"  = 1))
 #' leaderboard$leaderboard_scores
 #'
 #' @importFrom stats median
