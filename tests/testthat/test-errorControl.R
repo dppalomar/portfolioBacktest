@@ -1,5 +1,12 @@
 context("Checking package error control")
 
+library(xts)
+data(dataset10)
+my_dataset <- dataset10[[1]]
+names(my_dataset) <- c("open", "index")
+
+
+
 test_that("Error control test for \"stockDataDownload\"", {
   
   sink(file = tempfile())
@@ -7,11 +14,6 @@ test_that("Error control test for \"stockDataDownload\"", {
   sink()
   
 })
-
-library(xts)
-data("dataset10")
-my_dataset <- dataset10[[1]]
-names(my_dataset) <- c("open", "index")
 
 test_that("Error control test for \"stockDataResample\"", {
   
@@ -94,3 +96,5 @@ test_that("Error control test for \"backtestLeaderboard\"", {
   expect_error(backtestLeaderboard(bt, list("NOT_NAME" = 1)), "Contain invalid elements in \"weights\".")
   
 })
+
+

@@ -1,234 +1,137 @@
----
-output:
-  html_document:
-    variant: markdown_github
-    keep_md: true
-  md_document:
-    variant: markdown_github
----
-
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+portfolioBacktest
+=================
 
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/portfolioBacktest)](https://CRAN.R-project.org/package=portfolioBacktest)
+[![CRAN
+Downloads](https://cranlogs.r-pkg.org/badges/portfolioBacktest)](https://CRAN.R-project.org/package=portfolioBacktest)
+[![CRAN Downloads
+Total](https://cranlogs.r-pkg.org/badges/grand-total/portfolioBacktest?color=brightgreen)](https://CRAN.R-project.org/package=portfolioBacktest)
 
-[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/riskParityPortfolio)](https://cran.r-project.org/package=riskParityPortfolio)
-[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/riskParityPortfolio)](https://cran.r-project.org/package=riskParityPortfolio)
-![CRAN Downloads Total](https://cranlogs.r-pkg.org/badges/grand-total/riskParityPortfolio?color=brightgreen)
+Automated backtesting of multiple portfolios over multiple datasets of
+stock prices in a rolling-window fashion. Intended for researchers and
+practitioners to backtest a set of different portfolios, as well as by a
+course instructor to assess the students in their portfolio design in a
+fully automated and convenient manner, with results conveniently
+formatted in tables and plots. Each portfolio design is easily defined
+as a function that takes as input a window of the stock prices and
+outputs the portfolio weights. Multiple portfolios can be easily
+specified as a list of functions or as files in a folder. Multiple
+datasets can be conveniently extracted randomly from different markets,
+different time periods, and different subsets of the stock universe. The
+results can be later assessed and ranked with tables based on a number
+of performance criteria (e.g., expected return, volatility, Sharpe
+ratio, drawdown, turnover rate, return on investment, computational
+time, etc.), as well as plotted in a number of ways with nice barplots
+and boxplots.
 
-# portfolioBacktest
-Backtesting of a portfolio in a rolling-window fashion over a dataset of stock prices. Multiple datasets are allowed (e.g., taken randomly over different markets, different time periods, and different subset of the stock universe). In addition, multiple portfolios can be backtested for a subsequent comparison and ranking on a number of criteria including annual return, annual volatility, Sharpe ratio, maximum drawdown, turnover rate, return on investment, computational time, etc. The portfolio is defined as a function that takes as input a window of the stock prices and outputs the portfolio weights. This package can be useful for a researcher/practitioner who wants to backtest a set of portfolios over a multitude of datasets over different markets. In addition, it can be particularly useful to evaluate students in a portfolio design course where the grading is based on the performance.
+Installation
+------------
 
+The package can be installed from
+[CRAN](https://CRAN.R-project.org/package=portfolioBacktest) or
+[GitHub](https://github.com/dppalomar/portfolioBacktest):
 
-## Installation
-To install the latest stable version of ``portfolioBacktest``, run the following commands in R:
-
-```r
+``` r
+# install stable version from CRAN
 install.packages("portfolioBacktest")
-```
 
-To install the development version of ``portfolioBacktest``, run the following commands in R:
-
-```r
-install.packages("devtools")
+# install development version from GitHub
 devtools::install_github("dppalomar/portfolioBacktest")
 ```
 
 To get help:
 
-```r
+``` r
 library(portfolioBacktest)
 help(package = "portfolioBacktest")
-package?portfolioBacktest
 ?portfolioBacktest
 ```
 
-To cite ``portfolioBacktest`` in publications:
+To cite `portfolioBacktest` in publications:
 
-```r
+``` r
 citation("portfolioBacktest")
 ```
 
+Quick Start
+-----------
 
+Do the backtest on your own portfolio following few steps:
 
+-   **Step 1** - load package & dataset
 
-## Usage of `portfolioBacktest`
-We start by loading the package and some random sets of stock market data:
-
-```r
-library(PerformanceAnalytics)
+``` r
 library(portfolioBacktest)
-```
-The package contains a simple dataset called `dataset` containing a list of data with the prices of random sets of stock market data from the S&P 500, over random periods of two years with a random selection of 50 stocks of each universe.
- 
-
-```r
-length(dataset)
-#> [1] 10
-names(dataset[[1]])
-#> [1] "open"     "high"     "low"      "close"    "volume"   "adjusted"
-#> [7] "index"
-str(dataset[[1]]$adjusted)
-#> An 'xts' object on 2015-04-24/2017-04-24 containing:
-#>   Data: num [1:504, 1:50] 22.1 22.1 22.7 22.5 22.3 ...
-#>  - attr(*, "dimnames")=List of 2
-#>   ..$ : NULL
-#>   ..$ : chr [1:50] "MAS.Adjusted" "MGM.Adjusted" "CMI.Adjusted" "CSX.Adjusted" ...
-#>   Indexed by objects of class: [Date] TZ: UTC
-#>   xts Attributes:  
-#> List of 2
-#>  $ src    : chr "yahoo"
-#>  $ updated: POSIXct[1:1], format: "2018-12-29 16:24:41"
-
-colnames(dataset[[1]]$adjusted)
-#>  [1] "MAS.Adjusted"  "MGM.Adjusted"  "CMI.Adjusted"  "CSX.Adjusted" 
-#>  [5] "TGT.Adjusted"  "AWK.Adjusted"  "LNC.Adjusted"  "KO.Adjusted"  
-#>  [9] "CCI.Adjusted"  "RJF.Adjusted"  "ICE.Adjusted"  "SRE.Adjusted" 
-#> [13] "FOXA.Adjusted" "CERN.Adjusted" "ORLY.Adjusted" "EMR.Adjusted" 
-#> [17] "CME.Adjusted"  "AVB.Adjusted"  "AMT.Adjusted"  "TIF.Adjusted" 
-#> [21] "HAL.Adjusted"  "OMC.Adjusted"  "NTAP.Adjusted" "KORS.Adjusted"
-#> [25] "AEP.Adjusted"  "A.Adjusted"    "KSS.Adjusted"  "BHGE.Adjusted"
-#> [29] "BEN.Adjusted"  "HST.Adjusted"  "AMP.Adjusted"  "WY.Adjusted"  
-#> [33] "AGN.Adjusted"  "CPB.Adjusted"  "NWL.Adjusted"  "INTC.Adjusted"
-#> [37] "XRAY.Adjusted" "VRSK.Adjusted" "MLM.Adjusted"  "CI.Adjusted"  
-#> [41] "PHM.Adjusted"  "MKC.Adjusted"  "OXY.Adjusted"  "GM.Adjusted"  
-#> [45] "CB.Adjusted"   "RHT.Adjusted"  "DOV.Adjusted"  "GLW.Adjusted" 
-#> [49] "FLIR.Adjusted" "GPC.Adjusted"
+data("dataset10")
 ```
 
-Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector `w`:
+-   **Step 2** - define your own portfolio
 
-```r
-portfolio_fun <- function(data) {
-  X <- diff(log(data$adjusted))[-1]  # compute log returns, here we use adjusted prices
-  Sigma <- cov(X)  # compute SCM
-  # design GMVP
-  w <- solve(Sigma, rep(1, nrow(Sigma)))
-  w <- w/sum(abs(w))  # normalized to have ||w||_1=1
-  return(w)
+``` r
+my_portfolio <- function(dataset) {
+  prices <- dataset$adjusted
+  N <- ncol(prices)
+  return(rep(1/N, N))
 }
 ```
 
-We are then ready to use the function `portfolioBacktest()` that will execute and evaluate the portfolio design function on a rolling-window basis, and the result can be easily handled with privided function `backtestSelector()`
+-   **Step 3** - do backtest
 
-```r
-bt <- portfolioBacktest(portfolio_fun, dataset[1], shortselling = TRUE)
-res <- backtestSelector(bt, portfolio_index = 1)
-names(res)
-#> [1] "performance"   "error"         "error_message" "cpu_time"     
-#> [5] "portfolio"     "return"        "cumPnL"
-plot(res$cumPnL[[1]])
+``` r
+bt <- portfolioBacktest(my_portfolio, dataset10)
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="75%" style="display: block; margin: auto;" />
+-   **Step 4** - check your portfolio performance
 
-We can also backtest over multiple data sets 
-
-```r
-# perform multiple backtesting
-mul_data_bt <- portfolioBacktest(portfolio_fun, dataset, shortselling = TRUE)
-mul_data_res <- backtestSelector(mul_data_bt, portfolio_index = 1)
-mul_data_res$performance
-#>            Sharpe ratio max drawdown annual return annual volatility
-#> dataset 1    0.43216171   0.02601129   0.018310402        0.04236933
-#> dataset 2    0.45708668   0.04323931   0.024808463        0.05427518
-#> dataset 3    1.41115502   0.02286482   0.046456693        0.03292104
-#> dataset 4   -0.01951969   0.06783961  -0.001085763        0.05562397
-#> dataset 5    0.72256088   0.06083075   0.041099042        0.05687970
-#> dataset 6    2.17578547   0.02212631   0.071331145        0.03278409
-#> dataset 7    4.32024112   0.01591036   0.139474565        0.03228398
-#> dataset 8    1.13401883   0.04077619   0.051204767        0.04515337
-#> dataset 9    0.86003940   0.07066204   0.049092802        0.05708204
-#> dataset 10   1.82664160   0.03751242   0.057249236        0.03134125
-#>            Sterling ratio Omega ratio     ROT bps
-#> dataset 1      0.70394064    1.075537  36.4135924
-#> dataset 2      0.57374788    1.083725  60.4375741
-#> dataset 3      2.03179820    1.251251 122.4139059
-#> dataset 4     -0.01600485    1.001542  -0.7599049
-#> dataset 5      0.67562935    1.142782 108.8563347
-#> dataset 6      3.22381606    1.393876 159.0092504
-#> dataset 7      8.76627360    1.910817 352.9881774
-#> dataset 8      1.25575149    1.222673 129.9534162
-#> dataset 9      0.69475494    1.164732  86.8431384
-#> dataset 10     1.52614101    1.343066 142.6190387
+``` r
+backtestSummary(bt)$performance
+#>                          fun1
+#> Sharpe ratio        1.5414027
+#> max drawdown        0.0893789
+#> annual return       0.1641528
+#> annual volatility   0.1218623
+#> Sterling ratio      2.2138192
+#> Omega ratio         1.2950904
+#> ROT bps           696.9894933
 ```
 
-For comparison, we may want some benchmarks. Now the package suppport two benchmarks, which are `uniform portfolio` and `index` of the certain market. We can easily do that 
+For a more detailed explanation on how to use the package with all the
+features, check the
+[vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
 
+Package Snapshot
+----------------
 
-```r
-mul_data_bt <- portfolioBacktest(portfolio_fun, dataset, benchmark = c("uniform", "index"), shortselling = TRUE)
-names(mul_data_bt)
-#> [1] "fun1"    "uniform" "index"
-```
+This package backtests a list of portfolios over multiple datasets on a
+rolling-window basis, producing final results as in the following.
 
-Then we can extract the desired result by using passing the corresponding name to argument `portfolio_name` of function `backtestSelector()`
+-   Performance table:
+    <img src="man/figures/README-unnamed-chunk-10-1.png" width="75%" style="display: block; margin: auto;" />
 
+<br>
 
-```r
-# extract result of the passed function
-res_fun1 <- backtestSelector(mul_data_bt, "fun1")
-names(res_fun1)
-#> [1] "performance"   "error"         "error_message" "cpu_time"     
-#> [5] "portfolio"     "return"        "cumPnL"
-res_fun1$performance
-#>            Sharpe ratio max drawdown annual return annual volatility
-#> dataset 1    0.43216171   0.02601129   0.018310402        0.04236933
-#> dataset 2    0.45708668   0.04323931   0.024808463        0.05427518
-#> dataset 3    1.41115502   0.02286482   0.046456693        0.03292104
-#> dataset 4   -0.01951969   0.06783961  -0.001085763        0.05562397
-#> dataset 5    0.72256088   0.06083075   0.041099042        0.05687970
-#> dataset 6    2.17578547   0.02212631   0.071331145        0.03278409
-#> dataset 7    4.32024112   0.01591036   0.139474565        0.03228398
-#> dataset 8    1.13401883   0.04077619   0.051204767        0.04515337
-#> dataset 9    0.86003940   0.07066204   0.049092802        0.05708204
-#> dataset 10   1.82664160   0.03751242   0.057249236        0.03134125
-#>            Sterling ratio Omega ratio     ROT bps
-#> dataset 1      0.70394064    1.075537  36.4135924
-#> dataset 2      0.57374788    1.083725  60.4375741
-#> dataset 3      2.03179820    1.251251 122.4139059
-#> dataset 4     -0.01600485    1.001542  -0.7599049
-#> dataset 5      0.67562935    1.142782 108.8563347
-#> dataset 6      3.22381606    1.393876 159.0092504
-#> dataset 7      8.76627360    1.910817 352.9881774
-#> dataset 8      1.25575149    1.222673 129.9534162
-#> dataset 9      0.69475494    1.164732  86.8431384
-#> dataset 10     1.52614101    1.343066 142.6190387
+-   Barplot:
+    <img src="man/figures/README-unnamed-chunk-11-1.png" width="75%" style="display: block; margin: auto;" />
 
-# extract result of the uniform portfolio function
-res_uniform <- backtestSelector(mul_data_bt, "uniform")
-names(res_uniform)
-#> [1] "performance"   "error"         "error_message" "cpu_time"     
-#> [5] "portfolio"     "return"        "cumPnL"
-```
+<br>
 
-For a clear view, we can summarize all the portfolios' performance based on user customized summary functions. For example, we want to compare the median and average value of the performance of these portfolios.
+-   Boxplot:
+    <img src="man/figures/README-unnamed-chunk-12-1.png" width="75%" style="display: block; margin: auto;" />
 
+Links
+-----
 
-```r
-res_summary <- backtestSummary(mul_data_bt, summary_fun = median)
-names(res_summary)
-#> [1] "performance_summary" "failure_rate"        "cpu_time_summary"   
-#> [4] "error_message"
-res_summary$performance_summary
-#>                           fun1      uniform      index
-#> Sharpe ratio        0.99702912 1.546805e+00 1.33208392
-#> max drawdown        0.03914431 8.946477e-02 0.09169451
-#> annual return       0.04777475 1.651707e-01 0.14897463
-#> annual volatility   0.04376135 1.215642e-01 0.12479190
-#> Sterling ratio      0.97984607 2.219609e+00 1.93644619
-#> Omega ratio         1.19370264 1.296275e+00 1.27258183
-#> ROT bps           115.63512029 2.715873e+03        Inf
-```
+Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest)
+and [GitHub](https://github.com/dppalomar/portfolioBacktest).
 
+README file:
+[CRAN-readme](https://CRAN.R-project.org/package=portfolioBacktest/readme/README.html)
+and
+[GitHub-readme](https://github.com/dppalomar/portfolioBacktest/blob/master/README.md).
 
-## Links
-Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest) and [GitHub](https://github.com/dppalomar/portfolioBacktest).
-
-README file: [CRAN-readme](https://cran.r-project.org/package=portfolioBacktest/readme/README.html)
-and [GitHub-readme](https://raw.githack.com/dppalomar/portfolioBacktest/master/README.html).
-
-Vignette: [CRAN-html-vignette](https://cran.r-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html),
-[CRAN-pdf-vignette](https://cran.r-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest-pdf.pdf),
-[GitHub-html-vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html), and
-[GitHub-pdf-vignette](https://docs.google.com/viewer?url=https://github.com/dppalomar/portfolioBacktest/raw/master/vignettes/PortfolioBacktest-pdf.pdf).
-
+Vignette:
+[CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html)
+and
+[GitHub-vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html).

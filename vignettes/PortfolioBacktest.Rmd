@@ -41,9 +41,10 @@ knit_hooks$set(pngquant = hook_pngquant)
 ```
 
 -----------
-> This vignette illustrates the usage of the package `portfolioBacktest` for automated portfolio backtesting
+> This vignette illustrates the usage of the package 
+[`portfolioBacktest`](https://CRAN.R-project.org/package=portfolioBacktest) for automated portfolio backtesting
 over multiple datasets on a rolling-window basis. It can be used by a researcher/practitioner to backtest a set 
-of different portfolios, as well as by a course instructor to assess the students in their portfolio design 
+of different portfolios, as well as a course instructor to assess the students in their portfolio design 
 in a fully automated and convenient manner. The results can be nicely formatted in tables and plots.
 
 
@@ -59,7 +60,7 @@ load("figures/bt.RData")
 
 ```{r, echo=FALSE}
 res_sum <- backtestSummary(bt)
-summaryTable(res_sum, type = "DT")
+summaryTable(res_sum, type = "DT", order_col = 2, order_dir = "desc")
 ```
 
 <br>
@@ -138,22 +139,22 @@ names(dataset10[1:3])  # show names of a few datasets
 names(dataset10$`dataset 1`)  # structure of one dataset
 head(dataset10$`dataset 1`$adjusted[, 1:3])  
 ```
-Note that each data item contains an `xts` object called `"adjusted"` (adjusted prices). By default, `portfolioBacktest()` will use such `"adjusted"` prices to calculate the portfolio return. But one can change this setting with the argument `price_name` in function `portfolioBacktest()`.
+Note that each dataset contains an `xts` object called `"adjusted"` (adjusted prices). By default, `portfolioBacktest()` will use such adjusted prices to calculate the portfolio return. But one can change this setting with the argument `price_name` in function `portfolioBacktest()`.
 
 ## Obtaining more data
-We emphasize that 10 datasets are not enough for properly backtesting portfolios. In this package, we provide the function `stockDataDownload()` to download online data resources. Its results will naturally follow our required data format. then, the function `stockDataResample()` can help resample the downloaded data into multiple datasets (each resample is obtained by randomly choosing a subset of the stock names and randomly choosing a time period over the available long period), which can be directly passed to `portfolioBacktest()`. We recommend using these two functions to generate multiple datasets for serious backtesting:
+We emphasize that 10 datasets are not enough for properly backtesting portfolios. In this package, we provide the function `stockDataDownload()` to download online data resources in the required data format. Then, the function `stockDataResample()` can help resample the downloaded data into multiple datasets (each resample is obtained by randomly choosing a subset of the stock names and randomly choosing a time period over the available long period), which can be directly passed to `portfolioBacktest()`. We recommend using these two functions to generate multiple datasets for serious backtesting:
 ```{r, eval = FALSE}
 data("SP500_symbols")  # load the SP500 symbols
 # download data from internet
 SP500 <- stockDataDownload(stock_symbols = SP500_symbols, 
                            from = "2008-12-01", to = "2018-12-01")
-# resample from SP500, each with 50 stocks and 2-year consecutive data 
+# resample 10 times from SP500, each with 50 stocks and 2-year consecutive data 
 my_dataset_list <- stockDataResample(SP500_YAHOO, 
                                      N_sample = 50, T_sample = 252*2, 
                                      num_datasets = 10)
 ```
 Each individual dataset will contain 7 `xts` objects with names: `open`, `high`, `low`, `close`, `volume`, `adjusted`, `index`. 
-Once the datasets are ready they can be saved into a file to avoid having to download and resample everytime.
+Once the datasets are ready they can be saved into a file to avoid having to download and resample every time.
 
 ## Expanding the datasets
 Additional data can be helpful in designing portfolios. One can add as many other `xts` objects in each dataset as desired. For example, if the Moving Average Convergence Divergence (MACD) information is needed by the portfolio functions, one can manually add it to the dataset as follows:
@@ -166,10 +167,7 @@ for (i in 1:length(dataset10))
 
 
 # Defining Portfolios
-each of them taking as input a dataset containing a list of xts objects (following the format of each element of the argument dataset_list) properly windowed (following the rolling-window approach) and returning the portfolio as a vector of normalized weights.
-
-
-The portfolios have to be defined in the form of function that takes as input a dataset (properly windowed during the backtesting following a rolling-window basis) and returns the portfolio as a numerical vector of normalized weights of the same length as the number of stocks. We give the examples for the **quintile portfolio**, the **global minimum variance portfolio (GMVP)**, and the **Markowitz mean-variance portfolio** as follows (under practical constraints $\mathbf{w} \ge \mathbf{0}$ and $\mathbf{1}^{T} \mathbf{w} =1$):
+The portfolios have to be defined in the form of function that takes as input a dataset (which will be automatically windowed during the backtesting following a rolling-window basis) containing a list of `xts` objects (following the format of the elements of the argument `dataset_list`) and returns the portfolio as a numerical vector of normalized weights of the same length as the number of stocks. We give the examples for the **quintile portfolio**, the **global minimum variance portfolio (GMVP)**, and the **Markowitz mean-variance portfolio** as follows (under practical constraints $\mathbf{w} \ge \mathbf{0}$ and $\mathbf{1}^{T} \mathbf{w} =1$):
 ```{r, echo = TRUE, results = 'hide'}
 # define quintile portfolio
 quintile_portfolio_fun <- function(data) {
@@ -209,7 +207,7 @@ Markowitz_portfolio_fun <- function(data) {
 
 
 
-# Backtesting and Plots
+# Backtesting and Plotting
 ## Backtesting your portfolios
 With the datasets and portfolios ready, we can now do the backtest easily. For example, to obtain the three portfolios' performance over the datasets, we just need combine them in a list and run the backtest in one line:
 ```{r, results = 'hide'}
@@ -226,7 +224,7 @@ Here `bt` is a list storing all the backtest results according to the passed fun
 names(bt)
 ```
 
-Each elements of `bt` is also a list storing more information for each of the datasets:
+Each element of `bt` is also a list storing more information for each of the datasets:
 ```{r, echo = FALSE}
 library(data.tree)
 tmp <- bt
@@ -264,11 +262,11 @@ For more flexible usage of these functions, one can refer to the help pages of t
 
 
 ## Plotting your results
-Besides, we also provide some functions to show results in tables and figures.
+Besides, the package also provides some functions to show results in tables and figures.
 
 * Performance table:
 ```{r}
-summaryTable(bt_sum, type = "DT")
+summaryTable(res_sum, type = "DT", order_col = 2, order_dir = "desc")
 ```
 
 <br>
@@ -290,7 +288,7 @@ backtestBoxPlot(bt, measure = "Sharpe ratio")
 
 # Advanced Usage
 ## Incoporating benchmarks
-When performing the backtest of the designed portfolio functions, one may want to incorporate some benchmarks. The package currently suppports two benchmarks: `uniform portfolio` and `index` of the market. (Note that to incorporate the `index` benchmark each dataset needs to contain one `xts` object named `index`). Once can easily choose the benchmarks by passing the corresponding value to argument `benchmark`:
+When performing the backtest of the designed portfolio functions, one may want to incorporate some benchmarks. The package currently suppports two benchmarks: `uniform portfolio` and `index` of the market. (Note that to incorporate the `index` benchmark each dataset needs to contain one `xts` object named `index`.) Once can easily choose the benchmarks by passing the corresponding value to argument `benchmark`:
 ```{r, cache=TRUE}
 bt <- portfolioBacktest(portfolios, dataset10, benchmark = c("uniform", "index"))
 names(bt)
@@ -305,7 +303,7 @@ bt <- portfolioBacktest(portfolios, dataset10, show_progress_bar = TRUE)
 
 
 ## Parallel backtesting
-The backtesting typically incurs in a very heavy computational load when the number of portfolios or datasets is large. The package contains support for parallel computational mode. Users can choose to evaluate different portfolio functions in parallel or, in a more fine-grained way, to evaluate multiple datasets in parallel for each function:
+The backtesting typically incurs in a very heavy computational load when the number of portfolios or datasets is large (also depending on the computational cost of each portfolio function). The package contains support for parallel computational mode. Users can choose to evaluate different portfolio functions in parallel or, in a more fine-grained way, to evaluate multiple datasets in parallel for each function:
 ```{r, cache=TRUE}
 portfun <- Markowitz_portfolio_fun
 
@@ -327,7 +325,7 @@ system.time(
                                   paral_datasets = 5)
   )
 ```
-It is obvious that the evaluation time for backtesting has been significantly reduced. Note that the parallel evaluation time can not be exactly equal to the original time divided by parallel cores because starting new R sessions also takes extra time. Besides, the two parallel modes can be simultaneous used.
+It is obvious that the evaluation time for backtesting has been significantly reduced. Note that the parallel evaluation elapsed time will not be exactly equal to the original time divided by parallel cores because starting new R sessions also takes extra time. Besides, the two parallel modes can be simultaneous used.
 
 
 ## Tracing where execution errors happen
@@ -350,7 +348,7 @@ wrong_portfolio_fun <- function(data) {
 }
 ```
 
-Now, let's the above portfolio function to `portfolioBacktest()` and see how to check the error trace:
+Now, let's pass the above portfolio function to `portfolioBacktest()` and see how to check the error trace:
 ```{r}
 bt <- portfolioBacktest(wrong_portfolio_fun, dataset10)
 res <- backtestSelector(bt, portfolio_index = 1)
@@ -368,9 +366,9 @@ cat(attr(error1, "error_stack")$stack)
 
 
 ## Backtesting over files: usage for grading students
-In some situations, one may have to backtest portfolios from different people stored in different files. In such cases, the different portfolio may have conflicting dependencies and loading all of them into the environment may not be a reasonable approach. The package adds support for backtesting portfolios given in individual files in a folder in a way that each is executed in a clean environment without affecting each other. It suffices to write each portfolio function into a .R script (with unique filename) containing the portfolio function named exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). All theses files should be put into a file folder, whose path will be passed to the function `portfolioBacktest()` with the argument `folder_path`.
+In some situations, one may have to backtest portfolios from different sources stored in different files, e.g., students in a porftolio design course (in fact, this package was originally developed to assess students in the course "Portfolio Optimization with R" from the [MSc in Financial Mathematics (MAFM)](https://mafm.ust.hk)). In such cases, the different portfolios may have conflicting dependencies and loading all of them into the environment may not be a reasonable approach. The package adds support for backtesting portfolios given in individual files in a folder in a way that each is executed in a clean environment without affecting each other. It suffices to write each portfolio function into an R script (with unique filename) containing the portfolio function named exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). All theses files should be put into a file folder, whose path will be passed to the function `portfolioBacktest()` with the argument `folder_path`.
 
-If an instructor wants to evaluate students of a course in their portfolio design, this can be easily done by asking each student to submit a .R script with a unique filename like `STUDENTNUMBER.R`. For example, suppose we have three files in the folder `portfolio_files` named `0001.R`, `0002.R`, and `0003.R`. Then:
+If an instructor wants to evaluate students of a course in their portfolio design, this can be easily done by asking each student to submit an R script with a unique filename like `STUDENTNUMBER.R`. For example, suppose we have three files in the folder `portfolio_files` named `0001.R`, `0002.R`, and `0003.R`. Then:
 ```{r, cache=TRUE}
 bt_all_students <- portfolioBacktest(folder_path = "portfolio_files", 
                                      dataset = dataset10)
@@ -394,7 +392,7 @@ grid.table(leaderboard$leaderboard_scores)
 
 
 ## Example of a script file to be submitted by a student
-Consider the student with id number 666. Then the script file should be named `666.R` and should contain the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`):
+Consider the student with id number 666. Then the script file should be named `666.R` and should contain the portfolio function called exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (and any required package loading with `library()`):
 ```{r, eval=FALSE}
 library(CVXR)
 
@@ -417,28 +415,25 @@ portfolio_fun <- function(prices) {
 
 
 # Appendix
-
 ## Performance criteria
-
 The performance criteria currently considered by the package are:
 
- - **expected return:** the [annualized return](https://www.investopedia.com/terms/a/annualized-total-return.asp)
- - **volatility:** the [annualized standard deviation](https://www.fool.com/knowledge-center/how-to-calculate-annualized-volatility.aspx) of returns 
- - **max drawdown:** the maximum loss from a peak to a trough of a portfolio, see also [here](https://www.investopedia.com/terms/m/maximum-drawdown-mdd.asp)
- - **Sharpe ratio:** [annualized Sharpe ratio](https://en.wikipedia.org/wiki/Sharpe_ratio), the ratio between `annualized return` and `annualized standard deviation`
- - **Sterling ratio:** the return over average drawdown, see [here](https://en.m.wikipedia.org/wiki/Sterling_ratio) for complete definition. In the package, we use $$
+- **annual return**: the [annualized return](https://en.wikipedia.org/wiki/Rate_of_return)
+- **annual volatility**: the [annualized standard deviation](https://en.wikipedia.org/wiki/Volatility_(finance)) of returns 
+- **max drawdown**: the [maximum drawdown](https://en.wikipedia.org/wiki/Drawdown_(economics)) is defined as the maximum loss from a peak to a trough of a portfolio
+- **Sharpe ratio**: [annualized Sharpe ratio](https://en.wikipedia.org/wiki/Sharpe_ratio), the ratio between `annualized return` and `annualized standard deviation`
+- **Sterling ratio**: the return over average drawdown, see [here](https://en.m.wikipedia.org/wiki/Sterling_ratio) for complete definition. In the package, we use $$
  \text{Sterling ratio} = \frac{\text{annualized return}}{\text{max drawdown}} $$
- - **Omega ratio:** the probability weighted ratio of gains over losses for some threshold return target, see [here](https://en.m.wikipedia.org/wiki/Omega_ratio) for complete definition. The ratio is calculated as: $$ \Omega(r) = \frac{\int_{r}^{\infty} (1-F(x))dx}{\int_{-\infty}^{r} F(x)dx} $$
+- **Omega ratio**: the probability weighted ratio of gains over losses for some threshold return target, see [here](https://en.m.wikipedia.org/wiki/Omega_ratio) for complete definition. The ratio is calculated as: $$ \Omega(r) = \frac{\int_{r}^{\infty} (1-F(x))dx}{\int_{-\infty}^{r} F(x)dx} $$
  In the package, we use $\Omega(0)$, which is also known as Gain-Loss-Ratio.
- 
- - **Return over Turnover (ROT):** the sum of cummulative return over the sum of turnover.
+- **ROT bps**: Return over Turnover (ROT) defined as the sum of cummulative return over the sum of turnover.
+
 
 ## Future features
-
 The package currently has the following limitations that we plan to address in the future:
 
- - **Transaction cost**: the transaction cost is currently not accounted for in the computation of the portfolio returns during the backtesting.
- - **Turnover term**: the portfolio function only receives as argument the dataset, but not the currently held portfolio $\mathbf{w}_{t-1}$, so the the turnover $\lVert \mathbf{w}_{t} - \mathbf{w}_{t-1} \rVert _{1}$ cannot be taken into account in the design.
-
+- **Transaction cost**: the transaction cost is currently not accounted for in the computation of the portfolio returns during the backtesting (although the ROT can currently be conveniently used to assess the potential effects of a high turnover in terms of transaction costs).
+- **Turnover term**: the portfolio function currently only receives as argument the dataset, but not the currently held portfolio $\mathbf{w}_{t-1}$, so the the turnover $\lVert \mathbf{w}_{t} - \mathbf{w}_{t-1} \rVert _{1}$ cannot be taken into account in the design.
+- **Additional performance measures**: there are countless of additional performance measures that could be included such as the [Sortino ratio](https://en.wikipedia.org/wiki/Sortino_ratio).
 
 

@@ -1,10 +1,10 @@
 ---
 output:
+  md_document:
+    variant: markdown_github
   html_document:
     variant: markdown_github
     keep_md: true
-  md_document:
-    variant: markdown_github
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -23,23 +23,37 @@ opts_chunk$set(
 knit_hooks$set(pngquant = hook_pngquant)
 ```
 
-[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/portfolioBacktest)](https://cran.r-project.org/package=portfolioBacktest)
-[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/portfolioBacktest)](https://cran.r-project.org/package=portfolioBacktest)
-![CRAN Downloads Total](https://cranlogs.r-pkg.org/badges/grand-total/portfolioBacktest?color=brightgreen)
+
 
 # portfolioBacktest
-Backtesting of a portfolio in a rolling-window fashion over a dataset of stock prices. Multiple datasets are allowed (e.g., taken randomly over different markets, different time periods, and different subset of the stock universe). In addition, multiple portfolios can be backtested for a subsequent comparison and ranking on a number of criteria including annual return, annual volatility, Sharpe ratio, maximum drawdown, turnover rate, return on investment, computational time, etc. The portfolio is defined as a function that takes as input a window of the stock prices and outputs the portfolio weights. This package can be useful for a researcher/practitioner who wants to backtest a set of portfolios over a multitude of datasets over different markets. In addition, it can be particularly useful to evaluate students in a portfolio design course where the grading is based on the performance.
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/portfolioBacktest)](https://CRAN.R-project.org/package=portfolioBacktest)
+[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/portfolioBacktest)](https://CRAN.R-project.org/package=portfolioBacktest)
+[![CRAN Downloads Total](https://cranlogs.r-pkg.org/badges/grand-total/portfolioBacktest?color=brightgreen)](https://CRAN.R-project.org/package=portfolioBacktest)
+
+Automated backtesting of multiple portfolios over multiple 
+datasets of stock prices in a rolling-window fashion. Intended for 
+researchers and practitioners to backtest a set of different portfolios, 
+as well as by a course instructor to assess the students in their portfolio 
+design in a fully automated and convenient manner, with results conveniently 
+formatted in tables and plots. Each portfolio design is easily defined as a
+function that takes as input a window of the stock prices and outputs the 
+portfolio weights. Multiple portfolios can be easily specified as a list 
+of functions or as files in a folder. Multiple datasets can be conveniently 
+extracted randomly from different markets, different time periods, and 
+different subsets of the stock universe. The results can be later assessed 
+and ranked with tables based on a number of performance criteria (e.g., 
+expected return, volatility, Sharpe ratio, drawdown, turnover rate, return 
+on investment, computational time, etc.), as well as plotted in a number of 
+ways with nice barplots and boxplots.
 
 
 ## Installation
-To install the latest stable version of `portfolioBacktest`, run the following commands in R:
-```{r, eval = FALSE}
+The package can be installed from [CRAN](https://CRAN.R-project.org/package=portfolioBacktest) or [GitHub](https://github.com/dppalomar/portfolioBacktest):
+```{r, eval=FALSE}
+# install stable version from CRAN
 install.packages("portfolioBacktest")
-```
 
-To install the development version of `portfolioBacktest`, run the following commands in R:
-```{r, eval = FALSE}
-install.packages("devtools")
+# install development version from GitHub
 devtools::install_github("dppalomar/portfolioBacktest")
 ```
 
@@ -47,7 +61,6 @@ To get help:
 ```{r, eval = FALSE}
 library(portfolioBacktest)
 help(package = "portfolioBacktest")
-package?portfolioBacktest
 ?portfolioBacktest
 ```
 
@@ -57,89 +70,70 @@ citation("portfolioBacktest")
 ```
 
 
+## Quick Start
+Do the backtest on your own portfolio following few steps:
 
-
-## Usage of `portfolioBacktest`
-We start by loading the package and some random sets of stock market data:
-```{r, message = FALSE}
-library(PerformanceAnalytics)
+- **Step 1** - load package & dataset
+```{r, results="hide"}
 library(portfolioBacktest)
+data("dataset10")
 ```
-The package contains a simple dataset called `dataset` containing a list of data with the prices of random sets of stock market data from the S&P 500, over random periods of two years with a random selection of 50 stocks of each universe.
- 
+- **Step 2** - define your own portfolio
 ```{r}
-length(dataset)
-names(dataset[[1]])
-str(dataset[[1]]$adjusted)
-
-colnames(dataset[[1]]$adjusted)
-```
-
-Now, we define some portfolio design that takes as input the prices and outputs the portfolio vector `w`:
-```{r, message=FALSE}
-portfolio_fun <- function(data) {
-  X <- diff(log(data$adjusted))[-1]  # compute log returns, here we use adjusted prices
-  Sigma <- cov(X)  # compute SCM
-  # design GMVP
-  w <- solve(Sigma, rep(1, nrow(Sigma)))
-  w <- w/sum(abs(w))  # normalized to have ||w||_1=1
-  return(w)
+my_portfolio <- function(dataset) {
+  prices <- dataset$adjusted
+  N <- ncol(prices)
+  return(rep(1/N, N))
 }
 ```
-
-We are then ready to use the function `portfolioBacktest()` that will execute and evaluate the portfolio design function on a rolling-window basis, and the result can be easily handled with privided function `backtestSelector()`
+- **Step 3** - do backtest
+```{r, results="hide"}
+bt <- portfolioBacktest(my_portfolio, dataset10)
+```
+- **Step 4** - check your portfolio performance
 ```{r}
-bt <- portfolioBacktest(portfolio_fun, dataset[1], shortselling = TRUE)
-res <- backtestSelector(bt, portfolio_index = 1)
-names(res)
-plot(res$cumPnL[[1]])
+backtestSummary(bt)$performance
 ```
 
-We can also backtest over multiple data sets 
-```{r}
-# perform multiple backtesting
-mul_data_bt <- portfolioBacktest(portfolio_fun, dataset, shortselling = TRUE)
-mul_data_res <- backtestSelector(mul_data_bt, portfolio_index = 1)
-mul_data_res$performance
+For a more detailed explanation on how to use the package with all the features, check the [vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
+
+
+
+## Package Snapshot
+This package backtests a list of portfolios over multiple datasets on a rolling-window basis, producing final results as in the following.
+```{r, echo=FALSE, message=FALSE}
+library(portfolioBacktest)
+load("man/figures/bt.RData")
 ```
 
-For comparison, we may want some benchmarks. Now the package suppport two benchmarks, which are `uniform portfolio` and `index` of the certain market. We can easily do that 
 
-```{r}
-mul_data_bt <- portfolioBacktest(portfolio_fun, dataset, benchmark = c("uniform", "index"), shortselling = TRUE)
-names(mul_data_bt)
+- Performance table:
+```{r, echo=FALSE}
+res_sum <- backtestSummary(bt)
+summaryTable(res_sum, type = "DT", order_col = 2, order_dir = "desc")
 ```
 
-Then we can extract the desired result by using passing the corresponding name to argument `portfolio_name` of function `backtestSelector()`
+<br>
 
-```{r}
-# extract result of the passed function
-res_fun1 <- backtestSelector(mul_data_bt, "fun1")
-names(res_fun1)
-res_fun1$performance
-
-# extract result of the uniform portfolio function
-res_uniform <- backtestSelector(mul_data_bt, "uniform")
-names(res_uniform)
+- Barplot:
+```{r, echo=FALSE, out.width="75%"}
+summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"), type = "ggplot2")
 ```
 
-For a clear view, we can summarize all the portfolios' performance based on user customized summary functions. For example, we want to compare the median and average value of the performance of these portfolios.
+<br>
 
-```{r}
-res_summary <- backtestSummary(mul_data_bt, summary_fun = median)
-names(res_summary)
-res_summary$performance_summary
+- Boxplot:
+```{r, echo=FALSE, out.width="75%"}
+backtestBoxPlot(bt, measure = "Sharpe ratio")
 ```
+
 
 
 ## Links
 Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest) and [GitHub](https://github.com/dppalomar/portfolioBacktest).
 
-README file: [CRAN-readme](https://cran.r-project.org/package=portfolioBacktest/readme/README.html)
-and [GitHub-readme](https://raw.githack.com/dppalomar/portfolioBacktest/master/README.html).
+README file: [CRAN-readme](https://CRAN.R-project.org/package=portfolioBacktest/readme/README.html) and [GitHub-readme](https://github.com/dppalomar/portfolioBacktest/blob/master/README.md).
 
-Vignette: [CRAN-html-vignette](https://cran.r-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html),
-[CRAN-pdf-vignette](https://cran.r-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest-pdf.pdf),
-[GitHub-html-vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html), and
-[GitHub-pdf-vignette](https://docs.google.com/viewer?url=https://github.com/dppalomar/portfolioBacktest/raw/master/vignettes/PortfolioBacktest-pdf.pdf).
+Vignette: [CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html) and
+[GitHub-vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html).
 

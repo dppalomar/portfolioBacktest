@@ -41,10 +41,6 @@
 #'         quantmod
 #' @export
 stockDataDownload <- function(stock_symbols, index_symbol = NULL, only_monotone = TRUE, from, to, ...) {
-  
-  if (!requireNamespace("quantmod", quietly = TRUE)) 
-    stop("Package \"quantmod\" needed for this function to work. Please install it.")
-  
   open <- high <- low <- close <- volume <- adjusted <- list()
   n_stocks <- length(stock_symbols)
   valid_count <- 0
