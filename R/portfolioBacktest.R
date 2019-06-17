@@ -85,7 +85,10 @@
 #' summaryTable(bt_summary)
 #' 
 #' @import xts
-#'         zoo
+#' @importFrom zoo index
+#' @importFrom doSNOW registerDoSNOW
+#' @importFrom foreach foreach %dopar%
+#' @importFrom parallel makeCluster stopCluster
 #' @export
 portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path = NULL, price_name = "adjusted",
                               paral_portfolios = 1, paral_datasets = 1,
@@ -98,8 +101,6 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   paral_portfolios <- round(paral_portfolios)
   paral_datasets <- round(paral_datasets)
   if (paral_portfolios < 1 || paral_datasets < 1) stop("Parallel number must be a positive interger.")
-  if ((paral_portfolios > 1 || paral_datasets > 1) && !requireNamespace("doSNOW", quietly = TRUE)) 
-    stop("Package \"doSNOW\" needed for parallel mode. Please install it.")
   if (is.null(folder_path) && is.null(portfolio_funs)) stop("The \"folder_path\" and \"portfolio_fun_list\" cannot be both NULL.")
   if (!is.null(portfolio_funs) && !is.list(portfolio_funs)) portfolio_funs <- list(portfolio_funs)
   ##############################

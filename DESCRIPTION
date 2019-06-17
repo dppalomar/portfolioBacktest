@@ -33,13 +33,14 @@ Depends: R (>= 2.10)
 Imports:
     xts,
     zoo,
+    doSNOW,
+    foreach,
     evaluate,
     PerformanceAnalytics,
     R.utils,
     utils,
     quantmod
 Suggests:
-    doSNOW,
     DT,
     ggplot2,
     gridExtra,

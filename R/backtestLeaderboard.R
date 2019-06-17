@@ -56,6 +56,7 @@
 #' leaderboard$leaderboard_scores
 #'
 #' @importFrom stats median
+#' @importFrom utils modifyList
 #' @export
 backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median, show_benchmark = TRUE) {
   if (!is.list(weights)) stop("Argument \"weights\" must be a list.")
