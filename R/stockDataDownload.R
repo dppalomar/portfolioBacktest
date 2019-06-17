@@ -88,6 +88,7 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, only_monotone 
   }
   
   # also download index data
+  if (is.null(index_symbol)) index_symbol <- attr(stock_symbols, "index_symbol")  
   if (!is.null(index_symbol)) {
     rt$index <- tryCatch(Ad(suppressWarnings(getSymbols(index_symbol, from = from, to = to, auto.assign = FALSE, ...))),
                          error = function(e) {cat("Fail to download index \"", index_symbol, "\"\n", sep = "")})
