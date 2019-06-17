@@ -54,6 +54,7 @@
 #'                                                       "ROT bps"       = 1))
 #' leaderboard$leaderboard_scores
 #'
+#' @importFrom stats median
 #' @export
 backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median, show_benchmark = TRUE) {
   if (!is.list(weights)) stop("Argument \"weights\" must be a list.")
@@ -112,7 +113,7 @@ backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median,
 
 rank_percentile <- function(x) {
   N <- length(x)
-  rank_pctl <- ecdf(x)(x)
+  rank_pctl <- stats::ecdf(x)(x)
   rank_pctl <- (rank_pctl - 1/N)/(1 - 1/N)
   return (100*rank_pctl)
 }

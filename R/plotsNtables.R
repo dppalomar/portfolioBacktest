@@ -1,6 +1,6 @@
 #' @title Create table from backtest summary.
 #' 
-#' @description After performing a backtest with \link{\code{portfolioBacktest}} 
+#' @description After performing a backtest with \code{\link{portfolioBacktest}} 
 #' and obtaining a summary of the performance measures with 
 #' \code{\link{backtestSummary}}, this function creates a table from the summary. 
 #' By default the table is a simple matrix, but if the user has installed the 
@@ -126,8 +126,11 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
 #' # now we can obtain the table
 #' bt_summary_median <- backtestSummary(bt)
 #' summaryBarPlot(bt_summary_median, measures = c("max drawdown", "annual volatility"))
-#' summaryBarPlot(bt_summary_median, measures = c("max drawdown", "annual volatility"), type = "simple")
+#' summaryBarPlot(bt_summary_median, measures = c("max drawdown", "annual volatility"), 
+#'                type = "simple")
 #' 
+#' @importFrom grDevices topo.colors
+#' @importFrom graphics barplot legend par
 #' @export
 summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "simple"), ...) {
   # extract table
@@ -175,7 +178,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' @title Create boxplot from backtest results.
 #' 
 #' @description Create boxplot from a portfolio backtest obtained with the function 
-#' \link{\code{portfolioBacktest}}. By default the boxplot is based on the 
+#' \code{\link{portfolioBacktest}}. By default the boxplot is based on the 
 #' package \code{ggplot2} (also plots a dot for each single backtest), but the user can also 
 #' specify a simple base plot.
 #' 
@@ -215,6 +218,8 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' backtestBoxPlot(bt, "Sharpe ratio")
 #' backtestBoxPlot(bt, "Sharpe ratio", type = "simple")
 #' 
+#' @importFrom graphics boxplot par
+#' @importFrom stats quantile
 #' @export
 backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "simple"), ...) {
   # extract correct performance measure

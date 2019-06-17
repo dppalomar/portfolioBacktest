@@ -507,8 +507,8 @@ returnPortfolio <- function(R, weights, execution = c("same day", "next day"), n
   w <- R; w[] <- NA
   w[index(weights), ] <- weights
   switch(match.arg(execution),  # w[t] is the portfolio held before the realization of price[t] and R[t]
-         "same day" = { w <- lag(w) },
-         "next day" = { w <- lag(w, 2) },
+         "same day" = { w <- lag.xts(w) },
+         "next day" = { w <- lag.xts(w, 2) },
          stop("Execution method unknown")
   )
   rebalance_indices <- which(!is.na(w[, 1]))
@@ -541,7 +541,7 @@ returnPortfolio <- function(R, weights, execution = c("same day", "next day"), n
   
   # compute ROT based on normalized dollars
   PnL <- diff(NAV); colnames(PnL) <- "PnL"
-  PnL_rel <- PnL/lag(NAV)
+  PnL_rel <- PnL/lag.xts(NAV)
   turnover_rel <- xts(rowSums(abs(delta_rel)), index(delta_rel))
   sum_PnL_rel <- sum(PnL_rel, na.rm = TRUE)
   sum_turnover_rel <- sum(turnover_rel, na.rm = TRUE) * length(rebalance_indices)/(length(rebalance_indices)-1)  # to compensate for the removed fist turnover

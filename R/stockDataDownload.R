@@ -32,7 +32,8 @@
 #' data(SP500_symbols)
 #' 
 #' # download data from internet
-#' SP500_data <- stockDataDownload(stock_symbols = SP500_symbols, from = "2008-12-01", to = "2009-12-01")
+#' SP500_data <- stockDataDownload(stock_symbols = SP500_symbols, 
+#'                                 from = "2008-12-01", to = "2009-12-01")
 #' }
 #' 
 #' @import xts 
@@ -136,7 +137,8 @@ multipleXTSMerge <- function(xts_list) {
 #' data(SP500_symbols)
 #' 
 #' # download data from internet
-#' SP500_data <- stockDataDownload(stock_symbols = SP500_symbols, from = "2008-12-01", to = "2011-12-01")#'                            
+#' SP500_data <- stockDataDownload(stock_symbols = SP500_symbols, 
+#'                                 from = "2008-12-01", to = "2011-12-01")
 #' # resample from downloaded, each with 50 stocks and 2-year continuous data
 #' my_dataset_list <- stockDataResample(SP500_data, N = 50, T = 2*252, num_datasets = 10)
 #' }
