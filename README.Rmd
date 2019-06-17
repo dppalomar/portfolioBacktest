@@ -108,21 +108,22 @@ load("man/figures/bt.RData")
 
 
 - Performance table:
+
 ```{r, echo=FALSE}
 res_sum <- backtestSummary(bt)
 summaryTable(res_sum, type = "DT", order_col = 2, order_dir = "desc")
 ```
 
-<br>
 
 - Barplot:
+
 ```{r, echo=FALSE, out.width="75%"}
 summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"), type = "ggplot2")
 ```
 
-<br>
 
 - Boxplot:
+
 ```{r, echo=FALSE, out.width="75%"}
 backtestBoxPlot(bt, measure = "Sharpe ratio")
 ```
