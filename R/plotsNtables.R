@@ -256,6 +256,7 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
            })
            plot_limits <- c(min(limits["limit_min", ]), max(limits["limit_max", ]))
            df <- as.data.frame.table(res_table)
+           Var2 <- Freq <- NULL  # ugly hack to deal with CRAN note
            ggplot2::ggplot(df, ggplot2::aes(x = Var2, y = Freq, fill = Var2)) +
              ggplot2::geom_boxplot(show.legend = FALSE) +  # (outlier.shape = NA)
              ggplot2::geom_point(size = 0.5, alpha = params$alpha, show.legend = FALSE) +  # geom_jitter(width = 0) +
