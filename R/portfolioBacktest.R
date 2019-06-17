@@ -88,7 +88,7 @@
 #' @importFrom zoo index
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom foreach foreach %dopar%
-#' @importFrom parallel makeCluster stopCluster
+#' @importFrom snow makeCluster stopCluster
 #' @export
 portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path = NULL, price_name = "adjusted",
                               paral_portfolios = 1, paral_datasets = 1,
@@ -320,6 +320,7 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, price_name, mar
     registerDoSNOW(cl)
     exports <- ls(envir = .GlobalEnv)
     exports <- exports[! exports %in% c("portfolio_fun", "dat")]
+    dat <- NULL
     result <- foreach(dat = dataset_list, .combine = c, .packages = .packages(), .export = ls(envir = .GlobalEnv), .options.snow = opts) %dopar% {
       return(list(singlePortfolioSingleXTSBacktest(portfolio_fun, dat, price_name, market,
                                                    shortselling, leverage,
