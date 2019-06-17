@@ -35,6 +35,7 @@ Imports:
     zoo,
     doSNOW,
     foreach,
+    snow,
     evaluate,
     PerformanceAnalytics,
     R.utils,
