@@ -68,9 +68,9 @@ bt <- portfolioBacktest(uniform_portfolio_fun, dataset10, benchmark = c("uniform
 
 test_that("Error control test for \"backtestSelector\"", {
   
-  expect_error(backtestSelector(selector = "NOT_SELECTOR"), "\"selector\" contains invalid element.")
+  expect_error(backtestSelector(measures = "NOT_MEASURE"), "\"measures\" contains invalid element.")
   
-  expect_error(backtestSelector(selector = integer(0)), "\"selector\" must have length > 1.")
+  expect_error(backtestSelector(measures = integer(0)), "\"measures\" must have length > 1.")
   
   expect_error(backtestSelector(), "must select a portfolio.")
   
@@ -81,7 +81,7 @@ test_that("Error control test for \"backtestSelector\"", {
 
 test_that("Error control test for \"backtestTable\"", {
   
-  expect_error(backtestSelector(bt, selector = "NOT_SELECTOR"), "\"selector\" contains invalid element.")
+  expect_error(backtestSelector(bt, measures = "NOT_MEASURE"), "\"measures\" contains invalid element.")
   
 })
 

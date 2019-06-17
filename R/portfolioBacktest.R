@@ -79,8 +79,8 @@
 #' 
 #' # check your result
 #' names(bt)
-#' backtestSelector(bt, portfolio_name = "Uniform", selector = c("Sharpe ratio", "max drawdown"))
-#' backtestTable(bt, selector = c("Sharpe ratio", "max drawdown"))
+#' backtestSelector(bt, portfolio_name = "Uniform", measures = c("Sharpe ratio", "max drawdown"))
+#' backtestTable(bt, measures = c("Sharpe ratio", "max drawdown"))
 #' bt_summary <- backtestSummary(bt)
 #' summaryTable(bt_summary)
 #' 

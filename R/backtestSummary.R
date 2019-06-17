@@ -102,13 +102,13 @@ backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fu
 #' @description Create table with the results from a portfolio backtest.
 #' 
 #' @inheritParams backtestSummary
-#' @param selector String vector to select performane measures (default is all) from
+#' @param measures String vector to select performane measures (default is all) from
 #'                 \code{"Sharpe ratio"}, \code{"max drawdown"}, \code{"annual return"}, \code{"annual volatility"}, 
 #'                 \code{"Sterling ratio"}, \code{"Omega ratio"}, \code{"ROT bps"},
 #'                 \code{"error"}, \code{"cpu_time"}, and \code{"error_message"}.
 #' 
-#' @return List with the following elements (some might be missing, depending on argument \code{selector}):
-#' \item{\code{<performance criterion>}}{Performance measures as selected by \code{selector}.}
+#' @return List with the following elements:
+#' \item{\code{<performance criterion>}}{One item per performance measures as selected by argument \code{measures}.}
 #' \item{\code{error}}{Error status (\code{TRUE} or \code{FALSE}) for each portfolio over each dataset
 #'                    (\code{TRUE} is when the portfolio function generates an error or the maximum CPU time is exceeded).}
 #' \item{\code{cpu_time}}{CPU usage by each portfolio function over each dataset.}
@@ -136,16 +136,16 @@ backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fu
 #' 
 #' @export  
 backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA, 
-                          show_benchmark = TRUE, selector = NULL) {
+                          show_benchmark = TRUE, measures = NULL) {
   # check portfolio index and names
   if (anyNA(portfolio_names) && anyNA(portfolio_indexes)) portfolio_indexes <- attr(bt, 'portfolio_index')
   if (!anyNA(portfolio_indexes)) portfolio_names <- names(bt)[portfolio_indexes]
   if (show_benchmark) portfolio_names <- c(portfolio_names, names(bt)[attr(bt, 'benchmark_index')])
   
-  # check selector
-  selector_range <- c(names(portfolioPerformance()), 'error', 'error_message', 'cpu_time')
-  if (is.null(selector)) selector <- selector_range
-  if (any(!(selector %in% selector_range))) stop("\"selector\" contains invalid element.")
+  # check measures
+  measures_range <- c(names(portfolioPerformance()), 'error', 'error_message', 'cpu_time')
+  if (is.null(measures)) measures <- measures_range
+  if (any(!(measures %in% measures_range))) stop("\"measures\" contains invalid element.")
   
   # check if source_error happen
   valid_mask <- sapply(bt[portfolio_names], function(x){is.null(x$source_error_message)})
@@ -154,7 +154,7 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
   # extract results and combine into matrix
   N_dataset <- length(bt[[portfolio_names[valid_mask][1]]])
   N_portfolio <- length(portfolio_names)
-  mask_performance <- setdiff(selector, c('error', 'error_message', 'cpu_time'))
+  mask_performance <- setdiff(measures, c('error', 'error_message', 'cpu_time'))
   
   
   container <- matrix(NA, N_dataset, N_portfolio)
@@ -166,7 +166,7 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
   # fill in all results
   for (i in 1:N_portfolio) {
     
-    tmp <- backtestSelector(bt = bt, portfolio_name = portfolio_names[i], selector = selector)
+    tmp <- backtestSelector(bt = bt, portfolio_name = portfolio_names[i], measures = measures)
     
     for (metric in mask_performance) {
       # creat space in first visit
@@ -177,17 +177,17 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
       performance[[metric]][, i] <- tmp$performance[, metric]
     }
     
-    if ('error' %in% selector)
+    if ('error' %in% measures)
       if (valid_mask[i]) 
         error[, i] <- tmp$error
       else
         error[, i] <- TRUE
       
-    if ('cpu_time' %in% selector)
+    if ('cpu_time' %in% measures)
       if (valid_mask[i])
         cpu_time[, i] <- tmp$cpu_time
     
-    if ('error_message' %in% selector)
+    if ('error_message' %in% measures)
       if (valid_mask[i])
         error_message[[portfolio_names[i]]] <- tmp$error_message
       else
@@ -196,9 +196,9 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
   
   rt <- list()
   if (length(mask_performance) >= 1) rt <- performance
-  if ('error' %in% selector)         rt$error <- error
-  if ('cpu_time' %in% selector)      rt$cpu_time <- cpu_time
-  if ('error_message' %in% selector) rt$error_message <- error_message
+  if ('error' %in% measures)         rt$error <- error
+  if ('cpu_time' %in% measures)      rt$cpu_time <- cpu_time
+  if ('error_message' %in% measures) rt$error_message <- error_message
   
   return(rt)
 }
@@ -217,12 +217,12 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
 #' @param portfolio_name String name of a portfolio, e.g., \code{"GMVP"} means to select the performance 
 #'                       of portfolio with name \code{"GMVP"} in \code{bt}. 
 #'                       Only considered when \code{portfolio_index} is not passed.
-#' @param selector String vector to select performane measures (default is all) from
+#' @param measures String vector to select performane measures (default is all) from
 #'                 \code{"Sharpe ratio"}, \code{"max drawdown"}, \code{"annual return"}, \code{"annual volatility"}, 
 #'                 \code{"Sterling ratio"}, \code{"Omega ratio"}, and \code{"ROT bps"}.
 #' 
 #' @return List with the following elements:
-#' \item{\code{performance}}{Performance measures selected by \code{selector}.}
+#' \item{\code{performance}}{Performance measures selected by argument \code{measures}.}
 #' \item{\code{error}}{Error status (\code{TRUE} or \code{FALSE}) of portfolio over each dataset
 #'                    (\code{TRUE} is when the portfolio function generates an error or the maximum CPU time is exceeded).}
 #' \item{\code{error_message}}{Error messages generated by portfolio function over each dataset.
@@ -253,29 +253,29 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
 #' 
 #' @export
 #' 
-backtestSelector <- function(bt, portfolio_index = NA, portfolio_name = NA, selector = NULL) {
-  selector_range <- c(names(portfolioPerformance()), 'error', 'error_message', 'cpu_time', 'return', 'portfolio')
-  if (is.null(selector)) selector <- selector_range
-  if (any(!(selector %in% selector_range))) stop("\"selector\" contains invalid element.")
-  if (length(selector) == 0) stop("\"selector\" must have length > 1.")
+backtestSelector <- function(bt, portfolio_index = NA, portfolio_name = NA, measures = NULL) {
+  measures_range <- c(names(portfolioPerformance()), 'error', 'error_message', 'cpu_time', 'return', 'portfolio')
+  if (is.null(measures)) measures <- measures_range
+  if (any(!(measures %in% measures_range))) stop("\"measures\" contains invalid element.")
+  if (length(measures) == 0) stop("\"measures\" must have length > 1.")
   if (is.na(portfolio_name) && is.na(portfolio_index)) stop("must select a portfolio.") 
   if (!is.na(portfolio_index)) portfolio_name <- names(bt)[portfolio_index]
   if (length(portfolio_name) > 1) stop("Only one portfolio can be selected.")
   if (!is.null(bt[[portfolio_name]]$source_error_message)) return(bt[[portfolio_name]])
   
   result <- list()
-  mask_performance <- setdiff(selector, c('error', 'error_message', 'cpu_time', 'return', 'portfolio'))
+  mask_performance <- setdiff(measures, c('error', 'error_message', 'cpu_time', 'return', 'portfolio'))
   if (length(mask_performance) > 0)
     result$performance <- t(sapply(bt[[portfolio_name]], function(x){x$performance[mask_performance]}))
-  if ('error' %in% selector) 
+  if ('error' %in% measures) 
     result$error <- sapply(bt[[portfolio_name]], function(x){x$error})
-  if ('error_message' %in% selector) 
+  if ('error_message' %in% measures) 
     result$error_message <- lapply(bt[[portfolio_name]], function(x){x$error_message})
-  if ('cpu_time' %in% selector)
+  if ('cpu_time' %in% measures)
     result$cpu_time <- sapply(bt[[portfolio_name]], function(x){x$cpu_time})
-  if ('portfolio' %in% selector)
+  if ('portfolio' %in% measures)
     result$portfolio <- lapply(bt[[portfolio_name]], function(x){x$portfolio})
-  if ('return' %in% selector) {
+  if ('return' %in% measures) {
     result$return <- lapply(bt[[portfolio_name]], function(x){x$return})
     result$cumPnL <- lapply(bt[[portfolio_name]], function(x){x$cumPnL})
   }
