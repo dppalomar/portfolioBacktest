@@ -37,7 +37,7 @@
 #' @param show_progress_bar Logical value indicating whether to show progress bar (default is \code{FALSE}). 
 #' @param benchmark String vector indicating the benchmark portfolios to be incorporated, currently supports:
 #' \itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks}
-#'          \item{\code{index} - the market index, requires an \code{xts} names \code{"index"} in the datasets.}}
+#'          \item{\code{index} - the market index, requires an \code{xts} named `index` in the datasets.}}
 #' @param shortselling Logical value indicating whether shortselling is allowed or not 
 #'                     (default is \code{TRUE}, so no control for shorselling in the backtesting).
 #' @param leverage Amount of leverage as in \eqn{||w||_1 <= leverage} 
@@ -48,14 +48,21 @@
 #' @param cpu_time_limit Time limit for executing each portfolio function over a single data set 
 #'                       (default is \code{Inf}, so no time limit).
 #' @param return_portfolio Logical value indicating whether to return portfolios (default is \code{TRUE}).
-#' @param return_return Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).
+#' @param return_returns Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).
 #' 
-#' @return List as the portfolio backtest results, see 
+#' @return List with the portfolio backtest results, see 
 #'         \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#result-format}{vignette-result-format}
-#'         for details. It can be accessed directly. But we highly recommend our functions, e.g., \code{\link{backtestTable}}, \code{\link{backtestBoxPlot}},
-#'         to extract whatever you want.
+#'         for details. It can be accessed directly, but we highly recommend the package specific functions to extract any required
+#'         information, namely, \code{\link{backtestSelector}}, \code{\link{backtestTable}}, 
+#'         \code{\link{backtestBoxPlot}}, \code{\link{backtestLeaderboard}},
+#'         \code{\link{backtestSummary}}, \code{\link{summaryTable}}, \code{\link{summaryBarPlot}}.
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
+#' 
+#' @seealso \code{\link{stockDataDownload}}, \code{\link{stockDataResample}},
+#'          \code{\link{backtestSelector}}, \code{\link{backtestTable}}, 
+#'          \code{\link{backtestBoxPlot}}, \code{\link{backtestLeaderboard}},
+#'          \code{\link{backtestSummary}}, \code{\link{summaryTable}}, \code{\link{summaryBarPlot}}.
 #' 
 #' @examples
 #' library(portfolioBacktest)
@@ -86,7 +93,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                               shortselling = TRUE, leverage = Inf,
                               T_rolling_window = 252, optimize_every = 20, rebalance_every = 1,
                               cpu_time_limit = Inf,
-                              return_portfolio = TRUE, return_return = TRUE) {
+                              return_portfolio = TRUE, return_returns = TRUE) {
   ####### error control ########
   paral_portfolios <- round(paral_portfolios)
   paral_datasets <- round(paral_datasets)
@@ -111,14 +118,14 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                          shortselling, leverage,
                          T_rolling_window, optimize_every, rebalance_every,
                          cpu_time_limit,
-                         return_portfolio, return_return) {
+                         return_portfolio, return_returns) {
       packages_default <- search() # snap the default packages
       res <- singlePortfolioBacktest(portfolio_fun, dataset_list, price_name, market = FALSE,
                                      paral_datasets, show_progress_bar,
                                      shortselling, leverage,
                                      T_rolling_window, optimize_every, rebalance_every,
                                      cpu_time_limit,
-                                     return_portfolio, return_return)
+                                     return_portfolio, return_returns)
       packages_now <- search()# detach the newly loaded packages
       packages_det <- packages_now[!(packages_now %in% packages_default)]
       detachPackages(packages_det)
@@ -134,7 +141,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                                 shortselling, leverage,
                                 T_rolling_window, optimize_every, rebalance_every,
                                 cpu_time_limit,
-                                return_portfolio, return_return)
+                                return_portfolio, return_returns)
       }
     } else {
       # create the progress bar based on function number
@@ -158,7 +165,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                              shortselling, leverage,
                              T_rolling_window, optimize_every, rebalance_every,
                              cpu_time_limit,
-                             return_portfolio, return_return)))
+                             return_portfolio, return_returns)))
       }
       if (show_progress_bar) close(pb)
       stopCluster(cl) 
@@ -175,7 +182,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                          shortselling, leverage,
                          T_rolling_window, optimize_every, rebalance_every,
                          cpu_time_limit,
-                         return_portfolio, return_return) {
+                         return_portfolio, return_returns) {
       packages_default <- search()  # snap the default packages
       source_error <- FALSE; source_error_message <- NA
       tryCatch(expr    = {suppressMessages(source(paste0(folder_path, "/", file), local = TRUE))
@@ -184,7 +191,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                                                          shortselling, leverage,
                                                          T_rolling_window, optimize_every, rebalance_every,
                                                          cpu_time_limit,
-                                                         return_portfolio, return_return)}, 
+                                                         return_portfolio, return_returns)}, 
                warning = function(w){source_error <<- TRUE; source_error_message <<- w$message}, 
                error   = function(e){source_error <<- TRUE; source_error_message <<- e$message})
       packages_now <- search()# detach the newly loaded packages
@@ -203,7 +210,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                                 shortselling, leverage,
                                 T_rolling_window, optimize_every, rebalance_every,
                                 cpu_time_limit,
-                                return_portfolio, return_return)
+                                return_portfolio, return_returns)
       }
     } else {
       # creat the progress bar based on files number
@@ -224,7 +231,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                              shortselling, leverage,
                              T_rolling_window, optimize_every, rebalance_every,
                              cpu_time_limit,
-                             return_portfolio, return_return)))
+                             return_portfolio, return_returns)))
       }
       if (show_progress_bar) close(pb)
       stopCluster(cl) 
@@ -239,7 +246,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                                      shortselling, leverage,
                                      T_rolling_window, optimize_every, rebalance_every,
                                      cpu_time_limit,
-                                     return_portfolio, return_return)
+                                     return_portfolio, return_returns)
   result <- c(result, res_benchmark)
   attr(result, 'portfolio_index') <- 1:length(portfolio_names)
   attr(result, 'contain_benchmark') <- length(res_benchmark) > 0
@@ -255,7 +262,7 @@ benchmarkBacktest <- function(dataset_list, benchmark, price_name,
                               shortselling, leverage,
                               T_rolling_window, optimize_every, rebalance_every,
                               cpu_time_limit,
-                              return_portfolio, return_return) {
+                              return_portfolio, return_returns) {
   res <- list()
   if ("uniform" %in% benchmark) {
     if (show_progress_bar) cat("\n Evaluating benchmark-uniform\n")
@@ -264,7 +271,7 @@ benchmarkBacktest <- function(dataset_list, benchmark, price_name,
                                            shortselling, leverage,
                                            T_rolling_window, optimize_every, rebalance_every,
                                            cpu_time_limit,
-                                           return_portfolio, return_return)
+                                           return_portfolio, return_returns)
   }
   if ("index" %in% benchmark) {
     if (show_progress_bar) cat("\n Evaluating benchmark-index\n")
@@ -273,7 +280,7 @@ benchmarkBacktest <- function(dataset_list, benchmark, price_name,
                                          shortselling, leverage,
                                          T_rolling_window, optimize_every, rebalance_every,
                                          cpu_time_limit,
-                                         return_portfolio, return_return)
+                                         return_portfolio, return_returns)
   }
   return(res)
 }
@@ -286,7 +293,7 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, price_name, mar
                                     shortselling, leverage,
                                     T_rolling_window, optimize_every, rebalance_every,
                                     cpu_time_limit,
-                                    return_portfolio, return_return) {
+                                    return_portfolio, return_returns) {
   # create the progress bar
   if (show_progress_bar) {
     sink(file = tempfile())
@@ -304,7 +311,7 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, price_name, mar
                                                       shortselling, leverage,
                                                       T_rolling_window, optimize_every, rebalance_every,
                                                       cpu_time_limit,
-                                                      return_portfolio, return_return)
+                                                      return_portfolio, return_returns)
       if (show_progress_bar) opts$progress(i) # show progress bar
     }
   } else {               ########### parallel mode
@@ -317,7 +324,7 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, price_name, mar
                                                    shortselling, leverage,
                                                    T_rolling_window, optimize_every, rebalance_every,
                                                    cpu_time_limit,
-                                                   return_portfolio, return_return)))
+                                                   return_portfolio, return_returns)))
     }
     stopCluster(cl) 
   }
@@ -339,7 +346,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
                                              shortselling, leverage,
                                              T_rolling_window, optimize_every, rebalance_every,
                                              cpu_time_limit,
-                                             return_portfolio, return_return) {
+                                             return_portfolio, return_returns) {
   # create return container
   res <- list(performance = portfolioPerformance(), 
               cpu_time = NA, 
@@ -356,7 +363,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
     res$performance <- portfolioPerformance(rets = idx_return)
     res$performance['ROT bps'] <- Inf
     res$cpu_time <- 0
-    if (return_return) {res$return <- idx_return; res$cumPnL <- idx_prices_window[-1]/as.numeric(idx_prices_window[1])}
+    if (return_returns) {res$return <- idx_return; res$cumPnL <- idx_prices_window[-1]/as.numeric(idx_prices_window[1])}
     return(res)
   }
   
@@ -443,7 +450,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
   res$error <- error
   res$error_message <- error_message
   if (return_portfolio) res$portfolio <- w
-  if (return_return) {res$return <- rets; res$cumPnL <- cumprod(1 + rets)}
+  if (return_returns) {res$return <- rets; res$cumPnL <- cumprod(1 + rets)}
   
   return(res)
 }

@@ -40,7 +40,7 @@ devtools::test()
 devtools::check()
 rcmdcheck::rcmdcheck()
 devtools::build()
-#devtools::revdep(pkg = "riskParityPortfolio")  # to check reverse dependencies
+#devtools::revdep(pkg = "portfolioBacktest")  # to check reverse dependencies
 #devtools::build_win()  #to check under windows
 #R CMD build .  # this is to generate tarball
 #R CMD check portfolioBacktest_0.1.0.tar.gz --as-cran  # this is before submission to CRAN

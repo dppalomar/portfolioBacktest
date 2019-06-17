@@ -1,14 +1,16 @@
 #' @title Create table from backtest summary.
 #' 
-#' @description After performing a backtest with \code{portfolioBacktest()} 
+#' @description After performing a backtest with \link{\code{portfolioBacktest}} 
 #' and obtaining a summary of the performance measures with 
-#' \code{backtestSummary()}, this function creates a table from the summary. 
+#' \code{\link{backtestSummary}}, this function creates a table from the summary. 
 #' By default the table is a simple matrix, but if the user has installed the 
 #' package \code{DT} or \code{grid.table} nicer tables can be generated.
 #' 
-#' @param bt_summary Backtest summary as obtained from \code{backtestSummary()}.
-#' @param measures Choice of performance measures (vector of strings) to be used from the 
-#'                 summary. By default all are used.
+#' @param bt_summary Backtest summary as obtained from the function \code{backtestSummary}.
+#' @param measures String vector to select performane measures (default is all) from
+#'                 `Sharpe ratio`, `max drawdown`, `annual return`, `annual volatility`, 
+#'                 `Sterling ratio`, `Omega ratio`, and `ROT bps`.
+#'                 
 #' @param type Type of table. Valid options: \code{"simple", "DT", "grid.table"}. Default is 
 #'             \code{"simple"} and generates a simple matrix (with the other choices the 
 #'             corresponding package must be installed).
@@ -85,15 +87,13 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
 
 #' @title Create barplot from backtest summary.
 #' 
-#' @description After performing a backtest with \code{portfolioBacktest()} 
+#' @description After performing a backtest with \code{\link{portfolioBacktest}} 
 #' and obtaining a summary of the performance measures with 
-#' \code{backtestSummary()}, this function creates a barplot from the summary. 
+#' \code{\link{backtestSummary}}, this function creates a barplot from the summary. 
 #' By default the plot is based on the package \code{ggplot2}, but the user
 #' can also specify a simple base plot.
 #' 
-#' @param bt_summary Backtest summary as obtained from \code{backtestSummary()}.
-#' @param measures Choice of performance measures (vector of strings) to be used from the 
-#'                 summary. By default all are used.
+#' @inheritParams summaryTable
 #' @param type Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
 #'             \code{"ggplot2"} (the package \code{ggplot2} must be installed).
 #' @param ... Additional parameters (only used for plot \code{type = "simple"}); 
@@ -174,20 +174,22 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 
 #' @title Create boxplot from backtest results.
 #' 
-#' @description After performing a backtest with \code{portfolioBacktest()},
-#' this function creates a boxplot. By default the boxplot is based on the package 
-#' \code{ggplot2} (also plots a dot for each single backtest), but the user
-#' can also specify a simple base plot.
+#' @description Create boxplot from a portfolio backtest obtained with the function 
+#' \link{\code{portfolioBacktest}}. By default the boxplot is based on the 
+#' package \code{ggplot2} (also plots a dot for each single backtest), but the user can also 
+#' specify a simple base plot.
 #' 
-#' @param backtest Backtest result as obtained from \code{portfolioBacktest()}.
-#' @param measure Choice of the performance measure (string) to be used. 
-#'                Default is \code{"Sharpe ratio"}.
+#' @inheritParams backtestSummary
+#' @param measure String to select a performane measure from
+#'                 \code{"Sharpe ratio"}, \code{"max drawdown"}, \code{"annual return"}, \code{"annual volatility"}, 
+#'                 \code{"Sterling ratio"}, \code{"Omega ratio"}, and \code{"ROT bps"}.
+#'                  Default is \code{"Sharpe ratio"}.
 #' @param type Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
 #'             \code{"ggplot2"} (the package \code{ggplot2} must be installed).
-#' @param ... Additional parameters; for example: 
-#'            \code{mar} for margins as in \code{par()} (for the case of plot \code{type = "simple"});
+#' @param ... Additional parameters. For example: 
+#'            \code{mar} for margins as in \code{par()} (for the case of plot \code{type = "simple"}); and
 #'            \code{alpha} for the alpha of each backtest dot (for the case of plot \code{type = "ggplot2"}), 
-#'                         set to 0 to remove the dots.
+#'                         set to \code{0} to remove the dots.
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
@@ -214,9 +216,9 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' backtestBoxPlot(bt, "Sharpe ratio", type = "simple")
 #' 
 #' @export
-backtestBoxPlot <- function(backtest, measure = "Sharpe ratio", type = c("ggplot2", "simple"), ...) {
+backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "simple"), ...) {
   # extract correct performance measure
-  res_list_table <- backtestTable(backtest)
+  res_list_table <- backtestTable(bt)
   idx <- grep(measure, names(res_list_table), ignore.case = TRUE)
   if (length(idx)!=1) stop(measure, "does not match a single performance measure")
   res_table <- res_list_table[[idx]]
