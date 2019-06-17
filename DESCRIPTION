@@ -48,8 +48,10 @@ Suggests:
     prettydoc,
     readtext,
     rmarkdown,
+    R.rsp,    
     stringi,
     testthat
 VignetteBuilder:
     knitr,
-    rmarkdown
+    rmarkdown,
+    R.rsp    

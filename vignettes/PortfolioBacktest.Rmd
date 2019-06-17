@@ -245,12 +245,12 @@ The package also contains several convenient functions to extract information fr
 ```{r}
 # select sharpe ratio and max drawdown performance of uniform portfolio
 backtestSelector(bt, portfolio_name = "Quintile", 
-                 selector = c("Sharpe ratio", "max drawdown"))
+                 measures = c("Sharpe ratio", "max drawdown"))
 ```
 * Tables of several performance measures of the portfolios (classified by performance criteria):
 ```{r}
 # show the portfolios performance in tables 
-backtestTable(bt, selector = c("Sharpe ratio", "max drawdown"))
+backtestTable(bt, measures = c("Sharpe ratio", "max drawdown"))
 ```
 * Summary of performance measures:
 ```{r}
