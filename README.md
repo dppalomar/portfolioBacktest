@@ -108,6 +108,7 @@ This package backtests a list of portfolios over multiple datasets on a
 rolling-window basis, producing final results as in the following.
 
 -   Performance table:
+
     <img src="man/figures/README-unnamed-chunk-10-1.png" width="75%" style="display: block; margin: auto;" />
 
 <br>
