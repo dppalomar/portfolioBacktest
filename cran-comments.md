@@ -3,7 +3,7 @@ This is the first release in CRAN, version 0.1.0 (2019-06-18), (package also ava
 ---
 
 ## Test environments
-* OS X, R 3.5.3
+* OS X, R 3.6.0
 * Windows at https://win-builder.r-project.org/
 
 ## R CMD check results

@@ -176,7 +176,8 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   } else { # when folder_path is passed
     files <- list.files(folder_path)
     portfolio_names <- gsub(".R", "", files)
-    
+    if (length(portfolio_names) == 0) stop(sprintf("Could not find any .R files in folder: %s", folder_path))
+
     # define a safe enviroment to source .R files
     dataset_list__ <- dataset_list  # backup dataset_list in case of being covered by sourced files
     safeEvalFolder <- function(folder_path, file, dataset_list__, price_name,

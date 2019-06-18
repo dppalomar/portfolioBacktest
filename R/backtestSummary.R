@@ -18,7 +18,7 @@
 #' \item{\code{performance_summary}}{Performance criteria: 
 #'                 \code{"Sharpe ratio"}, \code{"max drawdown"}, \code{"annual return"}, \code{"annual volatility"}, 
 #'                 \code{"Sterling ratio"}, \code{"Omega ratio"}, and \code{"ROT bps"}.
-#'                  Default is \code{"Sharpe ratio"}.
+#'                  Default is \code{"Sharpe ratio"}.}
 #' \item{\code{failure_rate}}{Failure rate of each portfolio (failure is when the portfolio
 #'                            function generates an error or the maximum CPU time is exceeded).}
 #' \item{\code{cpu_time_summary}}{Summary of the CPU usage by each portfolio function.}

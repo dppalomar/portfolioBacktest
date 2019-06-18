@@ -68,13 +68,6 @@ test_that("portfolioBacktest under parallel mode", {
 })
 
 test_that("portfolioBacktest over files", {
-  # bt_files_check <- portfolioBacktest(folder_path = "tests/testthat/portfolio_files/", dataset_list = dataset10,
-  #                                     shortselling = TRUE, leverage = Inf, 
-  #                                     return_portfolio = FALSE, return_returns = FALSE,
-  #                                     T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
-  # bt_files_check <- lapply(bt_files_check, function(x){sapply(x, function(x){x$performance})})
-  # save(bt_files_check, file = "tests/testthat/bt_files_check.RData", compression_level = 9)
-  
   bt_files <- portfolioBacktest(folder_path = "portfolio_files", dataset_list = dataset10,
                                 shortselling = TRUE, leverage = Inf, 
                                 return_portfolio = FALSE, return_returns = FALSE,
@@ -82,5 +75,7 @@ test_that("portfolioBacktest over files", {
   bt_files <- lapply(bt_files, function(x) {sapply(x, function(x) {x$performance})})
   load("bt_files_check.RData")
   expect_equal(bt_files, bt_files_check)
+  # expect_true(all.equal(bt_files, bt_files_check, tolerance = 1e-3))
+  # save(bt_files_check, file = "bt_files_check.RData", version = 2, compression_level = 9)
 })
 

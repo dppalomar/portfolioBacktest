@@ -42,6 +42,7 @@ Imports:
     utils,
     quantmod
 Suggests:
+    CVXR,
     DT,
     ggplot2,
     gridExtra,
