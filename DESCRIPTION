@@ -31,16 +31,16 @@ LazyData: true
 RoxygenNote: 6.1.1
 Depends: R (>= 2.10)
 Imports:
-    xts,
-    zoo,
     doSNOW,
-    foreach,
-    snow,
     evaluate,
+    foreach,
     PerformanceAnalytics,
+    quantmod,
     R.utils,
+    snow,
     utils,
-    quantmod
+    xts,
+    zoo
 Suggests:
     CVXR,
     DT,
