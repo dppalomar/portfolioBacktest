@@ -1,10 +1,11 @@
 ---
 output:
-  md_document:
-    variant: markdown_github
   html_document:
     variant: markdown_github
     keep_md: true
+  md_document:
+    variant: markdown_github
+always_allow_html: yes
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -95,7 +96,7 @@ bt <- portfolioBacktest(my_portfolio, dataset10)
 backtestSummary(bt)$performance
 ```
 
-For a more detailed explanation on how to use the package with all the features, check the [vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
+For a more detailed explanation on how to use the package with all the features, check the [vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html).
 
 
 
@@ -131,10 +132,9 @@ backtestBoxPlot(bt, measure = "Sharpe ratio")
 
 
 ## Links
-Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest) and [GitHub](https://github.com/dppalomar/portfolioBacktest).
+Package: [GitHub](https://github.com/dppalomar/portfolioBacktest).
 
-README file: [CRAN-readme](https://CRAN.R-project.org/package=portfolioBacktest/readme/README.html) and [GitHub-readme](https://github.com/dppalomar/portfolioBacktest/blob/master/README.md).
+README file: [GitHub-readme](https://github.com/dppalomar/portfolioBacktest/blob/master/README.md).
 
-Vignette: [CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html) and
-[GitHub-vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html).
+Vignette: [GitHub-vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html).
 

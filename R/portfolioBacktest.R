@@ -51,7 +51,7 @@
 #' @param return_returns Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).
 #' 
 #' @return List with the portfolio backtest results, see 
-#'         \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#result-format}{vignette-result-format}
+#'         \href{https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html#result-format}{vignette-result-format}
 #'         for details. It can be accessed directly, but we highly recommend the package specific functions to extract any required
 #'         information, namely, \code{\link{backtestSelector}}, \code{\link{backtestTable}}, 
 #'         \code{\link{backtestBoxPlot}}, \code{\link{backtestLeaderboard}},
