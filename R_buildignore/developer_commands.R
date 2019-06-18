@@ -2,7 +2,7 @@
 ## User installation
 ##
 # Local installation
-install.packages(file.choose(), repos = NULL, type="source")
+install.packages(file.choose(), repos = NULL, type = "source")
 # Installation from GitHub
 devtools::install_github("dppalomar/portfolioBacktest")
 # Installation from CRAN
@@ -41,7 +41,7 @@ devtools::check()
 rcmdcheck::rcmdcheck()
 devtools::build()
 #devtools::revdep(pkg = "portfolioBacktest")  # to check reverse dependencies
-#devtools::build_win()  #to check under windows
+#devtools::check_win_release()  #to check under windows
 #R CMD build .  # this is to generate tarball
 #R CMD check portfolioBacktest_0.1.0.tar.gz --as-cran  # this is before submission to CRAN
 #R CMD install portfolioBacktest_0.1.0.tar.gz

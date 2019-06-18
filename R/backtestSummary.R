@@ -253,14 +253,14 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
 #' 
 #' @export
 #' 
-backtestSelector <- function(bt, portfolio_index = NA, portfolio_name = NA, measures = NULL) {
+backtestSelector <- function(bt, portfolio_index = NULL, portfolio_name = NULL, measures = NULL) {
   measures_range <- c(names(portfolioPerformance()), 'error', 'error_message', 'cpu_time', 'return', 'portfolio')
   if (is.null(measures)) measures <- measures_range
   if (any(!(measures %in% measures_range))) stop("\"measures\" contains invalid element.")
   if (length(measures) == 0) stop("\"measures\" must have length > 1.")
-  if (is.na(portfolio_name) && is.na(portfolio_index)) stop("must select a portfolio.") 
-  if (!is.na(portfolio_index)) portfolio_name <- names(bt)[portfolio_index]
-  if (length(portfolio_name) > 1) stop("Only one portfolio can be selected.")
+  if (length(portfolio_name) > 1 || length(portfolio_index) > 1) stop("Only one portfolio can be selected.")
+  if (is.null(portfolio_name) && is.null(portfolio_index)) stop("must select a portfolio.") 
+  if (!is.null(portfolio_index)) portfolio_name <- names(bt)[portfolio_index]
   if (!is.null(bt[[portfolio_name]]$source_error_message)) return(bt[[portfolio_name]])
   
   result <- list()

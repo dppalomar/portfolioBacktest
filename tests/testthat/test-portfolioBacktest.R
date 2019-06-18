@@ -23,7 +23,7 @@ portfolios <- list("Uniform"   = uniform_portfolio_fun,
 test_that("backtest results and performance measures coincide with the precomputed ones", {
   bt <- portfolioBacktest(portfolios, dataset_list = dataset10,
                           shortselling = TRUE, leverage = Inf, 
-                          return_portfolio = TRUE, return_return = TRUE, 
+                          return_portfolio = TRUE, return_returns = TRUE, 
                           benchmark = c("uniform", "index"),
                           T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
   # bt_check <- bt$GMVP$`dataset 1`[-2]
@@ -51,14 +51,14 @@ test_that("backtest results and performance measures coincide with the precomput
 test_that("portfolioBacktest under parallel mode", {
   bt_paral_portfolios <- portfolioBacktest(portfolios, dataset_list = dataset10, paral_portfolios = 2,
                                            shortselling = TRUE, leverage = Inf, 
-                                           return_portfolio = TRUE, return_return = TRUE, 
+                                           return_portfolio = TRUE, return_returns = TRUE, 
                                            benchmark = c("uniform", "index"),
                                            T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
   
   
   bt_paral_datasets <- portfolioBacktest(portfolios, dataset_list = dataset10, paral_datasets = 5,
                                          shortselling = TRUE, leverage = Inf, 
-                                         return_portfolio = TRUE, return_return = TRUE, 
+                                         return_portfolio = TRUE, return_returns = TRUE, 
                                          benchmark = c("uniform", "index"),
                                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
 
@@ -70,16 +70,16 @@ test_that("portfolioBacktest under parallel mode", {
 test_that("portfolioBacktest over files", {
   # bt_files_check <- portfolioBacktest(folder_path = "tests/testthat/portfolio_files/", dataset_list = dataset10,
   #                                     shortselling = TRUE, leverage = Inf, 
-  #                                     return_portfolio = FALSE, return_return = FALSE,
+  #                                     return_portfolio = FALSE, return_returns = FALSE,
   #                                     T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
   # bt_files_check <- lapply(bt_files_check, function(x){sapply(x, function(x){x$performance})})
   # save(bt_files_check, file = "tests/testthat/bt_files_check.RData", compression_level = 9)
   
-  bt_files <- portfolioBacktest(folder_path = "portfolio_files/", dataset_list = dataset10,
+  bt_files <- portfolioBacktest(folder_path = "portfolio_files", dataset_list = dataset10,
                                 shortselling = TRUE, leverage = Inf, 
-                                return_portfolio = FALSE, return_return = FALSE,
+                                return_portfolio = FALSE, return_returns = FALSE,
                                 T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
-  bt_files <- lapply(bt_files, function(x){sapply(x, function(x){x$performance})})
+  bt_files <- lapply(bt_files, function(x) {sapply(x, function(x) {x$performance})})
   load("bt_files_check.RData")
   expect_equal(bt_files, bt_files_check)
 })

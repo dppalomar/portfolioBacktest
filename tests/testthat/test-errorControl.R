@@ -81,7 +81,7 @@ test_that("Error control test for \"backtestSelector\"", {
 
 test_that("Error control test for \"backtestTable\"", {
   
-  expect_error(backtestSelector(bt, measures = "NOT_MEASURE"), "\"measures\" contains invalid element.")
+  expect_error(backtestTable(bt, measures = "NOT_MEASURE"), "\"measures\" contains invalid element.")
   
 })
 
