@@ -25,7 +25,8 @@
 #' 
 #' @seealso \code{\link{summaryBarPlot}}
 #' 
-#' @examples 
+#' @examples
+#' \dontrun{ 
 #' library(portfolioBacktest)
 #' data(dataset10)  # load dataset
 #' 
@@ -47,6 +48,7 @@
 #' bt_summary_median <- backtestSummary(bt)
 #' summaryTable(bt_summary_median, measures = c("max drawdown", "annual volatility"))
 #' summaryTable(bt_summary_median, measures = c("max drawdown", "annual volatility"), type = "DT")
+#' }
 #' 
 #' @export
 summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "grid.table"), 
@@ -105,7 +107,8 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
 #' 
 #' @seealso \code{\link{summaryTable}}
 #' 
-#' @examples 
+#' @examples
+#' \dontrun{
 #' library(portfolioBacktest)
 #' data(dataset10)  # load dataset
 #' 
@@ -128,6 +131,7 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
 #' summaryBarPlot(bt_summary_median, measures = c("max drawdown", "annual volatility"))
 #' summaryBarPlot(bt_summary_median, measures = c("max drawdown", "annual volatility"), 
 #'                type = "simple")
+#' }
 #' 
 #' @importFrom grDevices topo.colors
 #' @importFrom graphics barplot legend par
@@ -197,7 +201,8 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
-#' @examples 
+#' @examples
+#' \dontrun{ 
 #' library(portfolioBacktest)
 #' data(dataset10)  # load dataset
 #' 
@@ -218,6 +223,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' # Now we can plot
 #' backtestBoxPlot(bt, "Sharpe ratio")
 #' backtestBoxPlot(bt, "Sharpe ratio", type = "simple")
+#' }
 #' 
 #' @importFrom graphics boxplot par
 #' @importFrom stats quantile

@@ -26,7 +26,8 @@
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
-#' @examples 
+#' @examples
+#' \dontrun{ 
 #' library(portfolioBacktest)
 #' data(dataset10)  # load dataset
 #' 
@@ -54,6 +55,7 @@
 #'                                                       "cpu time"      = 1,
 #'                                                       "failure rate"  = 1))
 #' leaderboard$leaderboard_scores
+#' }
 #'
 #' @importFrom stats median
 #' @importFrom utils modifyList
