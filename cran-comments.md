@@ -1,4 +1,4 @@
-This is the first release in CRAN, version 0.1.0 (2019-06-18), (package also available in GitHub).
+This is the first release in CRAN, version 0.1.0 (2019-06-19), (package also available in GitHub).
 
 ---
 
