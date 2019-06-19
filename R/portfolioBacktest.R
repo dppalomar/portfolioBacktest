@@ -204,7 +204,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       packages_now <- search()  # detach the newly loaded packages
       packages_det <- packages_now[!(packages_now %in% packages_default)]
       detachPackages(packages_det)
-      if (!is.null(error_message)) return(list(source_error_message = source_error_message))
+      if (!is.null(error_message)) return(list(source_error_message = error_message))
       return(res)
     }
     
