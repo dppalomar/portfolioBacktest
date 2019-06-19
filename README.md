@@ -118,7 +118,7 @@ rolling-window basis, producing final results as in the following.
 
 -   Performance table:
 
-<img src="man/figures/README-unnamed-chunk-11-0.png" width="75%" style="display: block; margin: auto;" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="75%" style="display: block; margin: auto;" />
 
 -   Barplot:
 
