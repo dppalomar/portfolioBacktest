@@ -64,12 +64,6 @@ Do the backtest on your own portfolio following few steps:
 
 ``` r
 library(portfolioBacktest)
-#> Registered S3 method overwritten by 'xts':
-#>   method     from
-#>   as.zoo.xts zoo
-#> Registered S3 method overwritten by 'quantmod':
-#>   method            from
-#>   as.zoo.data.frame zoo
 data("dataset10")
 ```
 
@@ -87,9 +81,6 @@ my_portfolio <- function(dataset) {
 
 ``` r
 bt <- portfolioBacktest(my_portfolio, dataset10)
-#> Registered S3 method overwritten by 'R.oo':
-#>   method        from       
-#>   throw.default R.methodsS3
 ```
 
 -   **Step 4** - check your portfolio performance

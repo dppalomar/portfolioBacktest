@@ -75,7 +75,7 @@ citation("portfolioBacktest")
 Do the backtest on your own portfolio following few steps:
 
 - **Step 1** - load package & dataset
-```{r, results="hide"}
+```{r, message=FALSE, results="hide"}
 library(portfolioBacktest)
 data("dataset10")
 ```
@@ -88,7 +88,7 @@ my_portfolio <- function(dataset) {
 }
 ```
 - **Step 3** - do backtest
-```{r, results="hide"}
+```{r, message=FALSE, results="hide"}
 bt <- portfolioBacktest(my_portfolio, dataset10)
 ```
 - **Step 4** - check your portfolio performance

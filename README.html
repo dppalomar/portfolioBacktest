@@ -404,12 +404,6 @@ help(package = &quot;portfolioBacktest&quot;)
 <li><strong>Step 1</strong> - load package &amp; dataset</li>
 </ul>
 <pre class="r"><code>library(portfolioBacktest)
-#&gt; Registered S3 method overwritten by &#39;xts&#39;:
-#&gt;   method     from
-#&gt;   as.zoo.xts zoo
-#&gt; Registered S3 method overwritten by &#39;quantmod&#39;:
-#&gt;   method            from
-#&gt;   as.zoo.data.frame zoo
 data(&quot;dataset10&quot;)</code></pre>
 <ul>
 <li><strong>Step 2</strong> - define your own portfolio</li>
@@ -422,10 +416,7 @@ data(&quot;dataset10&quot;)</code></pre>
 <ul>
 <li><strong>Step 3</strong> - do backtest</li>
 </ul>
-<pre class="r"><code>bt &lt;- portfolioBacktest(my_portfolio, dataset10)
-#&gt; Registered S3 method overwritten by &#39;R.oo&#39;:
-#&gt;   method        from       
-#&gt;   throw.default R.methodsS3</code></pre>
+<pre class="r"><code>bt &lt;- portfolioBacktest(my_portfolio, dataset10)</code></pre>
 <ul>
 <li><strong>Step 4</strong> - check your portfolio performance</li>
 </ul>
