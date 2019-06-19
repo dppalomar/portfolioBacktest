@@ -118,10 +118,7 @@ rolling-window basis, producing final results as in the following.
 
 -   Performance table:
 
-<!--html_preserve-->
-
-<script type="application/json" data-for="htmlwidget-1b80c919c40b63868586">{"x":{"filter":"none","data":[["Quintile","GMVP","Markowitz","uniform","index"],[0.0029,0.0044,0.4529,0.0021,0],[1.1383,1.1686,0.573,1.61,1.0389],[0.1074,0.0313,0.226,0.0936,0.0907],[0.1939,0.0487,0.1495,0.1921,0.1323],[0.1613,0.0418,0.3165,0.1353,0.1249],[1.8075,1.4304,0.8002,2.1967,1.3762],[1.206,1.2152,1.1246,1.2923,1.2071],[253.2452,81.7284,187.1631,837.5048,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>cpu time<\/th>\n      <th>Sharpe ratio<\/th>\n      <th>max drawdown<\/th>\n      <th>annual return<\/th>\n      <th>annual volatility<\/th>\n      <th>Sterling ratio<\/th>\n      <th>Omega ratio<\/th>\n      <th>ROT bps<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":15,"scrollX":true,"order":[2,"desc"],"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7,8]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,15,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(row).css({'font-weight':value == 'uniform' ? 'bold' : value == 'index' ? 'bold' : ''});\nDTWidget.formatPercentage(this, row, data, 5, 1, 3, ',', '.');\nDTWidget.formatPercentage(this, row, data, 3, 1, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
-<!--/html_preserve-->
+<img src="man/figures/README-unnamed-chunk-11-0.png" width="75%" style="display: block; margin: auto;" />
 
 -   Barplot:
 
