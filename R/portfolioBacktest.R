@@ -120,14 +120,14 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                               T_rolling_window, optimize_every, rebalance_every,
                               cpu_time_limit,
                               return_portfolio, return_returns) {
-      packages_default <- search() # snap the default packages
+      packages_default <- search()  # snap the default packages
       res <- singlePortfolioBacktest(portfolio_fun, dataset_list, price_name, market = FALSE,
                                      paral_datasets, show_progress_bar,
                                      shortselling, leverage,
                                      T_rolling_window, optimize_every, rebalance_every,
                                      cpu_time_limit,
                                      return_portfolio, return_returns)
-      packages_now <- search()# detach the newly loaded packages
+      packages_now <- search()  # detach the newly loaded packages
       packages_det <- packages_now[!(packages_now %in% packages_default)]
       detachPackages(packages_det)
       return(res)
@@ -136,7 +136,8 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
     if (paral_portfolios == 1) {
       result <- list()
       for (i in 1:length(portfolio_funs)) {
-        if (show_progress_bar) cat(sprintf("\n Backtesting function %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
+        if (show_progress_bar) 
+          message("\n Backtesting function ", format(portfolio_names[i], width = 15), " (", i, "/", length(portfolio_names), ")")
         result[[i]] <- safeEvalPortf(portfolio_funs[[i]], dataset_list, price_name,
                                      paral_datasets, show_progress_bar,
                                      shortselling, leverage,
@@ -151,7 +152,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
         pb <- utils::txtProgressBar(max = length(portfolio_funs), style = 3)
         sink()
         opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
-        cat(paste0("Evaluating overall ", length(portfolio_funs), " portfolio functions parallel \n"))
+        message("Evaluating overall ", length(portfolio_funs), " portfolio functions in parallel")
         opts$progress(0)
       } else opts <- list()
       
@@ -188,15 +189,19 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                                return_portfolio, return_returns) {
       packages_default <- search()  # snap the default packages
       source_error <- FALSE; source_error_message <- NA
-      tryCatch(expr    = {suppressMessages(source(file.path(folder_path, file), local = TRUE))
-                          res <- singlePortfolioBacktest(portfolio_fun, dataset_list__, price_name, market = FALSE,
-                                                         paral_datasets, show_progress_bar,
-                                                         shortselling, leverage,
-                                                         T_rolling_window, optimize_every, rebalance_every,
-                                                         cpu_time_limit,
-                                                         return_portfolio, return_returns)}, 
-               warning = function(w){source_error <<- TRUE; source_error_message <<- w$message}, 
-               error   = function(e){source_error <<- TRUE; source_error_message <<- e$message})
+      tryCatch({
+        suppressMessages(source(file.path(folder_path, file), local = TRUE))
+        res <- singlePortfolioBacktest(portfolio_fun, dataset_list__, price_name, market = FALSE,
+                                       paral_datasets, show_progress_bar,
+                                       shortselling, leverage,
+                                       T_rolling_window, optimize_every, rebalance_every,
+                                       cpu_time_limit,
+                                       return_portfolio, return_returns)
+        }, warning = function(w) {
+          source_error <<- TRUE; source_error_message <<- w$message
+        }, error   = function(e) {
+          source_error <<- TRUE; source_error_message <<- e$message
+        })
       packages_now <- search()# detach the newly loaded packages
       packages_det <- packages_now[!(packages_now %in% packages_default)]
       detachPackages(packages_det)
@@ -207,8 +212,8 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
     if (paral_portfolios == 1) {
       result <- list()
       for (i in 1:length(files)) {
-        if (show_progress_bar) 
-          cat(sprintf("\n Backtesting file %s (%d/%d)\n", format(portfolio_names[i], width = 15), i, length(portfolio_names)))
+        if (show_progress_bar)
+          message("\n Backtesting file ", format(portfolio_names[i], width = 15), " (", i, "/", length(portfolio_names), ")")
         result[[i]] <- safeEvalFolder(folder_path, files[i], dataset_list__, price_name,
                                       paral_datasets, show_progress_bar,
                                       shortselling, leverage,
@@ -223,7 +228,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
         pb <- utils::txtProgressBar(max = length(files), style = 3)
         sink()
         opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
-        cat(paste0("Evaluating overall ", length(files), " portfolio functions (from file) parallel \n"))
+        message("Evaluating overall ", length(files), " portfolio functions (from files) in parallel")
         opts$progress(0)
       } else opts <- list()
       
@@ -270,7 +275,7 @@ benchmarkBacktest <- function(dataset_list, benchmark, price_name,
                               return_portfolio, return_returns) {
   res <- list()
   if ("uniform" %in% benchmark) {
-    if (show_progress_bar) cat("\n Evaluating benchmark-uniform\n")
+    if (show_progress_bar) message("\n Evaluating benchmark uniform")
     res$uniform <- singlePortfolioBacktest(uniform_portfolio_fun, dataset_list, price_name, market = FALSE,
                                            paral_datasets, show_progress_bar,
                                            shortselling, leverage,
@@ -279,7 +284,7 @@ benchmarkBacktest <- function(dataset_list, benchmark, price_name,
                                            return_portfolio, return_returns)
   }
   if ("index" %in% benchmark) {
-    if (show_progress_bar) cat("\n Evaluating benchmark-index\n")
+    if (show_progress_bar) message("\n Evaluating benchmark index")
     res$index <- singlePortfolioBacktest(portfolio_fun = NULL, dataset_list, price_name, market = TRUE,
                                          paral_datasets, show_progress_bar,
                                          shortselling, leverage,
@@ -374,7 +379,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
   }
   
   if (!price_name %in% names(data)) 
-    stop(paste0("Fail to find price data with name \"", price_name, "\"" , " in given dataset_list."))
+    stop("Fail to find price data with name \"", price_name, "\"" , " in given dataset_list.")
   prices <- data[[price_name]]
   
   ######## error control  #########
@@ -405,7 +410,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
     idx_prices <- rebalance_indices[i]
     
     if (idx_prices %in% optimize_indices) {  # reoptimize
-      data_window  <- lapply(data, function(x){x[(idx_prices-T_rolling_window+1):idx_prices, ]})
+      data_window  <- lapply(data, function(x) {x[(idx_prices-T_rolling_window+1):idx_prices, ]})
       start_time <- proc.time()[3] 
       error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(w[i, ] <- do.call(portfolio_fun, list(data_window)), environment()), 
                                             timeout = cpu_time_limit, onTimeout = "silent")
@@ -414,11 +419,11 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
       w[i, ] <- w[i-1, ]
     }
     
-    # check if error happens
+    # check if error happened
     if (is.list(error_capture)) {
       error <- TRUE
       error_message <- error_capture$message
-      error_stack <- list("at" = deparse(error_capture$call), 
+      error_stack <- list("at"    = deparse(error_capture$call), 
                           "stack" = paste(sapply(error_capture$calls[-1], deparse), collapse = "\n"))
     }
     

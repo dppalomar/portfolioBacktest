@@ -27,7 +27,7 @@
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
 #' @examples
-#' \dontrun{ 
+#' \donttest{ 
 #' library(portfolioBacktest)
 #' data(dataset10)  # load dataset
 #' 

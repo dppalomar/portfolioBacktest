@@ -26,7 +26,7 @@
 #' @seealso \code{\link{summaryBarPlot}}
 #' 
 #' @examples
-#' \dontrun{ 
+#' \donttest{ 
 #' library(portfolioBacktest)
 #' data(dataset10)  # load dataset
 #' 
@@ -108,7 +108,7 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
 #' @seealso \code{\link{summaryTable}}
 #' 
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(portfolioBacktest)
 #' data(dataset10)  # load dataset
 #' 
@@ -202,7 +202,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
 #' @examples
-#' \dontrun{ 
+#' \donttest{
 #' library(portfolioBacktest)
 #' data(dataset10)  # load dataset
 #' 
