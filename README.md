@@ -108,7 +108,7 @@ backtestSummary(bt)$performance
 
 For a more detailed explanation on how to use the package with all the
 features, check the
-[vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html).
+[vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
 
 Package Snapshot
 ----------------
@@ -118,23 +118,26 @@ rolling-window basis, producing final results as in the following.
 
 -   Performance table:
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" width="75%" style="display: block; margin: auto;" />
+<img src="man/figures/README-table.png" width="85%" style="display: block; margin: auto;" />
 
 -   Barplot:
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" width="75%" style="display: block; margin: auto;" />
+<img src="man/figures/README-barplot.png" width="70%" style="display: block; margin: auto;" />
 
 -   Boxplot:
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" width="75%" style="display: block; margin: auto;" />
+<img src="man/figures/README-boxplot.png" width="65%" style="display: block; margin: auto;" />
 
 Links
 -----
 
-Package: [GitHub](https://github.com/dppalomar/portfolioBacktest).
+Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest)
+and [GitHub](https://github.com/dppalomar/portfolioBacktest).
 
 README file:
 [GitHub-readme](https://github.com/dppalomar/portfolioBacktest/blob/master/README.md).
 
 Vignette:
+[CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html)
+and
 [GitHub-vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html).

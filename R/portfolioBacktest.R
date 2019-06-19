@@ -14,7 +14,7 @@
 #' multiple cores. Errors in functions are properly catched and handled so
 #' that the execution of the overal backtesting is not stopped (error messages
 #' are stored for debugging purposes). See 
-#' \href{https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{vignette}
+#' \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{vignette}
 #' for a detailed explanation.
 #'
 #' @param portfolio_funs List of functions (can also be a single function), each of them taking as input 
@@ -22,13 +22,13 @@
 #'                       element of the argument \code{dataset_list}) properly windowed (following the
 #'                       rolling-window approach) and returning the portfolio as a vector of normalized
 #'                       weights. See 
-#'                       \href{https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{vignette}
+#'                       \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{vignette}
 #'                       for details.
 #' @param dataset_list List of datasets, each containing a list of \code{xts} objects, as generated
 #'                     by the function \code{\link{stockDataResample}}.
 #' @param folder_path If \code{portfolio_funs} is not defined, this should contain the path to a folder 
 #'                    containing the portfolio functions saved in files. See 
-#'                    \href{https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{vignette}
+#'                    \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{vignette}
 #'                    for details.
 #' @param price_name Name of the \code{xts} column in each dataset that contains the prices to be used in the portfolio return 
 #'                   computation (default is \code{"adjusted"}).
@@ -51,7 +51,7 @@
 #' @param return_returns Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).
 #' 
 #' @return List with the portfolio backtest results, see 
-#'         \href{https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html#result-format}{vignette-result-format}
+#'         \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#result-format}{vignette-result-format}
 #'         for details. It can be accessed directly, but we highly recommend the package specific functions to extract any required
 #'         information, namely, \code{\link{backtestSelector}}, \code{\link{backtestTable}}, 
 #'         \code{\link{backtestBoxPlot}}, \code{\link{backtestLeaderboard}},

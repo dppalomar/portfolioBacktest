@@ -96,45 +96,45 @@ bt <- portfolioBacktest(my_portfolio, dataset10)
 backtestSummary(bt)$performance
 ```
 
-For a more detailed explanation on how to use the package with all the features, check the [vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html).
+For a more detailed explanation on how to use the package with all the features, check the [vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
 
 
 
 ## Package Snapshot
 This package backtests a list of portfolios over multiple datasets on a rolling-window basis, producing final results as in the following.
-```{r, echo=FALSE, message=FALSE}
-library(portfolioBacktest)
-load("man/figures/bt.RData")
-```
-
 
 - Performance table:
 
-```{r, echo=FALSE}
-res_sum <- backtestSummary(bt)
-summaryTable(res_sum, type = "DT", order_col = 2, order_dir = "desc")
+```{r README-table, echo=FALSE, message=FALSE, out.width="85%"}
+#library(portfolioBacktest)
+#load("man/figures/bt.RData")
+#res_sum <- backtestSummary(bt)
+#summaryTable(res_sum, type = "DT", order_col = 2, order_dir = "desc")
+knitr::include_graphics("man/figures/README-table.png")
 ```
 
 
 - Barplot:
 
-```{r, echo=FALSE, out.width="75%"}
-summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"), type = "ggplot2")
+```{r README-barplot, echo=FALSE, out.width="70%"}
+#summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"), type = "ggplot2")
+knitr::include_graphics("man/figures/README-barplot.png")
 ```
 
 
 - Boxplot:
 
-```{r, echo=FALSE, out.width="75%"}
-backtestBoxPlot(bt, measure = "Sharpe ratio")
+```{r README-boxplot, echo=FALSE, out.width="65%"}
+#backtestBoxPlot(bt, measure = "Sharpe ratio")
+knitr::include_graphics("man/figures/README-boxplot.png")
 ```
 
 
 
 ## Links
-Package: [GitHub](https://github.com/dppalomar/portfolioBacktest).
+Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest) and [GitHub](https://github.com/dppalomar/portfolioBacktest).
 
 README file: [GitHub-readme](https://github.com/dppalomar/portfolioBacktest/blob/master/README.md).
 
-Vignette: [GitHub-vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html).
+Vignette: [CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html) and [GitHub-vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html).
 
