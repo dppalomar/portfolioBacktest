@@ -27,7 +27,7 @@
 #' @seealso \code{\link{stockDataResample}}
 #' 
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(portfolioBacktest)
 #' data(SP500_symbols)
 #' 
@@ -42,7 +42,7 @@
 stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_stocks_with_na = TRUE, ...) {
   open <- high <- low <- close <- volume <- adjusted <- list()
   n_stocks <- length(stock_symbols)
-  cat("Start downloading", n_stocks, "stocks...\n")
+  message("Downloading ", n_stocks, " stocks...")
   
   sink(file = tempfile())
   pb <- utils::txtProgressBar(max = n_stocks, style = 3)
@@ -51,10 +51,9 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_s
   valid_count <- 0
   stocks_fail <- c()
   for (i in 1:n_stocks) {
-    failed_download <- FALSE
     tmp <- tryCatch(suppressWarnings(getSymbols(stock_symbols[i], from = from, to = to, auto.assign = FALSE, warnings = FALSE, ...)),
-                    error = function(e) {failed_download <<- TRUE})
-    if (failed_download || !is.OHLCV(tmp) || ncol(tmp) != 6) 
+                    error = function(e) return(NULL))
+    if (!is.xts(tmp) || !is.OHLCV(tmp) || ncol(tmp) != 6) 
       stocks_fail <- c(stocks_fail, stock_symbols[i])
     else {
       valid_count <- valid_count + 1
@@ -69,9 +68,9 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_s
   }
 
   # show download information
-  cat("\nSuccess:", valid_count, "\t fail:", n_stocks - valid_count, "\n")
-  if (valid_count == 0) stop("Failed to download data from any stock.")
-  if (valid_count < n_stocks) cat("Failed to download:", stocks_fail, "\n")
+  message("\nSuccesses: ", valid_count, "\t fails: ", n_stocks - valid_count, "\n")
+  if (valid_count == 0) stop("Failed to download data from any stock.", call. = FALSE)
+  if (valid_count < n_stocks) message("Failed to download: ", stocks_fail, "\n")
   
   rt <- list("open"     = multipleXTSMerge(open),
              "high"     = multipleXTSMerge(high),
@@ -82,18 +81,19 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_s
   
   # if required, remove stocks with non-leading missing data
   if (rm_stocks_with_na) {
-    na_nonleading_mask <- apply(rt$open, 2, function(x) {any(diff(is.na(x)) > 0)})
+    na_nonleading_mask <- apply(rt$adjusted, 2, function(x) {any(diff(is.na(x)) > 0)})
     rt <- lapply(rt, function(x) {x[, !na_nonleading_mask]})
   }
   
   # also download index data
   if (is.null(index_symbol)) index_symbol <- attr(stock_symbols, "index_symbol")  
   if (!is.null(index_symbol)) {
+    message("Downloading index ", index_symbol, "...\n")
     rt$index <- tryCatch(Ad(suppressWarnings(getSymbols(index_symbol, from = from, to = to, auto.assign = FALSE, ...))),
-                         error = function(e) {cat("Fail to download index \"", index_symbol, "\"\n", sep = "")})
+                         error = function(e) {stop("Failed to download index \"", index_symbol, "\"\n", call. = FALSE)})
     # check if the date of stock prices and market index match
-    if (any(index(rt$open) != index(rt$index)))
-      warning("Date of stocks prices and market index do not match.")
+    if (any(index(rt$adjusted) != index(rt$index)))
+      stop("Date of stocks prices and market index do not match.", call. = FALSE)
   }
   
   return(rt)
@@ -132,7 +132,7 @@ multipleXTSMerge <- function(xts_list) {
 #' @seealso \code{\link{stockDataDownload}}, \code{\link{portfolioBacktest}}
 #' 
 #' @examples 
-#' \dontrun{
+#' \donttest{
 #' library(portfolioBacktest)
 #' data(SP500_symbols)
 #' 
