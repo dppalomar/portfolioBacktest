@@ -188,8 +188,8 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                                cpu_time_limit,
                                return_portfolio, return_returns) {
       packages_default <- search()  # snap the default packages
-      source_error <- FALSE; source_error_message <- NA
-      tryCatch({
+      
+      error_message <- tryCatch({
         suppressMessages(source(file.path(folder_path, file), local = TRUE))
         res <- singlePortfolioBacktest(portfolio_fun, dataset_list__, price_name, market = FALSE,
                                        paral_datasets, show_progress_bar,
@@ -197,15 +197,14 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                                        T_rolling_window, optimize_every, rebalance_every,
                                        cpu_time_limit,
                                        return_portfolio, return_returns)
-        }, warning = function(w) {
-          source_error <<- TRUE; source_error_message <<- w$message
-        }, error   = function(e) {
-          source_error <<- TRUE; source_error_message <<- e$message
-        })
-      packages_now <- search()# detach the newly loaded packages
+        NULL
+      }, warning = function(w) return(ifelse(!is.null(w$message), w$message, ""))
+       , error   = function(e) return(ifelse(!is.null(e$message), e$message, ""))
+      )     
+      packages_now <- search()  # detach the newly loaded packages
       packages_det <- packages_now[!(packages_now %in% packages_default)]
       detachPackages(packages_det)
-      if (source_error) return(list(source_error_message = source_error_message))
+      if (!is.null(error_message)) return(list(source_error_message = source_error_message))
       return(res)
     }
     
