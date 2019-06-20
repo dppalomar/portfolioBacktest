@@ -136,5 +136,5 @@ Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest) and [GitHu
 
 README file: [GitHub-readme](https://github.com/dppalomar/portfolioBacktest/blob/master/README.md).
 
-Vignette: [CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html) and [GitHub-vignette](https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html).
+Vignette: [CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
 
