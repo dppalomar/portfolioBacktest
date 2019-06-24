@@ -7,6 +7,7 @@
 ^README_files$
 ^R_buildignore$
 ^data-raw$
+^resources$
 ^vignettes/PortfolioBacktest_cache$
 ^vignettes/PortfolioBacktest_files$
 ^vignettes/PortfolioBacktest\.Rmd$

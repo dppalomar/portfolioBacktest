@@ -16,6 +16,6 @@
 #'
 #' @source \href{https://finance.yahoo.com}{Yahoo! Finance}
 #'
-#' @keywords datasets
+#' @keywords dataset
 #'
 "dataset10"

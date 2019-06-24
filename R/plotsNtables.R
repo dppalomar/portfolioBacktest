@@ -82,7 +82,7 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
              stop("Please install package \"gridExtra\" or choose another table type", call. = FALSE)
            gridExtra::grid.table(performance)
            },
-         stop("Table type unknown"))
+         stop("Table type unknown."))
 }
 
 
@@ -166,16 +166,12 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
            df <- as.data.frame.table(res_table)
            Var1 <- Freq <- NULL  # ugly hack to deal with CRAN note
            ggplot2::ggplot(df, ggplot2::aes(x = Var1, y = Freq, fill = Var1)) + 
-             ggplot2::geom_bar(stat = "identity") +
+             ggplot2::geom_bar(stat = "identity") +  #position = position_dodge()
              ggplot2::scale_x_discrete(breaks = NULL) +
              ggplot2::facet_wrap(~ Var2, scales = "free_y") +
              ggplot2::labs(title = params$main, x = NULL, y = NULL, fill = NULL)
-             #scale_fill_manual(values = viridisLite::viridis(nrow(res_table)))
-             #viridis::scale_fill_viridis(discrete = TRUE)  #this requires viridis instead of viridisLite
-           # ggplot(df, aes(x = Var2, y = Freq, fill = Var1)) + 
-           #   geom_bar(stat = "identity", color = "black", position = position_dodge())
          },
-         stop("Table type unknown"))
+         stop("Barplot type unknown."))
 }
 
 
@@ -271,6 +267,6 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
              ggplot2::coord_flip(ylim = plot_limits) + 
              ggplot2::labs(title = measure, x = NULL, y = NULL)
          },
-         stop("Boxplot type unknown"))
+         stop("Boxplot type unknown."))
 }
 
