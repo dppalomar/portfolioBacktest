@@ -63,8 +63,8 @@ computation (default is \code{"adjusted"}).}
 \value{
 List with the portfolio backtest results, see 
         \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#result-format}{vignette-result-format}
-        for details. It can be accessed directly, but we highly recommend the package specific functions to extract any required
-        information, namely, \code{\link{backtestSelector}}, \code{\link{backtestTable}}, 
+        for details. It can be accessed directly, but we highly recommend the use of the package specific functions to extract 
+        any required information, namely, \code{\link{backtestSelector}}, \code{\link{backtestTable}}, 
         \code{\link{backtestBoxPlot}}, \code{\link{backtestLeaderboard}},
         \code{\link{backtestSummary}}, \code{\link{summaryTable}}, \code{\link{summaryBarPlot}}.
 }
