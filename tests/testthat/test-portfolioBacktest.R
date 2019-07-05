@@ -48,24 +48,24 @@ test_that("backtest results and performance measures coincide with the precomput
   expect_equal(backtestSummary(bt, summary_fun = median)[1:2], bt_summary)  # compare except cpu time
 })
 
-test_that("portfolioBacktest under parallel mode", {
-  bt_paral_portfolios <- portfolioBacktest(portfolios, dataset_list = dataset10, paral_portfolios = 2,
-                                           shortselling = TRUE, leverage = Inf, 
-                                           return_portfolio = TRUE, return_returns = TRUE, 
-                                           benchmark = c("uniform", "index"),
-                                           T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
-  
-  
-  bt_paral_datasets <- portfolioBacktest(portfolios, dataset_list = dataset10, paral_datasets = 5,
-                                         shortselling = TRUE, leverage = Inf, 
-                                         return_portfolio = TRUE, return_returns = TRUE, 
-                                         benchmark = c("uniform", "index"),
-                                         T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
-
-  load("bt_table_check.RData")
-  expect_equal(backtestTable(bt_paral_portfolios)[1:8], bt_table_check) 
-  expect_equal(backtestTable(bt_paral_datasets)[1:8], bt_table_check) 
-})
+# test_that("portfolioBacktest under parallel mode", {
+#   bt_paral_portfolios <- portfolioBacktest(portfolios, dataset_list = dataset10, paral_portfolios = 2,
+#                                            shortselling = TRUE, leverage = Inf, 
+#                                            return_portfolio = TRUE, return_returns = TRUE, 
+#                                            benchmark = c("uniform", "index"),
+#                                            T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+#   
+#   
+#   bt_paral_datasets <- portfolioBacktest(portfolios, dataset_list = dataset10, paral_datasets = 5,
+#                                          shortselling = TRUE, leverage = Inf, 
+#                                          return_portfolio = TRUE, return_returns = TRUE, 
+#                                          benchmark = c("uniform", "index"),
+#                                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+# 
+#   load("bt_table_check.RData")
+#   expect_equal(backtestTable(bt_paral_portfolios)[1:8], bt_table_check) 
+#   expect_equal(backtestTable(bt_paral_datasets)[1:8], bt_table_check) 
+# })
 
 test_that("portfolioBacktest over files", {
   bt_files <- portfolioBacktest(folder_path = "portfolio_files", dataset_list = dataset10,
