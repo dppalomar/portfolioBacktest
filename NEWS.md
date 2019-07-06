@@ -1,3 +1,8 @@
+## Changes in portfolioBacktest version 0.1.2 (2019-XX-XX)
+
+* TBD
+
+
 ## Changes in portfolioBacktest version 0.1.1 (2019-07-06)
 
 * Problems with test (regarding stockDataDownload) fixed.
