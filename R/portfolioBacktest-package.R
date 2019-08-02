@@ -1,4 +1,4 @@
-#' portfolioBacktest: Automated Backtesting of Portfolios over Multiple Datasets.
+#' portfolioBacktest: Automated Backtesting of Portfolios over Multiple Datasets
 #'
 #' Automated backtesting of multiple portfolios over multiple 
 #' datasets of stock prices in a rolling-window fashion. Intended for 
