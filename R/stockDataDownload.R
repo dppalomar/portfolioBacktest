@@ -1,4 +1,4 @@
-#' @title Download stock data from the Internet.
+#' @title Download stock data from the Internet
 #'
 #' @description This function is basically a robust wrapper for 
 #' \code{\link[quantmod:getSymbols]{quantmod:getSymbols}} to download stock 
@@ -109,7 +109,7 @@ multipleXTSMerge <- function(xts_list) {
 
 
 
-#' @title Generate random resamples from stock data.
+#' @title Generate random resamples from stock data
 #' 
 #' @description This function resamples the stock data downloaded by
 #' \code{\link{stockDataDownload}} to obtain many datasets for a 

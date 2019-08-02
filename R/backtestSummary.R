@@ -1,4 +1,4 @@
-#' @title Summary of portfolio backtest.
+#' @title Summary of portfolio backtest
 #' 
 #' @description Summarize the results from a portfolio backtest.
 #' 
@@ -97,7 +97,7 @@ backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fu
 
 
 
-#' @title Table with portfolio backtest results.
+#' @title Table with portfolio backtest results
 #' 
 #' @description Create table with the results from a portfolio backtest.
 #' 
@@ -207,7 +207,7 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
 
 
 
-#' @title Selector of portfolio backtest results.
+#' @title Selector of portfolio backtest results
 #' 
 #' @description Select the results from a portfolio backtest.
 #' 

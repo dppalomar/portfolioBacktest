@@ -1,4 +1,4 @@
-#' Ten datasets obtained by resampling the S&P 500.
+#' Ten datasets obtained by resampling the S&P 500
 #' 
 #' Ten datasets of stock market data resampled from the S&P 500. 
 #' Each resample contains a random selection of 50 stocks from the S&P 500 

@@ -1,4 +1,4 @@
-#' @title Leaderboard of portfolios from the backtest results.
+#' @title Leaderboard of portfolios from the backtest results
 #' 
 #' @description Leaderboard of portfolios according to the backtesting results 
 #' and a ranking based on the combination of several performance criteria.

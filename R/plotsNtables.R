@@ -1,4 +1,4 @@
-#' @title Create table from backtest summary.
+#' @title Create table from backtest summary
 #' 
 #' @description After performing a backtest with \code{\link{portfolioBacktest}} 
 #' and obtaining a summary of the performance measures with 
@@ -87,7 +87,7 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
 
 
 
-#' @title Create barplot from backtest summary.
+#' @title Create barplot from backtest summary
 #' 
 #' @description After performing a backtest with \code{\link{portfolioBacktest}} 
 #' and obtaining a summary of the performance measures with 
@@ -176,7 +176,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 
 
 
-#' @title Create boxplot from backtest results.
+#' @title Create boxplot from backtest results
 #' 
 #' @description Create boxplot from a portfolio backtest obtained with the function 
 #' \code{\link{portfolioBacktest}}. By default the boxplot is based on the 
@@ -221,6 +221,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' backtestBoxPlot(bt, "Sharpe ratio", type = "simple")
 #' }
 #' 
+#' @importFrom grDevices topo.colors
 #' @importFrom graphics boxplot par
 #' @importFrom stats quantile
 #' @export

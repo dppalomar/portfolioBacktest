@@ -1,4 +1,4 @@
-#' @title Backtest multiple portfolios over multiple datasets of stock prices in a rolling-window basis.
+#' @title Backtest multiple portfolios over multiple datasets of stock prices in a rolling-window basis
 #'
 #' @description Automated backtesting of multiple portfolios over multiple 
 #' datasets of stock prices in a rolling-window fashion. 

@@ -1,4 +1,4 @@
-#' Stock symbols of the S&P 500 constituents.
+#' Stock symbols of the S&P 500 constituents
 #'
 #' @docType data
 #'
