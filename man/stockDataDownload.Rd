@@ -5,7 +5,7 @@
 \title{Download stock data from the Internet}
 \usage{
 stockDataDownload(stock_symbols, index_symbol = NULL, from, to,
-  rm_stocks_with_na = TRUE, local_file = TRUE, ...)
+  rm_stocks_with_na = TRUE, local_file_path = ".", ...)
 }
 \arguments{
 \item{stock_symbols}{String vector containing the symbols of the stocks to be downloaded.
@@ -21,9 +21,10 @@ User can pass the market index symbol as its attribute `index_symbol``
 \item{rm_stocks_with_na}{Logical value indicating whether to remove stocks with missing values 
 (ignoring leading missing values). Default is \code{TRUE}.}
 
-\item{local_file}{Logical value indicating whether to attempt to load stock data from a local
-file first and if not, after downloading, save data to local file for future 
-use. Default is \code{TRUE}.}
+\item{local_file_path}{Path where the stock data will be saved after the first time is downloaded, 
+so that in future retrievals it will be locally loaded (if the same 
+arguments are used). Default is \code{"."}. If local caching is not 
+desired, it can be deactivated by setting \code{local_file_path = NULL}.}
 
 \item{...}{Additional arguments to be passed to \code{\link[quantmod:getSymbols]{quantmod:getSymbols}}.}
 }

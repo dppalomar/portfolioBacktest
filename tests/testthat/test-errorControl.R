@@ -13,7 +13,7 @@ test_that("Error control test for \"stockDataDownload\"", {
   expect_error(stockDataDownload("NOT_SYMBOL"), 
                "Arguments from and to have to be passed.")
 
-  expect_error(stockDataDownload("NOT_SYMBOL", from = "1970-01-01", to = "1970-01-31", local_file = FALSE), 
+  expect_error(stockDataDownload("NOT_SYMBOL", from = "1970-01-01", to = "1970-01-31", local_file_path = NULL), 
                "Failed to download data from any stock.")
   sink()
 })

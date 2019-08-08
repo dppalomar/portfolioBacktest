@@ -17,9 +17,10 @@
 #' @param to String as the ending date (not included), e.g., "2017-09-17".
 #' @param rm_stocks_with_na Logical value indicating whether to remove stocks with missing values 
 #'                          (ignoring leading missing values). Default is \code{TRUE}.
-#' @param local_file Logical value indicating whether to attempt to load stock data from a local
-#'                   file first and if not, after downloading, save data to local file for future 
-#'                   use. Default is \code{TRUE}.
+#' @param local_file_path Path where the stock data will be saved after the first time is downloaded, 
+#'                        so that in future retrievals it will be locally loaded (if the same 
+#'                        arguments are used). Default is \code{"."}. If local caching is not 
+#'                        desired, it can be deactivated by setting \code{local_file_path = NULL}.
 #' @param ... Additional arguments to be passed to \code{\link[quantmod:getSymbols]{quantmod:getSymbols}}.
 #'
 #' @return List of 7 \code{xts} objects named `open`, `high`, `low`, `close`, `volume`, 
@@ -43,13 +44,14 @@
 #'         quantmod
 #'         digest
 #' @export
-stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_stocks_with_na = TRUE, local_file = TRUE, ...) {
+stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_stocks_with_na = TRUE, local_file_path = ".", ...) {
   # some error control
   if (missing(from) || missing(to)) stop("Arguments from and to have to be passed.")
   
   # first check if data locally saved
-  if (local_file) {
-    filename <- paste0("stockdata", "_from_", from, "_to_", to, "_(", digest(stock_symbols), ").RData")
+  if (!is.null(local_file_path)) {
+    filename <- file.path(local_file_path,
+                          paste0("stockdata", "_from_", from, "_to_", to, "_(", digest(stock_symbols), ").RData"))
     if (file.exists(filename)) {
       message("Loading stock data from local file...")
       load(filename)
@@ -124,7 +126,7 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_s
   if (any(nrows[1] != nrows[-1])) stop("Number of rows of Op, Hi, Lo, Vo, Ad (or Index) does not coincide!")
   
   # save to local file if necessary for future usage
-  if (local_file) {
+  if (!is.null(local_file_path)) {
     message("Saving stock data to local file for future use...")
     save(stockdata, file = filename)
   }
@@ -198,7 +200,7 @@ stockDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datasets =
              else NULL
   T <- nrow(X[[1]])
   if (T < T_sample) stop("\"T_sample\" can not be greater than the date length of \"X\".")
-  dataset <- list()
+  dataset <- vector("list", num_datasets)
   for (i in 1:num_datasets) {
     t_start <- sample(T-T_sample+1, 1)
     t_mask <- t_start:(t_start+T_sample-1)
@@ -213,7 +215,6 @@ stockDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datasets =
   names(dataset) <- paste("dataset", 1:num_datasets)
   return(dataset)
 }
-
 
 
 
