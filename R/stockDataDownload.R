@@ -17,6 +17,9 @@
 #' @param to String as the ending date (not included), e.g., "2017-09-17".
 #' @param rm_stocks_with_na Logical value indicating whether to remove stocks with missing values 
 #'                          (ignoring leading missing values). Default is \code{TRUE}.
+#' @param local_file Logical value indicating whether to attempt to load stock data from a local
+#'                   file first and if not, after downloading, save data to local file for future 
+#'                   use. Default is \code{TRUE}.
 #' @param ... Additional arguments to be passed to \code{\link[quantmod:getSymbols]{quantmod:getSymbols}}.
 #'
 #' @return List of 7 \code{xts} objects named `open`, `high`, `low`, `close`, `volume`, 
@@ -38,8 +41,23 @@
 #' 
 #' @import xts 
 #'         quantmod
+#'         digest
 #' @export
-stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_stocks_with_na = TRUE, ...) {
+stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_stocks_with_na = TRUE, local_file = TRUE, ...) {
+  # some error control
+  if (missing(from) || missing(to)) stop("Arguments from and to have to be passed.")
+  
+  # first check if data locally saved
+  if (local_file) {
+    filename <- paste0("stockdata", "_from_", from, "_to_", to, "_(", digest(stock_symbols), ").RData")
+    if (file.exists(filename)) {
+      message("Loading stock data from local file...")
+      load(filename)
+      return(stockdata)
+    }
+  }
+  
+  # if not continue to download data
   open <- high <- low <- close <- volume <- adjusted <- list()
   n_stocks <- length(stock_symbols)
   message("Downloading ", n_stocks, " stocks...")
@@ -72,32 +90,48 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_s
   if (valid_count == 0) stop("Failed to download data from any stock.", call. = FALSE)
   if (valid_count < n_stocks) message("Failed to download: ", stocks_fail, "\n")
   
-  rt <- list("open"     = multipleXTSMerge(open),
-             "high"     = multipleXTSMerge(high),
-             "low"      = multipleXTSMerge(low),
-             "close"    = multipleXTSMerge(close),
-             "volume"   = multipleXTSMerge(volume),
-             "adjusted" = multipleXTSMerge(adjusted))
+  stockdata <- list("open"     = multipleXTSMerge(open),
+                    "high"     = multipleXTSMerge(high),
+                    "low"      = multipleXTSMerge(low),
+                    "close"    = multipleXTSMerge(close),
+                    "volume"   = multipleXTSMerge(volume),
+                    "adjusted" = multipleXTSMerge(adjusted))
   
   # if required, remove stocks with non-leading missing data
   if (rm_stocks_with_na) {
-    na_nonleading_mask <- apply(rt$adjusted, 2, function(x) {any(diff(is.na(x)) > 0)})
-    rt <- lapply(rt, function(x) {x[, !na_nonleading_mask]})
+    na_nonleading_mask <- apply(stockdata$adjusted, 2, function(x) {any(diff(is.na(x)) > 0)})
+    stockdata <- lapply(stockdata, function(x) {x[, !na_nonleading_mask]})
   }
+  
+  # sanity check
+  ncols <- sapply(stockdata, ncol)
+  if (any(ncols[1] != ncols[-1])) stop("Number of cols of Op, Hi, Lo, Vo, Ad does not coincide!")
+      
   
   # also download index data
   if (is.null(index_symbol)) index_symbol <- attr(stock_symbols, "index_symbol")  
   if (!is.null(index_symbol)) {
     message("Downloading index ", index_symbol, "...\n")
-    rt$index <- tryCatch(Ad(suppressWarnings(getSymbols(index_symbol, from = from, to = to, auto.assign = FALSE, ...))),
+    stockdata$index <- tryCatch(Ad(suppressWarnings(getSymbols(index_symbol, from = from, to = to, auto.assign = FALSE, ...))),
                          error = function(e) {stop("Failed to download index \"", index_symbol, "\"\n", call. = FALSE)})
     # check if the date of stock prices and market index match
-    if (any(index(rt$adjusted) != index(rt$index)))
+    if (any(index(stockdata$adjusted) != index(stockdata$index)))
       stop("Date of stocks prices and market index do not match.", call. = FALSE)
   }
   
-  return(rt)
+  # sanity check
+  nrows <- sapply(stockdata, nrow)
+  if (any(nrows[1] != nrows[-1])) stop("Number of rows of Op, Hi, Lo, Vo, Ad (or Index) does not coincide!")
+  
+  # save to local file if necessary for future usage
+  if (local_file) {
+    message("Saving stock data to local file for future use...")
+    save(stockdata, file = filename)
+  }
+
+  return(stockdata)
 }
+
 
 multipleXTSMerge <- function(xts_list) {
   res <- xts_list[[1]]

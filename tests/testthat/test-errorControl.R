@@ -10,9 +10,12 @@ names(my_dataset) <- c("open", "index")
 test_that("Error control test for \"stockDataDownload\"", {
   
   sink(file = tempfile())
-  expect_error(stockDataDownload("NOT_SYMBOL"), "Failed to download data from any stock.")
+  expect_error(stockDataDownload("NOT_SYMBOL"), 
+               "Arguments from and to have to be passed.")
+
+  expect_error(stockDataDownload("NOT_SYMBOL", from = "1970-01-01", to = "1970-01-31", local_file = FALSE), 
+               "Failed to download data from any stock.")
   sink()
-  
 })
 
 test_that("Error control test for \"stockDataResample\"", {
