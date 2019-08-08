@@ -5,7 +5,7 @@
 \title{Generate random resamples from stock data}
 \usage{
 stockDataResample(X, N_sample = 50, T_sample = 2 * 252,
-  num_datasets = 10, check_stocks_with_na = TRUE)
+  num_datasets = 10, rm_stocks_with_na = TRUE)
 }
 \arguments{
 \item{X}{List of \code{xts} objects matching the structure returned by the function \code{\link{stockDataDownload}}.}
@@ -16,8 +16,8 @@ stockDataResample(X, N_sample = 50, T_sample = 2 * 252,
 
 \item{num_datasets}{Number of resampled datasets (chosen randomly among the stock universe).}
 
-\item{check_stocks_with_na}{Logical value indicating whether to quit in case of stocks with missing 
-values (ignoring leading missing values). Default is \code{TRUE}.}
+\item{rm_stocks_with_na}{Logical value indicating whether to remove stocks with missing values 
+(ignoring leading missing values). Default is \code{TRUE}.}
 }
 \value{
 List of datasets resampled from \code{X}.

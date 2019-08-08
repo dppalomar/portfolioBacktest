@@ -22,7 +22,7 @@ test_that("Error control test for \"stockDataResample\"", {
   
   X_wrong_index <- my_dataset
   index(X_wrong_index$index) <- index(X_wrong_index$index) + 1
-  expect_error(stockDataResample(X_wrong_index), "The date indexes of \"X\" are not matched.")
+  expect_error(stockDataResample(X_wrong_index), "The date indexes of \"X\" do not match.")
   
   X_non_mono <- my_dataset
   X_non_mono$open[2, ] <- NA

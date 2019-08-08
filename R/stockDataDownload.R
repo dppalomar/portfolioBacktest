@@ -156,8 +156,8 @@ multipleXTSMerge <- function(xts_list) {
 #' @param N_sample Number of stocks in each resample.
 #' @param T_sample Length of each resample (consecutive samples with a random initial time).
 #' @param num_datasets Number of resampled datasets (chosen randomly among the stock universe).
-#' @param check_stocks_with_na Logical value indicating whether to quit in case of stocks with missing 
-#'                             values (ignoring leading missing values). Default is \code{TRUE}.
+#' @param rm_stocks_with_na Logical value indicating whether to remove stocks with missing values 
+#'                          (ignoring leading missing values). Default is \code{TRUE}.
 #' 
 #' @return List of datasets resampled from \code{X}.
 #' 
@@ -180,33 +180,40 @@ multipleXTSMerge <- function(xts_list) {
 #' @import xts
 #'         zoo
 #' @export
-stockDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datasets = 10, check_stocks_with_na = TRUE) {
+stockDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datasets = 10, rm_stocks_with_na = TRUE) {
   # check data time zone
-  if (any(index(X$open) != index(X$index))) stop("The date indexes of \"X\" are not matched.")
+  if ((!is.null(X$index)) && any(index(X$open) != index(X$index))) stop("The date indexes of \"X\" do not match.")
   
   # if required, remove stocks with non-leading missing data
-  if (check_stocks_with_na) {
+  if (rm_stocks_with_na) {
     na_nonleading_mask <- apply(X$open, 2, function(x) {any(diff(is.na(x)) > 0)})
     if (any(na_nonleading_mask)) stop("\"X\" does not satisfy monotone missing-data pattern.")
   }
   
-  N <- ncol(X[[1]])
+  # resampling
+  cols <- sapply(X, ncol)
+  N <- max(cols)  # some elements will have N cols, others just 1
+  elems_N <- which(cols == N)
+  elems_1 <- if (any(cols == 1)) which(cols == 1)
+             else NULL
   T <- nrow(X[[1]])
   if (T < T_sample) stop("\"T_sample\" can not be greater than the date length of \"X\".")
   dataset <- list()
   for (i in 1:num_datasets) {
-    
     t_start <- sample(T-T_sample+1, 1)
     t_mask <- t_start:(t_start+T_sample-1)
-    
-    mask <- rep(1:N)[!is.na(X[[1]][t_start, ])]
-    if (length(mask) <= N_sample)
-      stock_mask <- mask
-    else
-      stock_mask <- sample(mask, N_sample)
-    dataset[[i]] <- lapply(X[1:6], function(x){x[t_mask, stock_mask]})
-    dataset[[i]]$index <- X$index[t_mask, ]
+    N_mask <- rep(1:N)[!is.na(X[[1]][t_start, ])]
+    stock_mask <- if (length(N_mask) <= N_sample) N_mask
+                  else sample(N_mask, N_sample)
+    dataset[[i]] <- vector("list", length(X))
+    names(dataset[[i]]) <- names(X)
+    dataset[[i]][elems_N] <- lapply(X[elems_N], function(x) {x[t_mask, stock_mask]})
+    if (!is.null(elems_1)) dataset[[i]][elems_1] <- lapply(X[elems_1], function(x) {x[t_mask, ]})
   }
   names(dataset) <- paste("dataset", 1:num_datasets)
   return(dataset)
 }
+
+
+
+
