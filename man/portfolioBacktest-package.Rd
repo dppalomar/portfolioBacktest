@@ -3,7 +3,7 @@
 \docType{package}
 \name{portfolioBacktest-package}
 \alias{portfolioBacktest-package}
-\title{portfolioBacktest: Automated Backtesting of Portfolios over Multiple Datasets.}
+\title{portfolioBacktest: Automated Backtesting of Portfolios over Multiple Datasets}
 \description{
 Automated backtesting of multiple portfolios over multiple 
 datasets of stock prices in a rolling-window fashion. Intended for 
@@ -41,7 +41,6 @@ For a quick help see the README file:
 
 For more details see the vignette:
 \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{CRAN-vignette}.
-\href{https://raw.githack.com/dppalomar/portfolioBacktest/master/vignettes/PortfolioBacktest.html}{GitHub-vignette}.
 }
 
 \author{

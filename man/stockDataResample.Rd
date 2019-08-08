@@ -2,7 +2,7 @@
 % Please edit documentation in R/stockDataDownload.R
 \name{stockDataResample}
 \alias{stockDataResample}
-\title{Generate random resamples from stock data.}
+\title{Generate random resamples from stock data}
 \usage{
 stockDataResample(X, N_sample = 50, T_sample = 2 * 252,
   num_datasets = 10, check_stocks_with_na = TRUE)

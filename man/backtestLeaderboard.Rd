@@ -2,7 +2,7 @@
 % Please edit documentation in R/backtestLeaderboard.R
 \name{backtestLeaderboard}
 \alias{backtestLeaderboard}
-\title{Leaderboard of portfolios from the backtest results.}
+\title{Leaderboard of portfolios from the backtest results}
 \usage{
 backtestLeaderboard(bt = NA, weights = list(), summary_fun = median,
   show_benchmark = TRUE)

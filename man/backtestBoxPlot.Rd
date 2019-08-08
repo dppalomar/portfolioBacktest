@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotsNtables.R
 \name{backtestBoxPlot}
 \alias{backtestBoxPlot}
-\title{Create boxplot from backtest results.}
+\title{Create boxplot from backtest results}
 \usage{
 backtestBoxPlot(bt, measure = "Sharpe ratio", type = c("ggplot2",
   "simple"), ...)

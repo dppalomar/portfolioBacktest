@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotsNtables.R
 \name{summaryTable}
 \alias{summaryTable}
-\title{Create table from backtest summary.}
+\title{Create table from backtest summary}
 \usage{
 summaryTable(bt_summary, measures = NULL, type = c("simple", "DT",
   "grid.table"), order_col = NULL, order_dir = c("asc", "desc"))

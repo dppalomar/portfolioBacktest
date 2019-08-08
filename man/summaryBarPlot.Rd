@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotsNtables.R
 \name{summaryBarPlot}
 \alias{summaryBarPlot}
-\title{Create barplot from backtest summary.}
+\title{Create barplot from backtest summary}
 \usage{
 summaryBarPlot(bt_summary, measures = NULL, type = c("ggplot2",
   "simple"), ...)

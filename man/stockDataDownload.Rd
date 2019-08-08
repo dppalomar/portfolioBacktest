@@ -2,7 +2,7 @@
 % Please edit documentation in R/stockDataDownload.R
 \name{stockDataDownload}
 \alias{stockDataDownload}
-\title{Download stock data from the Internet.}
+\title{Download stock data from the Internet}
 \usage{
 stockDataDownload(stock_symbols, index_symbol = NULL, from, to,
   rm_stocks_with_na = TRUE, ...)

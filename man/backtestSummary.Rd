@@ -2,7 +2,7 @@
 % Please edit documentation in R/backtestSummary.R
 \name{backtestSummary}
 \alias{backtestSummary}
-\title{Summary of portfolio backtest.}
+\title{Summary of portfolio backtest}
 \usage{
 backtestSummary(bt, portfolio_indexes = NA, portfolio_names = NA,
   summary_fun = median, show_benchmark = TRUE)

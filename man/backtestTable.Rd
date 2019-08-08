@@ -2,7 +2,7 @@
 % Please edit documentation in R/backtestSummary.R
 \name{backtestTable}
 \alias{backtestTable}
-\title{Table with portfolio backtest results.}
+\title{Table with portfolio backtest results}
 \usage{
 backtestTable(bt, portfolio_indexes = NA, portfolio_names = NA,
   show_benchmark = TRUE, measures = NULL)

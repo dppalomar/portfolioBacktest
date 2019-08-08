@@ -2,7 +2,7 @@
 % Please edit documentation in R/portfolioBacktest.R
 \name{portfolioBacktest}
 \alias{portfolioBacktest}
-\title{Backtest multiple portfolios over multiple datasets of stock prices in a rolling-window basis.}
+\title{Backtest multiple portfolios over multiple datasets of stock prices in a rolling-window basis}
 \usage{
 portfolioBacktest(portfolio_funs = NULL, dataset_list,
   folder_path = NULL, price_name = "adjusted", paral_portfolios = 1,

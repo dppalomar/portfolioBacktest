@@ -3,7 +3,7 @@
 \docType{data}
 \name{dataset10}
 \alias{dataset10}
-\title{Ten datasets obtained by resampling the S&P 500.}
+\title{Ten datasets obtained by resampling the S&P 500}
 \format{List of 10 datasets, each contains two \code{xts} objects:
 \describe{
   \item{adjusted}{505 x 50 \code{xts} with the adjusted prices of the 50 stocks}

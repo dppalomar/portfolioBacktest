@@ -3,7 +3,7 @@
 \docType{data}
 \name{SP500_symbols}
 \alias{SP500_symbols}
-\title{Stock symbols of the S&P 500 constituents.}
+\title{Stock symbols of the S&P 500 constituents}
 \format{String vector of stock symbols of the S&P 500 constituents. 
         The market index symbol is concluded as the attribute "index_symbol".}
 \source{
@@ -13,6 +13,6 @@
 data(SP500_symbols)
 }
 \description{
-Stock symbols of the S&P 500 constituents.
+Stock symbols of the S&P 500 constituents
 }
 \keyword{SP500_symbols}
