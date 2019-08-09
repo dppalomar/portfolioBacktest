@@ -154,7 +154,7 @@ my_dataset_list <- stockDataResample(SP500_YAHOO,
                                      num_datasets = 10)
 ```
 Each individual dataset will contain 7 `xts` objects with names: `open`, `high`, `low`, `close`, `volume`, `adjusted`, `index`. 
-Once the datasets are ready they can be saved into a file to avoid having to download and resample every time.
+Since the function `stockDataDownload()` may take a long time to download the data from the Internet, it will automatically save the data into a local file for subsequent fast retrieval (whenever the function is called with the same arguments).
 
 ## Expanding the datasets
 Additional data can be helpful in designing portfolios. One can add as many other `xts` objects in each dataset as desired. For example, if the Moving Average Convergence Divergence (MACD) information is needed by the portfolio functions, one can manually add it to the dataset as follows:
