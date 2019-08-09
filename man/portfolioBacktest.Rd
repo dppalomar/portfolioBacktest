@@ -8,8 +8,9 @@ portfolioBacktest(portfolio_funs = NULL, dataset_list,
   folder_path = NULL, price_name = "adjusted", paral_portfolios = 1,
   paral_datasets = 1, show_progress_bar = FALSE, benchmark = NULL,
   shortselling = TRUE, leverage = Inf, T_rolling_window = 252,
-  optimize_every = 20, rebalance_every = 1, cpu_time_limit = Inf,
-  return_portfolio = TRUE, return_returns = TRUE)
+  optimize_every = 20, rebalance_every = 1, execution = c("same day",
+  "next day"), cpu_time_limit = Inf, return_portfolio = TRUE,
+  return_returns = TRUE)
 }
 \arguments{
 \item{portfolio_funs}{List of functions (can also be a single function), each of them taking as input 
@@ -53,12 +54,25 @@ computation (default is \code{"adjusted"}).}
 
 \item{rebalance_every}{How often the portfolio is to be rebalanced (default is \code{1}).}
 
+\item{execution}{Execution can be either \code{"same day"} (default) or \code{"next day"}. 
+At the rebalancing period \code{t}, the portfolio has used information up to (and including)
+period \code{t}. Same day execution means one can get into the position at that period \code{t},
+whereas the next day execution means that one can only get into the position the following day.}
+
 \item{cpu_time_limit}{Time limit for executing each portfolio function over a single data set 
 (default is \code{Inf}, so no time limit).}
 
-\item{return_portfolio}{Logical value indicating whether to return portfolios (default is \code{TRUE}).}
+\item{return_portfolio}{Logical value indicating whether to return the portfolios (default is \code{TRUE}).
+Two portfolios are returned: \code{w_designed} is the designed portfolio at each
+given rebalancing period (using all the information up to and including that period,
+which can be executed either on the same day or the following day)
+and \code{w_bop} is the "beginning-of-period" portfolio (i.e., at each period it is the
+weights held in the market in the previous period so that the portfolio return at 
+each period is just the product of the asset returns and \code{w_bop} at that period.)}
 
-\item{return_returns}{Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).}
+\item{return_returns}{Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).
+Two series are returned: \code{return} with the portfolio returns and \code{cumPnL}
+with the portfolio cumulative PnL or wealth.}
 }
 \value{
 List with the portfolio backtest results, see 
