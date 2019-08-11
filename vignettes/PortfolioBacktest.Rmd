@@ -287,6 +287,29 @@ backtestBoxPlot(bt, measure = "Sharpe ratio")
 
 
 # Advanced Usage
+## Transaction costs
+By default, transaction costs are not included in the backtesting, but the user can easily specify the cost to be used for a more realistic backtesting:
+```{r}
+library(ggfortify)  # to nicely plot time series with ggplot2
+
+# backtest without transaction costs
+bt <- portfolioBacktest(my_portfolio, dataset10)
+
+# backtest with costs of 15 bps
+bt_tc <- portfolioBacktest(my_portfolio, dataset10,
+                           cost = list(buy = 15e-4, sell = 15e-4))
+
+# plot wealth time series
+wealth <- cbind(bt$fun1$`dataset 1`$cumPnL, bt_tc$fun1$`dataset 1`$cumPnL)
+colnames(wealth) <- c("without transaction costs", "with transaction costs")
+
+autoplot(wealth, geom = "line", facets = FALSE, main = "Wealth") + 
+  theme(legend.title = element_blank()) +
+  theme(legend.position = c(0.8, 0.2)) +
+  scale_color_manual(values = c("red", "black"))
+```
+
+
 ## Incoporating benchmarks
 When performing the backtest of the designed portfolio functions, one may want to incorporate some benchmarks. The package currently suppports two benchmarks: `uniform portfolio` and `index` of the market. (Note that to incorporate the `index` benchmark each dataset needs to contain one `xts` object named `index`.) Once can easily choose the benchmarks by passing the corresponding value to argument `benchmark`:
 ```{r, cache=TRUE}
@@ -432,7 +455,6 @@ The performance criteria currently considered by the package are:
 ## Future features
 The package currently has the following limitations that we plan to address in the future:
 
-- **Transaction cost**: the transaction cost is currently not accounted for in the computation of the portfolio returns during the backtesting (although the ROT can currently be conveniently used to assess the potential effects of a high turnover in terms of transaction costs).
 - **Turnover term**: the portfolio function currently only receives as argument the dataset, but not the currently held portfolio $\mathbf{w}_{t-1}$, so the the turnover $\lVert \mathbf{w}_{t} - \mathbf{w}_{t-1} \rVert _{1}$ cannot be taken into account in the design.
 - **Additional performance measures**: there are countless of additional performance measures that could be included such as the [Sortino ratio](https://en.wikipedia.org/wiki/Sortino_ratio).
 

@@ -9,7 +9,7 @@
   which can be "same day" or "next day".
   
 * Transaction costs are now included in the backtest computation and function 
-  portfolioBacktest() takes an extra argument.
+  portfolioBacktest() takes an extra argument (Issue: #7).
 
 
 ## Changes in portfolioBacktest version 0.1.1 (2019-07-06)
