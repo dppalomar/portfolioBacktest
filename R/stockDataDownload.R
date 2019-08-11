@@ -19,7 +19,7 @@
 #'                          (ignoring leading missing values). Default is \code{TRUE}.
 #' @param local_file_path Path where the stock data will be saved after the first time is downloaded, 
 #'                        so that in future retrievals it will be locally loaded (if the same 
-#'                        arguments are used). Default is \code{"."}. If local caching is not 
+#'                        arguments are used). Default is \code{getwd()}. If local caching is not 
 #'                        desired, it can be deactivated by setting \code{local_file_path = NULL}.
 #' @param ... Additional arguments to be passed to \code{\link[quantmod:getSymbols]{quantmod:getSymbols}}.
 #'
@@ -44,16 +44,19 @@
 #'         quantmod
 #'         digest
 #' @export
-stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_stocks_with_na = TRUE, local_file_path = ".", ...) {
+stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_stocks_with_na = TRUE, local_file_path = getwd(), ...) {
   # some error control
   if (missing(from) || missing(to)) stop("Arguments from and to have to be passed.")
   
   # first check if data locally saved
   if (!is.null(local_file_path)) {
+    sorted_stock_symbols <- sort(stock_symbols)
+    attributes(sorted_stock_symbols) <- attributes(stock_symbols)
+    hash_stock_symbols <- digest(stock_symbols)
     filename <- file.path(local_file_path,
-                          paste0("stockdata", "_from_", from, "_to_", to, "_(", digest(stock_symbols), ").RData"))
+                          paste0("stockdata", "_from_", from, "_to_", to, "_(", hash_stock_symbols, ").RData"))
     if (file.exists(filename)) {
-      message("Loading stock data from local file...")
+      message("Loading stock data from local file ", filename)
       load(filename)
       return(stockdata)
     }
@@ -127,7 +130,7 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_s
   
   # save to local file if necessary for future usage
   if (!is.null(local_file_path)) {
-    message("Saving stock data to local file for future use...")
+    message("Saving stock data to local file ", filename, " for future use.")
     save(stockdata, file = filename)
   }
 

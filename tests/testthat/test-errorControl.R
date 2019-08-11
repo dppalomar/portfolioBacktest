@@ -62,12 +62,12 @@ test_that("Error control test for \"portfolioBacktest\"", {
 
 
 # define uniform portfolio
-uniform_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
-  return(rep(1/ncol(prices), ncol(prices)))
+uniform_portfolio_fun <- function(dataset) {
+  N <- ncol(dataset$adjusted)
+  return(rep(1/N, N))
 }
 
 bt <- portfolioBacktest(uniform_portfolio_fun, dataset10, benchmark = c("uniform", "index"))
-
 
 test_that("Error control test for \"backtestSelector\"", {
   

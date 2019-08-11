@@ -66,9 +66,9 @@ whereas the next day execution means that one can only get into the position the
 Two portfolios are returned: \code{w_designed} is the designed portfolio at each
 given rebalancing period (using all the information up to and including that period,
 which can be executed either on the same day or the following day)
-and \code{w_bop} is the "beginning-of-period" portfolio (i.e., at each period it is the
-weights held in the market in the previous period so that the portfolio return at 
-each period is just the product of the asset returns and \code{w_bop} at that period.)}
+and \code{w_bop} is the "beginning-of-period" portfolio (i.e., at each period it contains 
+the weights held in the market in the previous period so that the portfolio return at 
+that period is just the product of the asset returns and \code{w_bop} at that period.)}
 
 \item{return_returns}{Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).
 Two series are returned: \code{return} with the portfolio returns and \code{cumPnL}

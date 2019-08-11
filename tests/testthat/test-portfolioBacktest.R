@@ -82,7 +82,7 @@ test_that("backtest results coincide with PerformanceAnalytics and base R", {
   
   # compare with PerformanceAnalytics
   expect_warning(PerfAnal <- PerformanceAnalytics::Return.portfolio(X_lin, weights = bt$GMVP$`dataset 1`$w_designed, verbose = TRUE), 
-  "The weights for one or more periods do not sum up to 1: assuming a return of 0 for the residual weights")
+                 "The weights for one or more periods do not sum up to 1: assuming a return of 0 for the residual weights")
   expect_equal(ret_portfolioBacktest, PerfAnal$returns, check.attributes = FALSE)
   expect_equal(bt$GMVP$`dataset 1`$w_bop, PerfAnal$BOP.Weight[, 1:2], check.attributes = FALSE)
   cash <- 1 - rowSums(bt$GMVP$`dataset 1`$w_bop)
@@ -142,6 +142,47 @@ test_that("backtest results and performance measures coincide with the precomput
   bt_summary <- backtestSummary(bt, summary_fun = median)[1:2]
   expect_equal(backtestSummary(bt, summary_fun = median)[1:2], bt_summary)  # compare except cpu time
 })
+
+
+
+
+test_that("transaction cost works properly", {
+  bt <- portfolioBacktest(portfolios[1], dataset_list = dataset10[1],
+                          shortselling = TRUE, leverage = Inf,
+                          return_portfolio = TRUE, return_returns = TRUE,
+                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+  
+  bt2 <- portfolioBacktest(portfolios[1], dataset_list = dataset10[1],
+                          shortselling = TRUE, leverage = Inf,
+                          cost = list(buy = 0, sell = 0, long = 0, short = 0),
+                          return_portfolio = TRUE, return_returns = TRUE,
+                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+  expect_equal(bt$Uniform$`dataset 1`[-2], bt2$Uniform$`dataset 1`[-2])
+
+  bt_tc <- portfolioBacktest(portfolios[1], dataset_list = dataset10[1],
+                           shortselling = TRUE, leverage = Inf,
+                           cost = list(buy = 1e-4, sell = 0, long = 0, short = 0),
+                           return_portfolio = TRUE, return_returns = TRUE,
+                           T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+  
+  expect_equal(bt$Uniform$`dataset 1`[c("error", "error_message", "w_designed")], 
+               bt_tc$Uniform$`dataset 1`[c("error", "error_message", "w_designed")])
+  expect_equal(bt$Uniform$`dataset 1`$w_bop,
+               bt_tc$Uniform$`dataset 1`$w_bop, tolerance = 1e-5)
+  expect_equal(bt$Uniform$`dataset 1`$return,
+               bt_tc$Uniform$`dataset 1`$return, tolerance = 1e-4)
+  #plot(cbind(bt$Uniform$`dataset 1`$return, bt_tc$Uniform$`dataset 1`$return))
+  expect_equal(bt$Uniform$`dataset 1`$cumPnL,
+               bt_tc$Uniform$`dataset 1`$cumPnL, tolerance = 1e-4)
+  #plot(cbind(bt$Uniform$`dataset 1`$cumPnL, bt_tc$Uniform$`dataset 1`$cumPnL))
+})
+
+
+
+
+
+
+
 
 # test_that("portfolioBacktest under parallel mode", {
 #   bt_paral_portfolios <- portfolioBacktest(portfolios, dataset_list = dataset10, paral_portfolios = 2,
