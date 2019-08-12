@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2019-08-11" />
+<meta name="date" content="2019-08-12" />
 
 <title>Portfolio Backtesting</title>
 
@@ -2426,7 +2426,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h1 class="title toc-ignore">Portfolio Backtesting</h1>
 <h3 class="author"><div class="line-block">Daniel P. Palomar and Rui ZHOU<br />
 Hong Kong University of Science and Technology (HKUST)</div></h3>
-<h3 class="date">2019-08-11</h3>
+<h3 class="date">2019-08-12</h3>
 </header>
 
 <hr>
@@ -2476,8 +2476,8 @@ Hong Kong University of Science and Technology (HKUST)</div></h3>
 <ul>
 <li>Performance table:</li>
 </ul>
-<div id="htmlwidget-570dca468c52a50c1ee5" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-570dca468c52a50c1ee5">{"x":{"filter":"none","data":[["Quintile","GMVP","Markowitz","uniform","index"],[0.0029,0.0044,0.4529,0.0021,0],[1.1383,1.1686,0.573,1.61,1.0389],[0.1074,0.0313,0.226,0.0936,0.0907],[0.1939,0.0487,0.1495,0.1921,0.1323],[0.1613,0.0418,0.3165,0.1353,0.1249],[1.8075,1.4304,0.8002,2.1967,1.3762],[1.206,1.2152,1.1246,1.2923,1.2071],[253.2452,81.7284,187.1631,837.5048,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>cpu time<\/th>\n      <th>Sharpe ratio<\/th>\n      <th>max drawdown<\/th>\n      <th>annual return<\/th>\n      <th>annual volatility<\/th>\n      <th>Sterling ratio<\/th>\n      <th>Omega ratio<\/th>\n      <th>ROT bps<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":15,"scrollX":true,"order":[2,"desc"],"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7,8]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,15,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(row).css({'font-weight':value == 'uniform' ? 'bold' : value == 'index' ? 'bold' : ''});\nDTWidget.formatPercentage(this, row, data, 5, 1, 3, ',', '.');\nDTWidget.formatPercentage(this, row, data, 3, 1, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-54f7927b6b55e7fac97b" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-54f7927b6b55e7fac97b">{"x":{"filter":"none","data":[["Quintile","GMVP","Markowitz","uniform","index"],[0.0029,0.0044,0.4529,0.0021,0],[1.1383,1.1686,0.573,1.61,1.0389],[0.1074,0.0313,0.226,0.0936,0.0907],[0.1939,0.0487,0.1495,0.1921,0.1323],[0.1613,0.0418,0.3165,0.1353,0.1249],[1.8075,1.4304,0.8002,2.1967,1.3762],[1.206,1.2152,1.1246,1.2923,1.2071],[253.2452,81.7284,187.1631,837.5048,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>cpu time<\/th>\n      <th>Sharpe ratio<\/th>\n      <th>max drawdown<\/th>\n      <th>annual return<\/th>\n      <th>annual volatility<\/th>\n      <th>Sterling ratio<\/th>\n      <th>Omega ratio<\/th>\n      <th>ROT bps<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":15,"scrollX":true,"order":[2,"desc"],"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7,8]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,15,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(row).css({'font-weight':value == 'uniform' ? 'bold' : value == 'index' ? 'bold' : ''});\nDTWidget.formatPercentage(this, row, data, 5, 1, 3, ',', '.');\nDTWidget.formatPercentage(this, row, data, 3, 1, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 <p><br></p>
 <ul>
 <li>Barplot:</li>
@@ -2644,18 +2644,18 @@ Hong Kong University of Science and Technology (HKUST)</div></h3>
 #&gt; 8   ¦   ¦   ¦--w_designed          
 #&gt; 9   ¦   ¦   ¦--w_bop               
 #&gt; 10  ¦   ¦   ¦--return              
-#&gt; 11  ¦   ¦   °--cumPnL              
-#&gt; 12  ¦   ¦--dataset 2               
-#&gt; 13  ¦   ¦   ¦--performance         
-#&gt; 14  ¦   ¦   ¦--cpu_time            
-#&gt; 15  ¦   ¦   ¦--error               
-#&gt; 16  ¦   ¦   ¦--error_message       
-#&gt; 17  ¦   ¦   ¦--w_designed          
-#&gt; 18  ¦   ¦   ¦--w_bop               
-#&gt; 19  ¦   ¦   ¦--return              
-#&gt; 20  ¦   ¦   °--... 1 nodes w/ 0 sub
-#&gt; 21  ¦   °--... 8 nodes w/ 65 sub   
-#&gt; 22  °--... 4 nodes w/ 433 sub</code></pre>
+#&gt; 11  ¦   ¦   ¦--cumPnL              
+#&gt; 12  ¦   ¦   °--wealth              
+#&gt; 13  ¦   ¦--dataset 2               
+#&gt; 14  ¦   ¦   ¦--performance         
+#&gt; 15  ¦   ¦   ¦--cpu_time            
+#&gt; 16  ¦   ¦   ¦--error               
+#&gt; 17  ¦   ¦   ¦--error_message       
+#&gt; 18  ¦   ¦   ¦--w_designed          
+#&gt; 19  ¦   ¦   ¦--w_bop               
+#&gt; 20  ¦   ¦   °--... 3 nodes w/ 0 sub
+#&gt; 21  ¦   °--... 8 nodes w/ 75 sub   
+#&gt; 22  °--... 4 nodes w/ 473 sub</code></pre>
 <p>One can extract any desired backtest information directly from the returned variable <code>bt</code>.</p>
 </div>
 <div id="shaping-your-results" class="section level2">
@@ -2742,8 +2742,8 @@ Hong Kong University of Science and Technology (HKUST)</div></h3>
 <li>Performance table:</li>
 </ul>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1"><span class="kw">summaryTable</span>(res_sum, <span class="dt">type =</span> <span class="st">&quot;DT&quot;</span>, <span class="dt">order_col =</span> <span class="dv">2</span>, <span class="dt">order_dir =</span> <span class="st">&quot;desc&quot;</span>)</a></code></pre></div>
-<div id="htmlwidget-7cfe686ae99fd20416ec" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-7cfe686ae99fd20416ec">{"x":{"filter":"none","data":[["Quintile","GMVP","Markowitz","uniform","index"],[0.0029,0.0044,0.4529,0.0021,0],[1.1383,1.1686,0.573,1.61,1.0389],[0.1074,0.0313,0.226,0.0936,0.0907],[0.1939,0.0487,0.1495,0.1921,0.1323],[0.1613,0.0418,0.3165,0.1353,0.1249],[1.8075,1.4304,0.8002,2.1967,1.3762],[1.206,1.2152,1.1246,1.2923,1.2071],[253.2452,81.7284,187.1631,837.5048,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>cpu time<\/th>\n      <th>Sharpe ratio<\/th>\n      <th>max drawdown<\/th>\n      <th>annual return<\/th>\n      <th>annual volatility<\/th>\n      <th>Sterling ratio<\/th>\n      <th>Omega ratio<\/th>\n      <th>ROT bps<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":15,"scrollX":true,"order":[2,"desc"],"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7,8]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,15,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(row).css({'font-weight':value == 'uniform' ? 'bold' : value == 'index' ? 'bold' : ''});\nDTWidget.formatPercentage(this, row, data, 5, 1, 3, ',', '.');\nDTWidget.formatPercentage(this, row, data, 3, 1, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-e42896dca2a662d8bd2d" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e42896dca2a662d8bd2d">{"x":{"filter":"none","data":[["Quintile","GMVP","Markowitz","uniform","index"],[0.0029,0.0044,0.4529,0.0021,0],[1.1383,1.1686,0.573,1.61,1.0389],[0.1074,0.0313,0.226,0.0936,0.0907],[0.1939,0.0487,0.1495,0.1921,0.1323],[0.1613,0.0418,0.3165,0.1353,0.1249],[1.8075,1.4304,0.8002,2.1967,1.3762],[1.206,1.2152,1.1246,1.2923,1.2071],[253.2452,81.7284,187.1631,837.5048,null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>cpu time<\/th>\n      <th>Sharpe ratio<\/th>\n      <th>max drawdown<\/th>\n      <th>annual return<\/th>\n      <th>annual volatility<\/th>\n      <th>Sterling ratio<\/th>\n      <th>Omega ratio<\/th>\n      <th>ROT bps<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":15,"scrollX":true,"order":[2,"desc"],"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7,8]},{"orderable":false,"targets":0}],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,15,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(row).css({'font-weight':value == 'uniform' ? 'bold' : value == 'index' ? 'bold' : ''});\nDTWidget.formatPercentage(this, row, data, 5, 1, 3, ',', '.');\nDTWidget.formatPercentage(this, row, data, 3, 1, 3, ',', '.');\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 <p><br></p>
 <ul>
 <li>Barplot:</li>
@@ -2773,7 +2773,7 @@ Hong Kong University of Science and Technology (HKUST)</div></h3>
 <a class="sourceLine" id="cb19-8" title="8">                           <span class="dt">cost =</span> <span class="kw">list</span>(<span class="dt">buy =</span> <span class="fl">15e-4</span>, <span class="dt">sell =</span> <span class="fl">15e-4</span>))</a>
 <a class="sourceLine" id="cb19-9" title="9"></a>
 <a class="sourceLine" id="cb19-10" title="10"><span class="co"># plot wealth time series</span></a>
-<a class="sourceLine" id="cb19-11" title="11">wealth &lt;-<span class="st"> </span><span class="kw">cbind</span>(bt<span class="op">$</span>fun1<span class="op">$</span><span class="st">`</span><span class="dt">dataset 1</span><span class="st">`</span><span class="op">$</span>cumPnL, bt_tc<span class="op">$</span>fun1<span class="op">$</span><span class="st">`</span><span class="dt">dataset 1</span><span class="st">`</span><span class="op">$</span>cumPnL)</a>
+<a class="sourceLine" id="cb19-11" title="11">wealth &lt;-<span class="st"> </span><span class="kw">cbind</span>(bt<span class="op">$</span>fun1<span class="op">$</span><span class="st">`</span><span class="dt">dataset 1</span><span class="st">`</span><span class="op">$</span>wealth, bt_tc<span class="op">$</span>fun1<span class="op">$</span><span class="st">`</span><span class="dt">dataset 1</span><span class="st">`</span><span class="op">$</span>wealth)</a>
 <a class="sourceLine" id="cb19-12" title="12"><span class="kw">colnames</span>(wealth) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;without transaction costs&quot;</span>, <span class="st">&quot;with transaction costs&quot;</span>)</a>
 <a class="sourceLine" id="cb19-13" title="13"></a>
 <a class="sourceLine" id="cb19-14" title="14"><span class="kw">autoplot</span>(wealth, <span class="dt">geom =</span> <span class="st">&quot;line&quot;</span>, <span class="dt">facets =</span> <span class="ot">FALSE</span>, <span class="dt">main =</span> <span class="st">&quot;Wealth&quot;</span>) <span class="op">+</span><span class="st"> </span></a>

@@ -36,7 +36,6 @@ opts_chunk$set(
   pngquant = "--speed=1"
 )
 knit_hooks$set(pngquant = hook_pngquant)
-# Help on bookdown: https://bookdown.org/yihui/bookdown/
 # rmarkdown::render("vignettes/PortfolioBacktest.Rmd", "prettydoc::html_pretty")
 ```
 
@@ -300,7 +299,7 @@ bt_tc <- portfolioBacktest(my_portfolio, dataset10,
                            cost = list(buy = 15e-4, sell = 15e-4))
 
 # plot wealth time series
-wealth <- cbind(bt$fun1$`dataset 1`$cumPnL, bt_tc$fun1$`dataset 1`$cumPnL)
+wealth <- cbind(bt$fun1$`dataset 1`$wealth, bt_tc$fun1$`dataset 1`$wealth)
 colnames(wealth) <- c("without transaction costs", "with transaction costs")
 
 autoplot(wealth, geom = "line", facets = FALSE, main = "Wealth") + 

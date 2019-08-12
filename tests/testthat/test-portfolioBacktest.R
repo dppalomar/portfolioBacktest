@@ -40,7 +40,7 @@ test_that("backtest results coincide with PerformanceAnalytics and base R", {
                           return_portfolio = TRUE, 
                           return_returns = TRUE)
   ret_portfolioBacktest <- bt$Uniform$`dataset 1`$return
-  wealth_portfolioBacktest <- bt$Uniform$`dataset 1`$cumPnL
+  wealth_portfolioBacktest <- bt$Uniform$`dataset 1`$wealth
   
   # compare with base R
   w_EWP <- rep(1/N, N)
@@ -125,7 +125,7 @@ test_that("backtest results and performance measures coincide with the precomput
   # save(bt_check, file = "bt_check.RData")
   load("bt_check.RData")
   expect_equal(bt$GMVP$`dataset 1`[-2], bt_check) 
-  
+
   # bt_selector_check <- backtestSelector(bt, portfolio_name = "Uniform")$performance
   # save(bt_selector_check, file = "bt_selector_check.RData")
   load("bt_selector_check.RData")
@@ -143,6 +143,37 @@ test_that("backtest results and performance measures coincide with the precomput
   expect_equal(backtestSummary(bt, summary_fun = median)[1:2], bt_summary)  # compare except cpu time
 })
 
+
+test_that("backtest results with bankruptcy work fine", {
+  # force one stock to go bankrupt
+  dataset10_bankruptcy <- dataset10[1]
+  dataset10_bankruptcy$`dataset 1`$adjusted[, 1] <- 
+    dataset10_bankruptcy$`dataset 1`$adjusted[, 1] - 0.08*(1:nrow(dataset10_bankruptcy$`dataset 1`$adjusted))
+  plot(dataset10_bankruptcy$`dataset 1`$adjusted[, 1])
+  i_bankruptcy <- which(dataset10_bankruptcy$`dataset 1`$adjusted[, 1] <= 0)[1]
+  
+  stock1_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
+    return(c(1, rep(0, ncol(prices)-1)))
+  }
+  
+  bt <- portfolioBacktest(stock1_portfolio_fun, dataset_list = dataset10_bankruptcy,
+                          shortselling = TRUE, leverage = Inf, 
+                          return_portfolio = TRUE, return_returns = TRUE, 
+                          benchmark = c("uniform", "index"),
+                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+  first_date_trading <- index(bt$fun1$`dataset 1`$wealth)[1]
+  stock_price_normalized <- dataset10_bankruptcy$`dataset 1`$adjusted[paste0(first_date_trading, "::"), 1]/as.numeric(dataset10_bankruptcy$`dataset 1`$adjusted[first_date_trading, 1])
+  #plot(cbind(stock_price_normalized, bt$fun1$`dataset 1`$wealth))
+  
+  # check bankruptcy_dates
+  expect_equal(index(stock_price_normalized[stock_price_normalized <= 0])[1],
+               index(bt$fun1$`dataset 1`$wealth[bt$fun1$`dataset 1`$wealth <= 0])[1])
+  bankruptcy_date <- index(stock_price_normalized[stock_price_normalized <= 0])[1]
+  
+  # check whole time series until bankruptcy
+  expect_equal(stock_price_normalized[paste0("::", bankruptcy_date)],
+               bt$fun1$`dataset 1`$wealth[paste0("::", bankruptcy_date)], check.attributes = FALSE)
+})
 
 
 
@@ -172,9 +203,9 @@ test_that("transaction cost works properly", {
   expect_equal(bt$Uniform$`dataset 1`$return,
                bt_tc$Uniform$`dataset 1`$return, tolerance = 1e-4)
   #plot(cbind(bt$Uniform$`dataset 1`$return, bt_tc$Uniform$`dataset 1`$return))
-  expect_equal(bt$Uniform$`dataset 1`$cumPnL,
-               bt_tc$Uniform$`dataset 1`$cumPnL, tolerance = 1e-4)
-  #plot(cbind(bt$Uniform$`dataset 1`$cumPnL, bt_tc$Uniform$`dataset 1`$cumPnL))
+  expect_equal(bt$Uniform$`dataset 1`$wealth,
+               bt_tc$Uniform$`dataset 1`$wealth, tolerance = 1e-4)
+  #plot(cbind(bt$Uniform$`dataset 1`$wealth, bt_tc$Uniform$`dataset 1`$wealth))
 })
 
 
@@ -211,7 +242,7 @@ test_that("portfolioBacktest over files", {
   bt_files <- lapply(bt_files, function(x) {sapply(x, function(x) {x$performance})})
   load("bt_files_check.RData")
   expect_equal(bt_files, bt_files_check)
-  # expect_true(all.equal(bt_files, bt_files_check, tolerance = 1e-3))
+  # bt_files_check <- bt_files
   # save(bt_files_check, file = "bt_files_check.RData", version = 2, compression_level = 9)
 })
 

@@ -63,8 +63,8 @@
 #'                         the weights held in the market in the previous period so that the portfolio return at 
 #'                         that period is just the product of the asset returns and \code{w_bop} at that period.)
 #' @param return_returns Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).
-#'                       Two series are returned: \code{return} with the portfolio returns and \code{cumPnL}
-#'                       with the portfolio cumulative PnL or wealth.
+#'                       Two series are returned: \code{return} with the portfolio returns and \code{wealth}
+#'                       with the portfolio wealth (aka cumulative P&L).
 #' 
 #' @return List with the portfolio backtest results, see 
 #'         \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#result-format}{vignette-result-format}
@@ -121,10 +121,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   if (paral_portfolios < 1 || paral_datasets < 1) stop("Parallel number must be a positive interger.")
   if (is.null(folder_path) && is.null(portfolio_funs)) stop("The \"folder_path\" and \"portfolio_fun_list\" cannot be both NULL.")
   if (!is.null(portfolio_funs) && !is.list(portfolio_funs)) portfolio_funs <- list(portfolio_funs)
-  if (is.null(cost$buy)) cost$buy <- 0
-  if (is.null(cost$sell)) cost$sell <- 0
-  if (is.null(cost$long)) cost$long <- 0
-  if (is.null(cost$short)) cost$short <- 0
+  cost <- modifyList(list(buy = 0, sell = 0, long = 0, short = 0), cost)
   if (length(cost) != 4) stop("Problem in specifying the cost: the elements can only be buy, sell, long, or short.")
   ##############################
   
@@ -404,16 +401,16 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
               w_designed = NA,
               w_bop = NA,
               return = NA,
-              cumPnL = NA)
+              wealth = NA)
   
   # when portfolio_return is given
   if (market) {
     idx_prices_window <- data$index[-(1:(T_rolling_window-1))]
     idx_return <- diff(log(idx_prices_window), na.pad = FALSE)
     res$performance <- portfolioPerformance(rets = idx_return)
-    res$performance['ROT bps'] <- Inf
+    res$performance["ROT (bps)"] <- Inf
     res$cpu_time <- 0
-    if (return_returns) {res$return <- idx_return; res$cumPnL <- idx_prices_window[-1]/as.numeric(idx_prices_window[1])}
+    if (return_returns) {res$return <- idx_return; res$wealth <- idx_prices_window[-1]/as.numeric(idx_prices_window[1])}
     return(res)
   }
   
@@ -506,12 +503,9 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
     res$w_designed <- w
     res$w_bop <- portf$w_bop
   }
-    
   if (return_returns) {
     res$return <- portf$rets
-    cumPnL <- c(xts(1, portf$initial_date), cumprod(1 + portf$rets))
-    colnames(cumPnL) <- "portfolio wealth"
-    res$cumPnL <- cumPnL
+    res$wealth <- portf$wealth
   }
 
   return(res)
@@ -526,7 +520,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
 portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
   performance <- rep(NA, 7)
   names(performance) <- c("Sharpe ratio", "max drawdown", "annual return", "annual volatility", 
-                          "Sterling ratio", "Omega ratio", "ROT bps")
+                          "Sterling ratio", "Omega ratio", "ROT (bps)")
   # "judge" means how to judge the performance, 1: the bigger the better, -1: the smaller the better
   attr(performance, "judge") <- c(1, -1, 1, -1, 1, 1, 1)
   
@@ -540,7 +534,7 @@ portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
   performance["annual volatility"] <- PerformanceAnalytics::StdDev.annualized(rets)
   performance["Sterling ratio"]    <- PerformanceAnalytics::Return.annualized(rets) / PerformanceAnalytics::maxDrawdown(rets)
   performance["Omega ratio"]       <- PerformanceAnalytics::Omega(rets)
-  performance["ROT bps"]           <- ROT_bips
+  performance["ROT (bps)"]         <- ROT_bips
   
   return(performance)
 }
@@ -553,13 +547,13 @@ portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
 #   weights: is an xts with the normalized dollar allocation (wrt NAV, typically with sum=1) where
 #            - each row represents a rebalancing date (with portfolio computed with info up to and including that day)
 #            - dates with no rows means: no rebalancing (note that the portfolio may then violate some margin constraints...)
+#   rets: are the returns for each day at the close
 #
 #' @import xts
 returnPortfolio <- function(R, weights, 
                             execution = c("same day", "next day"), 
                             cost = list(buy = 0*10^(-4), sell = 0*10^(-4), long = 0*10^(-4), short = 0*10^(-4)),
-                            initial_cash = 1, 
-                            name = "portfolio return") {
+                            initial_cash = 1) {
   ######## error control  #########
   if (!is.xts(R) || !is.xts(weights)) stop("This function only accepts xts")
   if (attr(index(R), "class") != "Date") stop("This function only accepts daily data")
@@ -579,19 +573,19 @@ returnPortfolio <- function(R, weights,
               "same day" = lag.xts(w, 1),  # w[t] is (idealistically) executed at price[t], so will multiply return[t+1]
               "next day" = lag.xts(w, 2),  # w[t] is executed one period later at price[t+1], so will multiply return[t+2]
               stop("Execution method unknown"))
-  rebalance_indices <- which(!is.na(w[, 1]))
-  # loop    (NAV contains the NAV at the beginning of the day, like w,
+  after_rebalance_indices <- which(!is.na(w[, 1]))
+  # loop    (NAV contains the NAV at the beginning of the day (i.e., end of previous day), like w,
   #          whereas ret contains the returns at the end of the day, so lag(ret) equals (NAV - lag(NAV))/lag(NAV))
   NAV <- ret <- xts(rep(NA, nrow(R)), order.by = index(R))
-  colnames(ret) <- name
+  colnames(ret) <- "portfolio return"
   colnames(NAV) <- "NAV"
   delta_rel <- xts(matrix(0, nrow(w), ncol(w)), order.by = index(w))
-  NAV[rebalance_indices[1]] <- initial_cash
-  w_eop <- w[rebalance_indices[1], ]  # don't want to count the initial huge turnover
-  for (t in rebalance_indices[1]:nrow(R)) {
-    if (t > rebalance_indices[1])
+  NAV[after_rebalance_indices[1]] <- initial_cash
+  w_eop <- w[after_rebalance_indices[1], ]  # don't want to count the initial huge turnover
+  for (t in after_rebalance_indices[1]:nrow(R)) {
+    if (t > after_rebalance_indices[1])
       NAV[t] <- NAV[t-1]*NAV_relchange
-    if (t %in% rebalance_indices) {
+    if (t %in% after_rebalance_indices) {
       delta_rel[t, ] <- w[t, ] - w_eop
       if (compute_tc)
         tc <- cost$buy*sum(pos(delta_rel[t, ])) + cost$sell*sum(pos(-delta_rel[t, ])) +  # trading cost
@@ -608,21 +602,30 @@ returnPortfolio <- function(R, weights,
       w_eop <- (1 + R[t, ])*w_eop
     }
     NAV_relchange <- cash + sum(w_eop)       # NAV_relchange(t+1) = NAV(t+1)/NAV(t)
+    if (NAV_relchange <= 0) {  # if bankruptcy
+      NAV[(t+1):nrow(R)] <- as.numeric(NAV[t]*NAV_relchange)
+      ret[(t+1):nrow(R)] <- 0
+      break
+    }
     w_eop <- as.vector(w_eop/NAV_relchange)  # now w_eop is normalized wrt the current NAV(t+1)
   }
-  
+
+  # prepare time series to return
+  rets <- ret[after_rebalance_indices[1]:nrow(ret), ]
+  wealth <- c(xts(1, index(w)[after_rebalance_indices[1] - 1]), cumprod(1 + rets))
+  colnames(wealth) <- "portfolio wealth"
+  # sanity check: all.equal(na.omit(lag(wealth)), na.omit(NAV), check.attributes = FALSE)
+  # sanity check: PnL <- diff(NAV); PnL_rel <- PnL/lag.xts(NAV); all.equal(na.omit(lag(ret)), na.omit(PnL_rel), check.attributes = FALSE)
+
   # compute ROT based on normalized dollars
-  PnL <- diff(NAV); colnames(PnL) <- "PnL"
-  PnL_rel <- PnL/lag.xts(NAV)
-  turnover_rel <- xts(rowSums(abs(delta_rel)), index(delta_rel))
-  sum_PnL_rel <- sum(PnL_rel, na.rm = TRUE)
-  sum_turnover_rel <- sum(turnover_rel, na.rm = TRUE) * length(rebalance_indices)/(length(rebalance_indices)-1)  # to compensate for the removed fist turnover
+  sum_PnL_rel <- sum(rets[-1])  # because the initial huge turnover was removed
+  sum_turnover_rel <- sum(abs(delta_rel)) * length(after_rebalance_indices)/(length(after_rebalance_indices)-1)  # to compensate for the removed fist turnover
   ROT_bips <- 1e4*sum_PnL_rel/sum_turnover_rel
-  
-  return(list(rets = ret[rebalance_indices[1]:nrow(ret), ],
+
+  return(list(rets = rets,
+              wealth = wealth,
               ROT_bips = ROT_bips,
-              w_bop = w[!is.na(w[, 1])],
-              initial_date = index(w)[rebalance_indices[1] - 1]))
+              w_bop = w[!is.na(w[, 1])]))
 }
 
 pos <- function(x)

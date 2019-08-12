@@ -77,8 +77,8 @@ the weights held in the market in the previous period so that the portfolio retu
 that period is just the product of the asset returns and \code{w_bop} at that period.)}
 
 \item{return_returns}{Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).
-Two series are returned: \code{return} with the portfolio returns and \code{cumPnL}
-with the portfolio cumulative PnL or wealth.}
+Two series are returned: \code{return} with the portfolio returns and \code{wealth}
+with the portfolio wealth (aka cumulative P&L).}
 }
 \value{
 List with the portfolio backtest results, see 
