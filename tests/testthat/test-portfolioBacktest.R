@@ -149,9 +149,8 @@ test_that("backtest results with bankruptcy work fine", {
   dataset10_bankruptcy <- dataset10[1]
   dataset10_bankruptcy$`dataset 1`$adjusted[, 1] <- 
     dataset10_bankruptcy$`dataset 1`$adjusted[, 1] - 0.08*(1:nrow(dataset10_bankruptcy$`dataset 1`$adjusted))
-  plot(dataset10_bankruptcy$`dataset 1`$adjusted[, 1])
-  i_bankruptcy <- which(dataset10_bankruptcy$`dataset 1`$adjusted[, 1] <= 0)[1]
-  
+  #plot(dataset10_bankruptcy$`dataset 1`$adjusted[, 1])
+
   stock1_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
     return(c(1, rep(0, ncol(prices)-1)))
   }
@@ -209,7 +208,51 @@ test_that("transaction cost works properly", {
 })
 
 
+test_that("cash is properly accounted in backtest results", {
+  # create stock with bankruptcy
+  dataset10_bankruptcy <- dataset10[1]
+  T <- nrow(dataset10_bankruptcy$`dataset 1`$adjusted)
+  dataset10_bankruptcy$`dataset 1`$adjusted[400:T, 1] <- 1e-6
+  #plot(dataset10_bankruptcy$`dataset 1`$adjusted[, 1])
 
+  # first all invested in a stock that goes bankrupt
+  stock1_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
+    return(c(1, rep(0, ncol(prices)-1)))
+  }
+  bt <- portfolioBacktest(stock1_portfolio_fun, dataset_list = dataset10_bankruptcy,
+                          shortselling = TRUE, leverage = Inf, 
+                          return_portfolio = TRUE, return_returns = TRUE, 
+                          benchmark = c("uniform", "index"),
+                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+  first_date_trading <- index(bt$fun1$`dataset 1`$wealth)[1]
+  stock_price_normalized <- dataset10_bankruptcy$`dataset 1`$adjusted[paste0(first_date_trading, "::"), 1]/as.numeric(dataset10_bankruptcy$`dataset 1`$adjusted[first_date_trading, 1])
+  #plot(cbind(stock_price_normalized, bt$fun1$`dataset 1`$wealth), lwd = c(2, 4))
+  expect_equal(stock_price_normalized, bt$fun1$`dataset 1`$wealth, check.attributes = FALSE)
+
+    
+  # second, all in cash
+  stock1_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
+    return(c(0, rep(0, ncol(prices)-1)))
+  }
+  bt <- portfolioBacktest(stock1_portfolio_fun, dataset_list = dataset10_bankruptcy,
+                          shortselling = TRUE, leverage = Inf, 
+                          return_portfolio = TRUE, return_returns = TRUE, 
+                          benchmark = c("uniform", "index"),
+                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+  #plot(cbind(stock_price_normalized, bt$fun1$`dataset 1`$wealth), lwd = c(2, 4))
+  expect_equal(sum(abs(bt$fun1$`dataset 1`$wealth - 1)), 0)
+    
+  # # third, partially invested
+  # stock1_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
+  #   return(c(0.5, rep(0, ncol(prices)-1)))
+  # }
+  # bt <- portfolioBacktest(stock1_portfolio_fun, dataset_list = dataset10_bankruptcy,
+  #                         shortselling = TRUE, leverage = Inf, 
+  #                         return_portfolio = TRUE, return_returns = TRUE, 
+  #                         benchmark = c("uniform", "index"),
+  #                         T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+  # plot(cbind(stock_price_normalized, bt$fun1$`dataset 1`$wealth), lwd = c(2, 4))
+})
 
 
 
