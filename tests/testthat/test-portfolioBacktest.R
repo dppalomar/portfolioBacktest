@@ -122,17 +122,17 @@ test_that("backtest results and performance measures coincide with the precomput
                           benchmark = c("uniform", "index"),
                           T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
   # bt_check <- bt$GMVP$`dataset 1`[-2]
-  # save(bt_check, file = "bt_check.RData")
+  # save(bt_check, file = "bt_check.RData", version = 2)
   load("bt_check.RData")
   expect_equal(bt$GMVP$`dataset 1`[-2], bt_check) 
 
   # bt_selector_check <- backtestSelector(bt, portfolio_name = "Uniform")$performance
-  # save(bt_selector_check, file = "bt_selector_check.RData")
+  # save(bt_selector_check, file = "bt_selector_check.RData", version = 2)
   load("bt_selector_check.RData")
   expect_equal(backtestSelector(bt, portfolio_name = "Uniform")$performance, bt_selector_check)
   
   # bt_table_check <- backtestTable(bt)[1:8]
-  # save(bt_table_check, file = "bt_table_check.RData")
+  # save(bt_table_check, file = "bt_table_check.RData", version = 2)
   load("bt_table_check.RData")
   expect_equal(backtestTable(bt)[1:8], bt_table_check) 
   
