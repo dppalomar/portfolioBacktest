@@ -143,5 +143,3 @@ plotPerformanceVsParam <- function(portfolio_funs, bt_summary, params_nominal, m
 
 
 
-
-
