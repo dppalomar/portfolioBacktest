@@ -49,9 +49,8 @@
 #'                  At the rebalancing period \code{t}, the portfolio has used information up to (and including)
 #'                  period \code{t}. Same day execution means one can get into the position at that period \code{t},
 #'                  whereas the next day execution means that one can only get into the position the following day.
-#' @param cost List containing four different types of transaction costs (common for all assets) 
-#'             for: buying, selling, shorting, and long leveraging. The default is 
-#'             \code{code = list(buy = 0e-4, sell = 0e-4, long = 0e-4, short = 0e-4)}. 
+#' @param cost List containing two different types of transaction costs (common for all assets) 
+#'             for buying and selling. The default is \code{code = list(buy = 0e-4, sell = 0e-4)}.
 #'             If some elements are not specified then they will be automatically set to zero.
 #' @param cpu_time_limit Time limit for executing each portfolio function over a single data set 
 #'                       (default is \code{Inf}, so no time limit).
@@ -112,7 +111,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                               shortselling = TRUE, leverage = Inf,
                               T_rolling_window = 252, optimize_every = 20, rebalance_every = 1, 
                               execution = c("same day", "next day"), 
-                              cost = list(buy = 0e-4, sell = 0e-4, long = 0e-4, short = 0e-4),
+                              cost = list(buy = 0e-4, sell = 0e-4),
                               cpu_time_limit = Inf,
                               return_portfolio = TRUE, return_returns = TRUE) {
   ####### error control ########
@@ -121,8 +120,8 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   if (paral_portfolios < 1 || paral_datasets < 1) stop("Parallel number must be a positive interger.")
   if (is.null(folder_path) && is.null(portfolio_funs)) stop("The \"folder_path\" and \"portfolio_fun_list\" cannot be both NULL.")
   if (!is.null(portfolio_funs) && !is.list(portfolio_funs)) portfolio_funs <- list(portfolio_funs)
-  cost <- modifyList(list(buy = 0, sell = 0, long = 0, short = 0), cost)
-  if (length(cost) != 4) stop("Problem in specifying the cost: the elements can only be buy, sell, long, or short.")
+  cost <- modifyList(list(buy = 0, sell = 0), cost)
+  if (length(cost) != 2) stop("Problem in specifying the cost: the elements can only be buy and sell.")
   ##############################
   
   # when portfolio_funs is passed
@@ -552,7 +551,7 @@ portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
 #' @import xts
 returnPortfolio <- function(R, weights, 
                             execution = c("same day", "next day"), 
-                            cost = list(buy = 0*10^(-4), sell = 0*10^(-4), long = 0*10^(-4), short = 0*10^(-4)),
+                            cost = list(buy = 0*10^(-4), sell = 0*10^(-4)),
                             initial_cash = 1) {
   ######## error control  #########
   if (!is.xts(R) || !is.xts(weights)) stop("This function only accepts xts")
@@ -588,15 +587,15 @@ returnPortfolio <- function(R, weights,
     if (t %in% after_rebalance_indices) {
       delta_rel[t, ] <- w[t, ] - w_eop
       if (compute_tc)
-        tc <- cost$buy*sum(pos(delta_rel[t, ])) + cost$sell*sum(pos(-delta_rel[t, ])) +  # trading cost
-              cost$long*max(0, sum(pos(w[t, ])) - 1) + cost$short*sum(pos(-w[t, ]))  # borrowing cost
+        tc <- cost$buy*sum(pos(delta_rel[t, ])) + cost$sell*sum(pos(-delta_rel[t, ]))   # trading cost
+              #cost$leverage_long*max(0, sum(pos(w[t, ])) - 1) + cost$short*sum(pos(-w[t, ]))  # borrowing cost
       cash <- 1 - sum(w[t, ]) - tc  # normalized cash wrt NAV[t]
       ret[t] <- sum(R[t, ]*w[t, ]) - tc  # recall w is normalized wrt NAV[t]
       w_eop <- (1 + R[t, ])*w[t, ]  # new w but it is still normalized wrt previous NAV which is not the correct normalization
     } else {
       w[t, ] <- w_eop  # and delta_rel[t, ] is (already) zero
-      if (compute_tc)
-        tc <- cost$long*max(0, sum(pos(w_eop)) - 1) + cost$short*sum(pos(-w_eop))  # borrowing cost (no trading cost here)
+      #if (compute_tc)
+      #  tc <- cost$leverage_long*max(0, sum(pos(w_eop)) - 1) + cost$short*sum(pos(-w_eop))  # borrowing cost (no trading cost here)
       cash <- 1 - sum(w_eop) - tc  # normalized cash wrt NAV[t]
       ret[t] <- sum(R[t, ]*w_eop) - tc
       w_eop <- (1 + R[t, ])*w_eop

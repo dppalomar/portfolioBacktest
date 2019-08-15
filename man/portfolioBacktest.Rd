@@ -9,9 +9,8 @@ portfolioBacktest(portfolio_funs = NULL, dataset_list,
   paral_datasets = 1, show_progress_bar = FALSE, benchmark = NULL,
   shortselling = TRUE, leverage = Inf, T_rolling_window = 252,
   optimize_every = 20, rebalance_every = 1, execution = c("same day",
-  "next day"), cost = list(buy = 0, sell = 0, long = 0, short = 0),
-  cpu_time_limit = Inf, return_portfolio = TRUE,
-  return_returns = TRUE)
+  "next day"), cost = list(buy = 0, sell = 0), cpu_time_limit = Inf,
+  return_portfolio = TRUE, return_returns = TRUE)
 }
 \arguments{
 \item{portfolio_funs}{List of functions (can also be a single function), each of them taking as input 
@@ -60,9 +59,8 @@ At the rebalancing period \code{t}, the portfolio has used information up to (an
 period \code{t}. Same day execution means one can get into the position at that period \code{t},
 whereas the next day execution means that one can only get into the position the following day.}
 
-\item{cost}{List containing four different types of transaction costs (common for all assets) 
-for: buying, selling, shorting, and long leveraging. The default is 
-\code{code = list(buy = 0e-4, sell = 0e-4, long = 0e-4, short = 0e-4)}. 
+\item{cost}{List containing two different types of transaction costs (common for all assets) 
+for buying and selling. The default is \code{code = list(buy = 0e-4, sell = 0e-4)}.
 If some elements are not specified then they will be automatically set to zero.}
 
 \item{cpu_time_limit}{Time limit for executing each portfolio function over a single data set 

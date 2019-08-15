@@ -184,14 +184,14 @@ test_that("transaction cost works properly", {
   
   bt2 <- portfolioBacktest(portfolios[1], dataset_list = dataset10[1],
                           shortselling = TRUE, leverage = Inf,
-                          cost = list(buy = 0, sell = 0, long = 0, short = 0),
+                          cost = list(buy = 0, sell = 0),
                           return_portfolio = TRUE, return_returns = TRUE,
                           T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
   expect_equal(bt$Uniform$`dataset 1`[-2], bt2$Uniform$`dataset 1`[-2])
 
   bt_tc <- portfolioBacktest(portfolios[1], dataset_list = dataset10[1],
                            shortselling = TRUE, leverage = Inf,
-                           cost = list(buy = 1e-4, sell = 0, long = 0, short = 0),
+                           cost = list(buy = 1e-4, sell = 0),
                            return_portfolio = TRUE, return_returns = TRUE,
                            T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
   
@@ -200,10 +200,10 @@ test_that("transaction cost works properly", {
   expect_equal(bt$Uniform$`dataset 1`$w_bop,
                bt_tc$Uniform$`dataset 1`$w_bop, tolerance = 1e-5)
   expect_equal(bt$Uniform$`dataset 1`$return,
-               bt_tc$Uniform$`dataset 1`$return, tolerance = 1e-4)
+               bt_tc$Uniform$`dataset 1`$return, tolerance = 2e-4)
   #plot(cbind(bt$Uniform$`dataset 1`$return, bt_tc$Uniform$`dataset 1`$return))
   expect_equal(bt$Uniform$`dataset 1`$wealth,
-               bt_tc$Uniform$`dataset 1`$wealth, tolerance = 1e-4)
+               bt_tc$Uniform$`dataset 1`$wealth, tolerance = 2e-4)
   #plot(cbind(bt$Uniform$`dataset 1`$wealth, bt_tc$Uniform$`dataset 1`$wealth))
 })
 
