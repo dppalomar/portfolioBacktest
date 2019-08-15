@@ -58,7 +58,8 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_real
     warning("Too many realizations requested for only ", N_combinations, 
             " possible combinations. Using instead N_realizations = ", N_combinations, ".")
     N_realizations <- N_combinations
-  }
+  } else 
+    message("Generating ", N_realizations, " realizations out of a total of ", N_combinations, " possible combinations.")
   
   list_random_funs <- vector("list", N_realizations)
   list_random_params <- vector("list", N_realizations)
@@ -134,7 +135,7 @@ plotPerformanceVsParam <- function(portfolio_funs, bt_summary, params_nominal, m
            ggplot2::ggplot(melted_score, ggplot2::aes(x = Var1, y = Var2, fill = value)) + 
              ggplot2::geom_tile() + #ggplot2::geom_raster() +
              ggplot2::labs(title = "Performance vs parameters", x = param1_name, y = param2_name) +
-             viridis::scale_fill_viridis(name = measure)
+             viridis::scale_fill_viridis(name = measure, na.value = "transparent")
            #scale_fill_gradient(low = "white", high = "steelblue")
          },
          stop("Cannot sweep over more than 1 parameter."))
