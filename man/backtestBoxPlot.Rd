@@ -16,7 +16,7 @@ backtestBoxPlot(bt, measure = "Sharpe ratio", type = c("ggplot2",
  Default is \code{"Sharpe ratio"}.}
 
 \item{type}{Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
-\code{"ggplot2"} (the package \code{ggplot2} must be installed).}
+\code{"ggplot2"}.}
 
 \item{...}{Additional parameters. For example: 
 \code{mar} for margins as in \code{par()} (for the case of plot \code{type = "simple"}); and

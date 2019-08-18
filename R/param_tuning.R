@@ -79,6 +79,8 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_real
   return(list_random_funs)
 }
 
+
+#' @export
 plotPerformanceVsParam <- function(bt_all_portfolios, params_subset = NULL, name_performance = "Sharpe ratio", summary_fun = median) {
   # summarize performance chosen
   res_summary <- backtestSummary(bt_all_portfolios, summary_fun = summary_fun)

@@ -35,6 +35,7 @@ Imports:
     doSNOW,
     evaluate,
     foreach,
+    ggplot2,
     PerformanceAnalytics,
     quantmod,
     R.utils,
@@ -45,7 +46,6 @@ Imports:
 Suggests:
     CVXR,
     DT,
-    ggplot2,
     gridExtra,
     knitr,
     prettydoc,

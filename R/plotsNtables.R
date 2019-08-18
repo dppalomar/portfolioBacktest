@@ -101,7 +101,7 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
 #' 
 #' @inheritParams summaryTable
 #' @param type Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
-#'             \code{"ggplot2"} (the package \code{ggplot2} must be installed).
+#'             \code{"ggplot2"}.
 #' @param ... Additional parameters (only used for plot \code{type = "simple"}); 
 #'            for example: \code{mar} for margins as in \code{par()},
 #'                         \code{inset} for the legend inset as in \code{legend()},
@@ -139,6 +139,7 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
 #' 
 #' @importFrom grDevices topo.colors
 #' @importFrom graphics barplot legend par
+#' @import ggplot2
 #' @export
 summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "simple"), ...) {
   # extract table
@@ -165,15 +166,12 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
            par(old_par)
          },
          "ggplot2" = {
-           if (!requireNamespace("ggplot2", quietly = TRUE)) 
-             stop("Please install package \"ggplot2\" or choose another plot type", call. = FALSE)
            df <- as.data.frame.table(res_table)
-           Var1 <- Freq <- NULL  # ugly hack to deal with CRAN note
-           ggplot2::ggplot(df, ggplot2::aes(x = Var1, y = Freq, fill = Var1)) + 
-             ggplot2::geom_bar(stat = "identity") +  #position = position_dodge()
-             ggplot2::scale_x_discrete(breaks = NULL) +
-             ggplot2::facet_wrap(~ Var2, scales = "free_y") +
-             ggplot2::labs(title = params$main, x = NULL, y = NULL, fill = NULL)
+           ggplot(df, aes_string(x = "Var1", y = "Freq", fill = "Var1")) + 
+             geom_bar(stat = "identity") +  #position = position_dodge()
+             scale_x_discrete(breaks = NULL) +
+             facet_wrap(~ Var2, scales = "free_y") +
+             labs(title = params$main, x = NULL, y = NULL, fill = NULL)
          },
          stop("Barplot type unknown."))
 }
@@ -193,7 +191,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #'                 \code{"Sterling ratio"}, \code{"Omega ratio"}, and \code{"ROT bps"}.
 #'                  Default is \code{"Sharpe ratio"}.
 #' @param type Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
-#'             \code{"ggplot2"} (the package \code{ggplot2} must be installed).
+#'             \code{"ggplot2"}.
 #' @param ... Additional parameters. For example: 
 #'            \code{mar} for margins as in \code{par()} (for the case of plot \code{type = "simple"}); and
 #'            \code{alpha} for the alpha of each backtest dot (for the case of plot \code{type = "ggplot2"}), 
@@ -228,6 +226,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' @importFrom grDevices topo.colors
 #' @importFrom graphics boxplot par
 #' @importFrom stats quantile
+#' @import ggplot2
 #' @export
 backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "simple"), ...) {
   # extract correct performance measure
@@ -253,8 +252,6 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
            par(old_par)
          },
          "ggplot2" = {
-           if (!requireNamespace("ggplot2", quietly = TRUE)) 
-             stop("Please install package \"ggplot2\" or choose another plot type", call. = FALSE)
            if (is.null(params$alpha)) params$alpha <- 0.4  # this is for the points (set to 0 if not want them)
            limits <- apply(res_table, 2, function(x) {
              lquartile <- quantile(x, 0.25, na.rm = TRUE)
@@ -264,13 +261,12 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
            })
            plot_limits <- c(min(limits["limit_min", ]), max(limits["limit_max", ]))
            df <- as.data.frame.table(res_table)
-           Var2 <- Freq <- NULL  # ugly hack to deal with CRAN note
-           ggplot2::ggplot(df, ggplot2::aes(x = Var2, y = Freq, fill = Var2)) +
-             ggplot2::geom_boxplot(show.legend = FALSE) +  # (outlier.shape = NA)
-             ggplot2::geom_point(size = 0.5, alpha = params$alpha, show.legend = FALSE) +  # geom_jitter(width = 0) +
-             ggplot2::scale_x_discrete(limits = rev(levels(df$Var2))) +
-             ggplot2::coord_flip(ylim = plot_limits) + 
-             ggplot2::labs(title = measure, x = NULL, y = NULL)
+           ggplot(df, aes_string(x = "Var2", y = "Freq", fill = "Var2")) +
+             geom_boxplot(show.legend = FALSE) +  # (outlier.shape = NA)
+             geom_point(size = 0.5, alpha = params$alpha, show.legend = FALSE) +  # geom_jitter(width = 0) +
+             scale_x_discrete(limits = rev(levels(df$Var2))) +
+             coord_flip(ylim = plot_limits) + 
+             labs(title = measure, x = NULL, y = NULL)
          },
          stop("Boxplot type unknown."))
 }
