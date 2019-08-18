@@ -59,7 +59,7 @@ load("figures/bt.RData")
 
 ```{r, echo=FALSE}
 res_sum <- backtestSummary(bt)
-summaryTable(res_sum, type = "DT", order_col = 2, order_dir = "desc")
+summaryTable(res_sum, type = "DT", order_col = "Sharpe ratio", order_dir = "desc")
 ```
 
 <br>
@@ -67,7 +67,7 @@ summaryTable(res_sum, type = "DT", order_col = 2, order_dir = "desc")
 * Barplot:
 
 ```{r, echo=FALSE, out.width="75%"}
-summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"), type = "ggplot2")
+summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"))
 ```
 
 <br>
@@ -169,8 +169,8 @@ for (i in 1:length(dataset10))
 The portfolios have to be defined in the form of function that takes as input a dataset (which will be automatically windowed during the backtesting following a rolling-window basis) containing a list of `xts` objects (following the format of the elements of the argument `dataset_list`) and returns the portfolio as a numerical vector of normalized weights of the same length as the number of stocks. We give the examples for the **quintile portfolio**, the **global minimum variance portfolio (GMVP)**, and the **Markowitz mean-variance portfolio** as follows (under practical constraints $\mathbf{w} \ge \mathbf{0}$ and $\mathbf{1}^{T} \mathbf{w} =1$):
 ```{r, echo = TRUE, results = 'hide'}
 # define quintile portfolio
-quintile_portfolio_fun <- function(data) {
-  X <- diff(log(data$adjusted))[-1]  # compute log returns
+quintile_portfolio_fun <- function(dataset) {
+  X <- diff(log(dataset$adjusted))[-1]  # compute log returns
   N <- ncol(X)
   # design quintile portfolio
   ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
@@ -180,8 +180,8 @@ quintile_portfolio_fun <- function(data) {
 }
 
 # define GMVP (allowing shorting)
-GMVP_portfolio_fun <- function(data) {
-  X <- diff(log(data$adjusted))[-1]  # compute log returns
+GMVP_portfolio_fun <- function(dataset) {
+  X <- diff(log(dataset$adjusted))[-1]  # compute log returns
   Sigma <- cov(X)  # compute SCM
   # design GMVP
   w <- solve(Sigma, rep(1, nrow(Sigma)))
@@ -191,8 +191,8 @@ GMVP_portfolio_fun <- function(data) {
 
 # define Markowitz mean-variance portfolio
 library(CVXR)
-Markowitz_portfolio_fun <- function(data) {
-  X <- diff(log(data$adjusted))[-1]  # compute log returns
+Markowitz_portfolio_fun <- function(dataset) {
+  X <- diff(log(dataset$adjusted))[-1]  # compute log returns
   mu <- colMeans(X)  # compute mean vector
   Sigma <- cov(X)  # compute the SCM
   # design mean-variance portfolio
@@ -265,7 +265,7 @@ Besides, the package also provides some functions to show results in tables and 
 
 * Performance table:
 ```{r}
-summaryTable(res_sum, type = "DT", order_col = 2, order_dir = "desc")
+summaryTable(res_sum, type = "DT", order_col = "Sharpe ratio", order_dir = "desc")
 ```
 
 <br>
@@ -319,29 +319,44 @@ names(bt)
 
 ## Parameter tuning in portfolio functions
 Portfolio functions usually contain some parameters that can be tuned. One can manually generate different versions of such portfolio functions with a variety of parameters. Fortunately, the function `genRandomFuns()` helps with this task by automatically generating different versions of the portfolios with randomly chosen paramaters:
-```{r}
-# first define the portfolio strategy GMVP with parameters "lookback" and "N_stocks"
-GMVP_portfolio_fun <- function(data) {
+```{r, cache=TRUE}
+# define a portfolio with parameters "lookback", "quintile", and "average_type"
+quintile_portfolio_fun <- function(dataset) {
   prices <- tail(dataset$adjusted, lookback)
-  prices <- prices[, 1:N_stocks]
   X <- diff(log(prices))[-1]
-  Sigma <- cov(X)
-  # design GMVP
-  w <- solve(Sigma, rep(1, nrow(Sigma)))
-  return(w/sum(w))
+  mu <- switch(average_type,
+               "mean" = colMeans(X),
+               "median" = apply(X, MARGIN = 2, FUN = median))
+  idx <- sort(mu, decreasing = TRUE, index.return = TRUE)$ix
+  w <- rep(0, ncol(X))
+  w[idx[1:ceiling(quintile*ncol(X))]] <- 1/ceiling(quintile*ncol(X))
+  return(w)
 }
 
 # then automatically generate multiple versions with randomly chosen parameters
-portfolio_list <- genRandomFuns(portfolio_fun = GMVP_portfolio_fun, 
+portfolio_list <- genRandomFuns(portfolio_fun = quintile_portfolio_fun, 
                                 params_grid = list(lookback = c(100, 120, 140, 160),
-                                                   N_stocks = c(5, 10, 20, 30, 40)),
-                                name = "GMVP", 
-                                N_realizations = 10)
+                                                   quintile = seq(0.1, 0.5, by = 0.1),
+                                                   average_type = c("mean", "median")),
+                                name = "Quintile", 
+                                N_realizations = 32)
 
-names(portfolio_list)
+names(portfolio_list[1:5])
 
 portfolio_list[[1]]
 ```
+
+Now we can proceed with the backtesting:
+```{r, cache=TRUE}
+bt_all_port <- portfolioBacktest(portfolio_list, dataset10)
+```
+
+Finally we can observe the performance for all combinations of parameters backtested:
+```{r}
+plotPerformanceVsParam(bt_all_port)
+```
+In this case, we can conclude that the best combination is to use the median of the past 160 days and using the 0.3 top quintile.
+
 
 
 ## Progress bar
