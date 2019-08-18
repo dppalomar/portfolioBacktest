@@ -18,9 +18,9 @@ summaryTable(bt_summary, measures = NULL, type = c("simple", "DT",
 \code{"simple"} and generates a simple matrix (with the other choices the 
 corresponding package must be installed).}
 
-\item{order_col}{Column number of the performance measure to be used to sort the rows 
-(only used for table \code{type = "DT"}). By default the last column 
-will be used.}
+\item{order_col}{Column number or column name of the performance measure to be used to 
+sort the rows (only used for table \code{type = "DT"}). By default the 
+last column will be used.}
 
 \item{order_dir}{Direction to be used to sort the rows (only used for table 
 \code{type = "DT"}). Valid options: \code{"asc", "desc"}. 
@@ -49,7 +49,8 @@ quintile_portfolio <- function(data) {
 }
 
 # do backtest
-bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
+bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), 
+                        dataset10,
                         benchmark = c("uniform", "index"))
 
 # now we can obtain the table
