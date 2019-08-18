@@ -14,9 +14,9 @@
 #' @param type Type of table. Valid options: \code{"simple", "DT", "grid.table"}. Default is 
 #'             \code{"simple"} and generates a simple matrix (with the other choices the 
 #'             corresponding package must be installed).
-#' @param order_col Column number of the performance measure to be used to sort the rows 
-#'                  (only used for table \code{type = "DT"}). By default the last column 
-#'                  will be used.
+#' @param order_col Column number or column name of the performance measure to be used to 
+#'                  sort the rows (only used for table \code{type = "DT"}). By default the 
+#'                  last column will be used.
 #' @param order_dir Direction to be used to sort the rows (only used for table 
 #'                  \code{type = "DT"}). Valid options: \code{"asc", "desc"}. 
 #'                  Default is \code{"asc"}.
@@ -41,7 +41,8 @@
 #' }
 #' 
 #' # do backtest
-#' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
+#' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), 
+#'                         dataset10,
 #'                         benchmark = c("uniform", "index"))
 #' 
 #' # now we can obtain the table
@@ -67,9 +68,12 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
          "DT" = {
            if (!requireNamespace("DT", quietly = TRUE)) 
              stop("Please install package \"DT\" or choose another table type", call. = FALSE)
-           if (is.null(order_col)) order_col <- ncol(performance)
+           if (is.character(order_col)) order_col <- which(colnames(performance) == order_col)
+           if (is.null(order_col) || length(order_col) == 0) order_col <- ncol(performance)
            order_dir <- match.arg(order_dir)
-           p <- DT::datatable(performance, options = list(dom = 't', pageLength = 15, scrollX = TRUE, order = list(order_col, order_dir)))
+           p <- DT::datatable(performance, 
+                              options = list(pageLength = 10, scrollX = TRUE, order = list(order_col, order_dir)),
+                              caption = "Leaderboard:")
            p <- DT::formatStyle(p, 0, target = "row", fontWeight = DT::styleEqual(c("uniform", "index"), c("bold", "bold")))
            if ("annual volatility" %in% colnames(performance))
              p <- DT::formatPercentage(p, "annual volatility", 1)
