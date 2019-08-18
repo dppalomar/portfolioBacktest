@@ -33,7 +33,7 @@ GMVP_portfolio_fun <- function(data) {
 }
 
 portfolio_list <- genRandomFuns(portfolio_fun = GMVP_portfolio_fun, 
-                                params_range = list(lookback = c(100, 120, 140, 160),
+                                params_grid = list(lookback = c(100, 120, 140, 160),
                                                     N_stocks = c(5, 10, 20, 30, 40)),
                                 name = "GMVP", 
                                 N_realizations = 10)

@@ -317,6 +317,33 @@ names(bt)
 ```
 
 
+## Parameter tuning in portfolio functions
+Portfolio functions usually contain some parameters that can be tuned. One can manually generate different versions of such portfolio functions with a variety of parameters. Fortunately, the function `genRandomFuns()` helps with this task by automatically generating different versions of the portfolios with randomly chosen paramaters:
+```{r}
+# first define the portfolio strategy GMVP with parameters "lookback" and "N_stocks"
+GMVP_portfolio_fun <- function(data) {
+  prices <- tail(dataset$adjusted, lookback)
+  prices <- prices[, 1:N_stocks]
+  X <- diff(log(prices))[-1]
+  Sigma <- cov(X)
+  # design GMVP
+  w <- solve(Sigma, rep(1, nrow(Sigma)))
+  return(w/sum(w))
+}
+
+# then automatically generate multiple versions with randomly chosen parameters
+portfolio_list <- genRandomFuns(portfolio_fun = GMVP_portfolio_fun, 
+                                params_grid = list(lookback = c(100, 120, 140, 160),
+                                                   N_stocks = c(5, 10, 20, 30, 40)),
+                                name = "GMVP", 
+                                N_realizations = 10)
+
+names(portfolio_list)
+
+portfolio_list[[1]]
+```
+
+
 ## Progress bar
 In order to monitor the backtest progress, one can choose to turn on a progress bar by setting the argument `show_progress_bar`:
 ```{r, eval = FALSE}
@@ -403,9 +430,9 @@ Now we can rank the different portfolios/students based on a weighted combinatio
 ```{r, fig.height=2, fig.width=9, out.width = "90%"}
 leaderboard <- backtestLeaderboard(bt_all_students, 
                                    weights = list("Sharpe ratio"  = 7, 
-                                                   "max drawdown"  = 1, 
-                                                   "annual return" = 1, 
-                                                   "ROT bps"       = 1))
+                                                  "max drawdown"  = 1, 
+                                                  "annual return" = 1, 
+                                                  "ROT (bps)"     = 1))
 
 # show leaderboard
 library(gridExtra)
