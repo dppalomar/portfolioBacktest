@@ -378,6 +378,9 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, price_name, mar
   else
     names(result) <- names(dataset_list)
   
+  # in case portfolio_fun had params as attribute (for parameter tuning), keep it
+  attr(result, "params") <- attr(portfolio_fun, "param")
+
   return(result)
 }
 
