@@ -79,8 +79,92 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_real
   return(list_random_funs)
 }
 
-
-plotPerformanceVsParam <- function(portfolio_funs, bt_summary, params_nominal, measure = "Sharpe ratio") {
+plotPerformanceVsParam <- function(bt_all_portfolios, params_subset = NULL, name_performance = "Sharpe ratio", summary_fun = median) {
+  # summarize performance chosen
+  res_summary <- backtestSummary(bt_all_portfolios, summary_fun = summary_fun)
+  score_all_funs <- summaryTable(res_summary, measures = name_performance, type = "simple")
+  
+  # get complete data.frame from the backtest
+  N_portfolios <- length(attr(bt_all_portfolios, "portfolio_index"))
+  if (N_portfolios == 0) stop("No portfolio found in backtest!")
+  params_portfolio_funs_list <- lapply(bt_all_portfolios[1:N_portfolios], attr, "params")
+  if (any(sapply(params_portfolio_funs_list, is.null))) stop("Backtest does not contain the attribute \"params\"!")
+  params_portfolio_funs <- do.call(rbind.data.frame, params_portfolio_funs_list)
+  portfolio_data <- cbind(params_portfolio_funs, score = score_all_funs[1:N_portfolios])
+  
+  # subset data.frame with subseting parameters
+  for (i in seq_along(params_subset))
+    portfolio_data <- portfolio_data[portfolio_data[[names(params_subset[i])]] %in% params_subset[[i]], ]
+  
+  # compute resulting params grid and indices of different types of parameters
+  params_grid <- params_portfolio_funs_list[[1]]
+  params_grid[] <- NA
+  for (i in 1:length(params_grid))
+    params_grid[[i]] <- sort(unique(sapply(params_portfolio_funs_list, function(x) x[[i]])))
+  if (!is.null(params_subset)) {
+    if (!all(names(params_subset) %in% names(params_grid)))
+      stop("Argument \"params_subset\" contains parameters not contained in the backtest.")
+    for (name in names(params_subset))
+      if (!all(params_subset[[name]] %in% params_grid[[name]]))
+        stop("Element ", name, " of argument \"params_subset\" is not contained in the backtest.")
+    params_grid <- modifyList(params_grid, params_subset)
+  }
+  cat("Parameter grid:\n"); print(params_grid)
+  N_grid <- sapply(params_grid, length)
+  idx_fixed <- which(N_grid == 1)
+  idx_numeric <- setdiff(which(lapply(params_grid, class) == "numeric"), idx_fixed)
+  idx_factor <- setdiff(which(lapply(params_grid, class) %in% c("character", "factor")), idx_fixed)
+  if (!setequal(union(union(idx_fixed, idx_numeric), idx_factor), 1:length(params_grid)))
+    stop("Error in the partitioning of the elements of params into fixed, numeric, and factor.")
+  cat(sprintf("Parameter types: %d fixed, %d variable numeric, and %d variable string/factor.", 
+              length(idx_fixed), length(idx_numeric), length(idx_factor)))
+  
+  # plot
+  title_name <- ifelse(length(idx_fixed) == 0, name_performance,
+                       paste(name_performance, "for configuration:", 
+                             paste(names(params_grid[idx_fixed]), params_grid[idx_fixed], sep = "=", collapse = ", ")))
+  switch(as.character(length(idx_numeric)),
+         "0" = stop("No numeric parameter to plot!"),
+         "1" = {
+           p <- ggplot(portfolio_data, aes_string(x = names(params_grid[idx_numeric]), y = "score")) +
+             geom_point() + geom_line() +
+             ggtitle(title_name)
+           if (length(idx_factor) >= 1)  # first factor to color
+             p <- p + aes_string(col = names(params_grid[idx_factor[1]]))
+           if (length(idx_factor) >= 2)  # second factor to shape
+             p <- p + aes_string(shape = names(params_grid)[idx_factor[2]])
+           if (length(idx_factor) == 3)  # third factor to facets
+             p <- p + facet_wrap(as.formula(paste("~", names(params_grid[idx_factor[3]]))), 
+                                 labeller = labeller(.cols = label_both))
+           if (length(idx_factor) == 4)  # third and fourth factor to facets
+             p <- p + facet_wrap(as.formula(paste(names(params_grid[idx_factor[3]]), "~", names(params_grid[idx_factor[4]]))), 
+                                 labeller = labeller(.cols = label_both))
+           if (length(idx_factor) > 4)
+             stop("Cannot deal with one numeric parameter and more than 4 string parameters.")
+         },
+         "2" = {
+           p <- ggplot(portfolio_data, 
+                       aes_string(x = names(params_grid[idx_numeric[1]]), y = names(params_grid[idx_numeric[2]]), fill = "score")) +
+             geom_tile() +  # geom_raster()
+             viridis::scale_fill_viridis(name = name_performance, na.value = "transparent") +
+             ggtitle(title_name)
+           if (length(idx_factor) == 1)  # first factor to facets
+             p <- p + facet_wrap(as.formula(paste("~", names(params_grid[idx_factor[1]]))), 
+                                 labeller = labeller(.cols = label_both))
+           if (length(idx_factor) == 2)  # first and second factors to facets
+             p <- p + facet_wrap(as.formula(paste(names(params_grid[idx_factor[1]]), "~", names(params_grid[idx_factor[2]]))), 
+                                 labeller = labeller(.cols = label_both))
+           if (length(idx_factor) > 2)
+             stop("Cannot deal with 2 numeric parameters and more than 2 string parameters.")
+         },
+         stop("Cannot deal with more than 2 numeric parameters."))
+  return(p)
+}
+  
+  
+  
+  
+plotPerformanceVsParam_old <- function(portfolio_funs, bt_summary, params_nominal = list(NULL), measure = "Sharpe ratio") {
   score_all_funs <- summaryTable(bt_summary, measures = measure, type = "simple")
   params_portfolio_funs <- lapply(portfolio_funs, attr, "params")
   params_grid <- attr(portfolio_funs, "params_grid")
