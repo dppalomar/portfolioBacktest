@@ -18,6 +18,8 @@ fun_factory <- function(mother_fun, ...) {
 #' 
 #' @description Portfolio functions usually contain some parameters that can be tuned. 
 #' This function creates multiple versions of a function with randomly chosen parameters.
+#' After backtesting those portfolios, the plotting function \code{\link{plotPerformanceVsParam}} 
+#' can be used to show the performance vs parameters.
 #' 
 #' @param portfolio_fun Portfolio function with parameters unspecified.
 #' @param params_grid Named list containing for each parameter the possible values it can take.
@@ -26,28 +28,30 @@ fun_factory <- function(mother_fun, ...) {
 #'                         
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
+#' @seealso \code{\link{plotPerformanceVsParam}}
+#' 
 #' @examples
-#' # define GMVP with parameters "lookback" and "N_stocks"
-#' GMVP_portfolio_fun <- function(data) {
-#'   prices <- tail(dataset$adjusted, lookback)
-#'   prices <- prices[, 1:N_stocks]
+#' # define GMVP with parameters "delay", "lookback", and "regularize"
+#' GMVP_portfolio_fun <- function(dataset) {
+#'   prices <- tail(lag(dataset$adjusted, delay), lookback)
 #'   X <- diff(log(prices))[-1]
 #'   Sigma <- cov(X)
+#'   if (regularize)
+#'     Sigma <- Sigma + 0.1 * sum(diag(Sigma)) * diag(ncol(Sigma))
 #'   # design GMVP
-#'   w <- solve(Sigma, rep(1, nrow(Sigma)))
+#'   w <- solve(Sigma, rep(1, ncol(Sigma)))
 #'   return(w/sum(w))
 #' }
 #' 
+#' # generate the functions with random parameters
 #' portfolio_list <- genRandomFuns(portfolio_fun = GMVP_portfolio_fun, 
 #'                                 params_grid = list(lookback = c(100, 120, 140, 160),
-#'                                                     N_stocks = c(5, 10, 20, 30, 40)),
+#'                                                    delay = c(0, 5, 10, 15, 20),
+#'                                                    regularize = c(FALSE, TRUE)),
 #'                                 name = "GMVP", 
-#'                                 N_realizations = 10)
+#'                                 N_realizations = 40)
 #' names(portfolio_list)
 #' portfolio_list[[1]]
-#' rlang::env_print(portfolio_list[[1]])
-#' rlang::fn_env(portfolio_list[[1]])$lookback
-#' rlang::fn_env(portfolio_list[[1]])$N_stocks
 #' 
 #' @export
 genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_realizations = NULL) {
@@ -80,6 +84,55 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_real
 }
 
 
+
+
+#' @title Plot performance of portfolio function vs choice of parameters 
+#' 
+#' @description Portfolio functions usually contain some parameters that can be tuned. 
+#' After generating multiple versions of a portfolio function with randomly chosen parameters
+#' with the function \code{\link{genRandomFuns}} and doing the backtesting, this function
+#' can be used to plot the performance vs choice of parameters.
+#' 
+#' @param bt_all_portfolios Backtest results as produced by the function \code{\link{portfolioBacktest}}.
+#' @param params_subset List of named parameters with a subset of the values to be considered. By 
+#'                      default all the possible values will be considered.
+#' @param name_performance String with the name of the performance measure to be used.
+#' @param summary_fun Summary function to be employed (e.g., median or mean). Defult is median.
+#'                         
+#' @author Daniel P. Palomar and Rui Zhou
+#' 
+#' @seealso \code{\link{genRandomFuns}}
+#' 
+#' @examples
+#' # define GMVP with parameters "delay", "lookback", and "regularize"
+#' GMVP_portfolio_fun <- function(dataset) {
+#'   prices <- tail(lag(dataset$adjusted, delay), lookback)
+#'   X <- diff(log(prices))[-1]
+#'   Sigma <- cov(X)
+#'   if (regularize)
+#'     Sigma <- Sigma + 0.1 * sum(diag(Sigma)) * diag(ncol(Sigma))
+#'   # design GMVP
+#'   w <- solve(Sigma, rep(1, ncol(Sigma)))
+#'   return(w/sum(w))
+#' }
+#' 
+#' # generate the functions with random parameters
+#' portfolio_list <- genRandomFuns(portfolio_fun = GMVP_portfolio_fun, 
+#'                                 params_grid = list(lookback = c(100, 120, 140, 160),
+#'                                                    delay = c(0, 5, 10, 15, 20),
+#'                                                    regularize = c(FALSE, TRUE)),
+#'                                 name = "GMVP", 
+#'                                 N_realizations = 40)
+#'                                 
+#' # backtest portfolios
+#' bt <- portfolioBacktest(portfolio_list, dataset10)
+#' 
+#' # plot
+#' plotPerformanceVsParam(bt)
+#' plotPerformanceVsParam(bt, params_subset = list(regularize = TRUE))
+#' plotPerformanceVsParam(bt, params_subset = list(delay = 5))
+#' plotPerformanceVsParam(bt, params_subset = list(delay = 5, regularize = TRUE))
+#' 
 #' @export
 plotPerformanceVsParam <- function(bt_all_portfolios, params_subset = NULL, name_performance = "Sharpe ratio", summary_fun = median) {
   # summarize performance chosen
@@ -94,6 +147,7 @@ plotPerformanceVsParam <- function(bt_all_portfolios, params_subset = NULL, name
   params_portfolio_funs <- do.call(rbind.data.frame, params_portfolio_funs_list)
   portfolio_data <- cbind(params_portfolio_funs, score = score_all_funs[1:N_portfolios])
   
+  browser()
   # subset data.frame with subseting parameters
   for (i in seq_along(params_subset))
     portfolio_data <- portfolio_data[portfolio_data[[names(params_subset[i])]] %in% params_subset[[i]], ]
@@ -115,10 +169,10 @@ plotPerformanceVsParam <- function(bt_all_portfolios, params_subset = NULL, name
   N_grid <- sapply(params_grid, length)
   idx_fixed <- which(N_grid == 1)
   idx_numeric <- setdiff(which(lapply(params_grid, class) == "numeric"), idx_fixed)
-  idx_factor <- setdiff(which(lapply(params_grid, class) %in% c("character", "factor")), idx_fixed)
+  idx_factor <- setdiff(which(lapply(params_grid, class) %in% c("character", "factor", "logical")), idx_fixed)
   if (!setequal(union(union(idx_fixed, idx_numeric), idx_factor), 1:length(params_grid)))
     stop("Error in the partitioning of the elements of params into fixed, numeric, and factor.")
-  cat(sprintf("Parameter types: %d fixed, %d variable numeric, and %d variable string/factor.", 
+  cat(sprintf("Parameter types: %d fixed, %d variable numeric, and %d variable non-numeric.", 
               length(idx_fixed), length(idx_numeric), length(idx_factor)))
   
   # plot

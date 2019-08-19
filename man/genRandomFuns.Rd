@@ -19,30 +19,35 @@ genRandomFuns(portfolio_fun, params_grid, name = "portfolio",
 \description{
 Portfolio functions usually contain some parameters that can be tuned. 
 This function creates multiple versions of a function with randomly chosen parameters.
+After backtesting those portfolios, the plotting function \code{\link{plotPerformanceVsParam}} 
+can be used to show the performance vs parameters.
 }
 \examples{
-# define GMVP with parameters "lookback" and "N_stocks"
-GMVP_portfolio_fun <- function(data) {
-  prices <- tail(dataset$adjusted, lookback)
-  prices <- prices[, 1:N_stocks]
+# define GMVP with parameters "delay", "lookback", and "regularize"
+GMVP_portfolio_fun <- function(dataset) {
+  prices <- tail(lag(dataset$adjusted, delay), lookback)
   X <- diff(log(prices))[-1]
   Sigma <- cov(X)
+  if (regularize)
+    Sigma <- Sigma + 0.1 * sum(diag(Sigma)) * diag(ncol(Sigma))
   # design GMVP
-  w <- solve(Sigma, rep(1, nrow(Sigma)))
+  w <- solve(Sigma, rep(1, ncol(Sigma)))
   return(w/sum(w))
 }
 
+# generate the functions with random parameters
 portfolio_list <- genRandomFuns(portfolio_fun = GMVP_portfolio_fun, 
                                 params_grid = list(lookback = c(100, 120, 140, 160),
-                                                    N_stocks = c(5, 10, 20, 30, 40)),
+                                                   delay = c(0, 5, 10, 15, 20),
+                                                   regularize = c(FALSE, TRUE)),
                                 name = "GMVP", 
-                                N_realizations = 10)
+                                N_realizations = 40)
 names(portfolio_list)
 portfolio_list[[1]]
-rlang::env_print(portfolio_list[[1]])
-rlang::fn_env(portfolio_list[[1]])$lookback
-rlang::fn_env(portfolio_list[[1]])$N_stocks
 
+}
+\seealso{
+\code{\link{plotPerformanceVsParam}}
 }
 \author{
 Daniel P. Palomar and Rui Zhou

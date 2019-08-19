@@ -336,10 +336,10 @@ quintile_portfolio_fun <- function(dataset) {
 # then automatically generate multiple versions with randomly chosen parameters
 portfolio_list <- genRandomFuns(portfolio_fun = quintile_portfolio_fun, 
                                 params_grid = list(lookback = c(100, 120, 140, 160),
-                                                   quintile = seq(0.1, 0.5, by = 0.1),
+                                                   quintile = 1:5 / 10,
                                                    average_type = c("mean", "median")),
                                 name = "Quintile", 
-                                N_realizations = 32)
+                                N_realizations = 40)
 
 names(portfolio_list[1:5])
 
