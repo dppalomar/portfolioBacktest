@@ -10,6 +10,11 @@
   
 * Transaction costs are now included in the backtest computation and function 
   portfolioBacktest() takes an extra argument (Issue: #7).
+  
+* Two new functions for easy parameter tuning and plotting: genRandomFuns() and 
+  plotPerformanceVsParams().
+  
+* Package ggplot2 is now imported and all the plots are based on it by default.
 
 
 ## Changes in portfolioBacktest version 0.1.1 (2019-07-06)

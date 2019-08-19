@@ -23,6 +23,8 @@ After backtesting those portfolios, the plotting function \code{\link{plotPerfor
 can be used to show the performance vs parameters.
 }
 \examples{
+library(portfolioBacktest)
+
 # define GMVP with parameters "delay", "lookback", and "regularize"
 GMVP_portfolio_fun <- function(dataset) {
   prices <- tail(lag(dataset$adjusted, delay), lookback)
@@ -44,6 +46,10 @@ portfolio_list <- genRandomFuns(portfolio_fun = GMVP_portfolio_fun,
                                 N_realizations = 40)
 names(portfolio_list)
 portfolio_list[[1]]
+rlang::env_print(portfolio_list[[1]])
+rlang::fn_env(portfolio_list[[1]])$lookback
+rlang::fn_env(portfolio_list[[1]])$delay
+rlang::fn_env(portfolio_list[[1]])$regularize
 
 }
 \seealso{

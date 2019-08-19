@@ -24,6 +24,8 @@ with the function \code{\link{genRandomFuns}} and doing the backtesting, this fu
 can be used to plot the performance vs choice of parameters.
 }
 \examples{
+library(portfolioBacktest)
+
 # define GMVP with parameters "delay", "lookback", and "regularize"
 GMVP_portfolio_fun <- function(dataset) {
   prices <- tail(lag(dataset$adjusted, delay), lookback)

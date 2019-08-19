@@ -31,6 +31,8 @@ fun_factory <- function(mother_fun, ...) {
 #' @seealso \code{\link{plotPerformanceVsParams}}
 #' 
 #' @examples
+#' library(portfolioBacktest)
+#' 
 #' # define GMVP with parameters "delay", "lookback", and "regularize"
 #' GMVP_portfolio_fun <- function(dataset) {
 #'   prices <- tail(lag(dataset$adjusted, delay), lookback)
@@ -52,6 +54,10 @@ fun_factory <- function(mother_fun, ...) {
 #'                                 N_realizations = 40)
 #' names(portfolio_list)
 #' portfolio_list[[1]]
+#' rlang::env_print(portfolio_list[[1]])
+#' rlang::fn_env(portfolio_list[[1]])$lookback
+#' rlang::fn_env(portfolio_list[[1]])$delay
+#' rlang::fn_env(portfolio_list[[1]])$regularize
 #' 
 #' @export
 genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_realizations = NULL) {
@@ -104,6 +110,8 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_real
 #' @seealso \code{\link{genRandomFuns}}
 #' 
 #' @examples
+#' library(portfolioBacktest)
+#' 
 #' # define GMVP with parameters "delay", "lookback", and "regularize"
 #' GMVP_portfolio_fun <- function(dataset) {
 #'   prices <- tail(lag(dataset$adjusted, delay), lookback)
