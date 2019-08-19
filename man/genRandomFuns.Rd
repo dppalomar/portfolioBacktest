@@ -19,7 +19,7 @@ genRandomFuns(portfolio_fun, params_grid, name = "portfolio",
 \description{
 Portfolio functions usually contain some parameters that can be tuned. 
 This function creates multiple versions of a function with randomly chosen parameters.
-After backtesting those portfolios, the plotting function \code{\link{plotPerformanceVsParam}} 
+After backtesting those portfolios, the plotting function \code{\link{plotPerformanceVsParams}} 
 can be used to show the performance vs parameters.
 }
 \examples{
@@ -29,7 +29,7 @@ GMVP_portfolio_fun <- function(dataset) {
   X <- diff(log(prices))[-1]
   Sigma <- cov(X)
   if (regularize)
-    Sigma <- Sigma + 0.1 * sum(diag(Sigma)) * diag(ncol(Sigma))
+    Sigma <- Sigma + 0.1 * sum(diag(Sigma))/ncol(Sigma) * diag(ncol(Sigma))
   # design GMVP
   w <- solve(Sigma, rep(1, ncol(Sigma)))
   return(w/sum(w))
@@ -47,7 +47,7 @@ portfolio_list[[1]]
 
 }
 \seealso{
-\code{\link{plotPerformanceVsParam}}
+\code{\link{plotPerformanceVsParams}}
 }
 \author{
 Daniel P. Palomar and Rui Zhou

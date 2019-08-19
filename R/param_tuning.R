@@ -18,7 +18,7 @@ fun_factory <- function(mother_fun, ...) {
 #' 
 #' @description Portfolio functions usually contain some parameters that can be tuned. 
 #' This function creates multiple versions of a function with randomly chosen parameters.
-#' After backtesting those portfolios, the plotting function \code{\link{plotPerformanceVsParam}} 
+#' After backtesting those portfolios, the plotting function \code{\link{plotPerformanceVsParams}} 
 #' can be used to show the performance vs parameters.
 #' 
 #' @param portfolio_fun Portfolio function with parameters unspecified.
@@ -28,7 +28,7 @@ fun_factory <- function(mother_fun, ...) {
 #'                         
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
-#' @seealso \code{\link{plotPerformanceVsParam}}
+#' @seealso \code{\link{plotPerformanceVsParams}}
 #' 
 #' @examples
 #' # define GMVP with parameters "delay", "lookback", and "regularize"
@@ -37,7 +37,7 @@ fun_factory <- function(mother_fun, ...) {
 #'   X <- diff(log(prices))[-1]
 #'   Sigma <- cov(X)
 #'   if (regularize)
-#'     Sigma <- Sigma + 0.1 * sum(diag(Sigma)) * diag(ncol(Sigma))
+#'     Sigma <- Sigma + 0.1 * sum(diag(Sigma))/ncol(Sigma) * diag(ncol(Sigma))
 #'   # design GMVP
 #'   w <- solve(Sigma, rep(1, ncol(Sigma)))
 #'   return(w/sum(w))
@@ -110,7 +110,7 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_real
 #'   X <- diff(log(prices))[-1]
 #'   Sigma <- cov(X)
 #'   if (regularize)
-#'     Sigma <- Sigma + 0.1 * sum(diag(Sigma)) * diag(ncol(Sigma))
+#'     Sigma <- Sigma + 0.1 * sum(diag(Sigma))/ncol(Sigma) * diag(ncol(Sigma))
 #'   # design GMVP
 #'   w <- solve(Sigma, rep(1, ncol(Sigma)))
 #'   return(w/sum(w))
@@ -128,13 +128,14 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_real
 #' bt <- portfolioBacktest(portfolio_list, dataset10)
 #' 
 #' # plot
-#' plotPerformanceVsParam(bt)
-#' plotPerformanceVsParam(bt, params_subset = list(regularize = TRUE))
-#' plotPerformanceVsParam(bt, params_subset = list(delay = 5))
-#' plotPerformanceVsParam(bt, params_subset = list(delay = 5, regularize = TRUE))
+#' plotPerformanceVsParams(bt)
+#' plotPerformanceVsParams(bt, params_subset = list(regularize = TRUE))
+#' plotPerformanceVsParams(bt, params_subset = list(delay = 5))
+#' plotPerformanceVsParams(bt, params_subset = list(delay = 5, regularize = TRUE))
 #' 
 #' @export
-plotPerformanceVsParam <- function(bt_all_portfolios, params_subset = NULL, name_performance = "Sharpe ratio", summary_fun = median) {
+plotPerformanceVsParams <- function(bt_all_portfolios, params_subset = NULL, 
+                                    name_performance = "Sharpe ratio", summary_fun = median) {
   # summarize performance chosen
   res_summary <- backtestSummary(bt_all_portfolios, summary_fun = summary_fun)
   score_all_funs <- summaryTable(res_summary, measures = name_performance, type = "simple")
@@ -147,7 +148,6 @@ plotPerformanceVsParam <- function(bt_all_portfolios, params_subset = NULL, name
   params_portfolio_funs <- do.call(rbind.data.frame, params_portfolio_funs_list)
   portfolio_data <- cbind(params_portfolio_funs, score = score_all_funs[1:N_portfolios])
   
-  browser()
   # subset data.frame with subseting parameters
   for (i in seq_along(params_subset))
     portfolio_data <- portfolio_data[portfolio_data[[names(params_subset[i])]] %in% params_subset[[i]], ]
@@ -220,7 +220,7 @@ plotPerformanceVsParam <- function(bt_all_portfolios, params_subset = NULL, name
   
   
   
-# plotPerformanceVsParam_old <- function(portfolio_funs, bt_summary, params_nominal = list(NULL), measure = "Sharpe ratio") {
+# plotPerformanceVsParams_old <- function(portfolio_funs, bt_summary, params_nominal = list(NULL), measure = "Sharpe ratio") {
 #   score_all_funs <- summaryTable(bt_summary, measures = measure, type = "simple")
 #   params_portfolio_funs <- lapply(portfolio_funs, attr, "params")
 #   params_grid <- attr(portfolio_funs, "params_grid")

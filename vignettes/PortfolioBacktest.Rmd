@@ -348,12 +348,12 @@ portfolio_list[[1]]
 
 Now we can proceed with the backtesting:
 ```{r, cache=TRUE}
-bt_all_port <- portfolioBacktest(portfolio_list, dataset10)
+bt <- portfolioBacktest(portfolio_list, dataset10)
 ```
 
 Finally we can observe the performance for all combinations of parameters backtested:
-```{r}
-plotPerformanceVsParam(bt_all_port)
+```{r,fig.width=7, fig.height=4}
+plotPerformanceVsParams(bt)
 ```
 In this case, we can conclude that the best combination is to use the median of the past 160 days and using the 0.3 top quintile.
 
