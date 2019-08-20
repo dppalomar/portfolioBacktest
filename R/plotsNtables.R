@@ -20,6 +20,8 @@
 #' @param order_dir Direction to be used to sort the rows (only used for table 
 #'                  \code{type = "DT"}). Valid options: \code{"asc", "desc"}. 
 #'                  Default is \code{"asc"}.
+#' @param page_length Page length for the table (only used for table \code{type = "DT"}). 
+#'                    Default is \code{10}.
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
@@ -53,7 +55,7 @@
 #' 
 #' @export
 summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "grid.table"), 
-                         order_col = NULL, order_dir = c("asc", "desc")) {
+                         order_col = NULL, order_dir = c("asc", "desc"), page_length = 10) {
   if (is.null(measures)) measures <- c("cpu time", rownames(bt_summary$performance_summary))  # by default use all
   # extract performance measures
   real_measures <- intersect(measures, rownames(bt_summary$performance_summary))
@@ -72,7 +74,7 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
            if (is.null(order_col) || length(order_col) == 0) order_col <- ncol(performance)
            order_dir <- match.arg(order_dir)
            p <- DT::datatable(performance, 
-                              options = list(pageLength = 10, scrollX = TRUE, order = list(order_col, order_dir)),
+                              options = list(pageLength = page_length, scrollX = TRUE, order = list(order_col, order_dir)),
                               caption = "Leaderboard:")
            p <- DT::formatStyle(p, 0, target = "row", fontWeight = DT::styleEqual(c("uniform", "index"), c("bold", "bold")))
            if ("annual volatility" %in% colnames(performance))

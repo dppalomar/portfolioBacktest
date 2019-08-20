@@ -5,7 +5,8 @@
 \title{Create table from backtest summary}
 \usage{
 summaryTable(bt_summary, measures = NULL, type = c("simple", "DT",
-  "grid.table"), order_col = NULL, order_dir = c("asc", "desc"))
+  "grid.table"), order_col = NULL, order_dir = c("asc", "desc"),
+  page_length = 10)
 }
 \arguments{
 \item{bt_summary}{Backtest summary as obtained from the function \code{backtestSummary}.}
@@ -25,6 +26,9 @@ last column will be used.}
 \item{order_dir}{Direction to be used to sort the rows (only used for table 
 \code{type = "DT"}). Valid options: \code{"asc", "desc"}. 
 Default is \code{"asc"}.}
+
+\item{page_length}{Page length for the table (only used for table \code{type = "DT"}). 
+Default is \code{10}.}
 }
 \description{
 After performing a backtest with \code{\link{portfolioBacktest}} 
