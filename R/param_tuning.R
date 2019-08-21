@@ -24,7 +24,7 @@ fun_factory <- function(mother_fun, ...) {
 #' @param portfolio_fun Portfolio function with parameters unspecified.
 #' @param params_grid Named list containing for each parameter the possible values it can take.
 #' @param name String with the name of the portfolio function.
-#' @param N_realizations Number of random realizations of the parameters.
+#' @param N_funs Number of functions to be generated.
 #'                         
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
@@ -39,7 +39,7 @@ fun_factory <- function(mother_fun, ...) {
 #'   X <- diff(log(prices))[-1]
 #'   Sigma <- cov(X)
 #'   if (regularize)
-#'     Sigma <- Sigma + 0.1 * sum(diag(Sigma))/ncol(Sigma) * diag(ncol(Sigma))
+#'     Sigma <- Sigma + 0.1 * mean(diag(Sigma)) * diag(ncol(Sigma))
 #'   # design GMVP
 #'   w <- solve(Sigma, rep(1, ncol(Sigma)))
 #'   return(w/sum(w))
@@ -51,7 +51,7 @@ fun_factory <- function(mother_fun, ...) {
 #'                                                    delay = c(0, 5, 10, 15, 20),
 #'                                                    regularize = c(FALSE, TRUE)),
 #'                                 name = "GMVP", 
-#'                                 N_realizations = 40)
+#'                                 N_funs = 40)
 #' names(portfolio_list)
 #' portfolio_list[[1]]
 #' rlang::env_print(portfolio_list[[1]])
@@ -60,20 +60,20 @@ fun_factory <- function(mother_fun, ...) {
 #' rlang::fn_env(portfolio_list[[1]])$regularize
 #' 
 #' @export
-genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_realizations = NULL) {
+genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_funs = NULL) {
   N_combinations <- prod(sapply(params_grid, length))
-  if (is.null(N_realizations)) 
-    stop("Number of random realizations N_realizations has to be specified")
-  if (N_realizations > N_combinations) {
-    warning("Too many realizations requested for only ", N_combinations, 
-            " possible combinations. Using instead N_realizations = ", N_combinations, ".")
-    N_realizations <- N_combinations
+  if (is.null(N_funs)) 
+    stop("Number of functions to be generated \"N_funs\" has to be specified")
+  if (N_funs > N_combinations) {
+    warning("\nToo many functions requested for only ", N_combinations, 
+            " possible combinations: using instead N_funs = ", N_combinations, ".")
+    N_funs <- N_combinations
   } else 
-    message("Generating ", N_realizations, " realizations out of a total of ", N_combinations, " possible combinations.")
+    message("Generating ", N_funs, " functions out of a total of ", N_combinations, " possible combinations.")
   
-  list_random_funs <- vector("list", N_realizations)
-  list_random_params <- vector("list", N_realizations)
-  for (i in 1:N_realizations) {
+  list_random_funs <- vector("list", N_funs)
+  list_random_params <- vector("list", N_funs)
+  for (i in 1:N_funs) {
     # generate random parameters
     while (any(sapply(list_random_params, identical, 
                       params_realiz <- lapply(params_grid, FUN = sample, 1, replace = TRUE)))) TRUE
@@ -118,7 +118,7 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_real
 #'   X <- diff(log(prices))[-1]
 #'   Sigma <- cov(X)
 #'   if (regularize)
-#'     Sigma <- Sigma + 0.1 * sum(diag(Sigma))/ncol(Sigma) * diag(ncol(Sigma))
+#'     Sigma <- Sigma + 0.1 * mean(diag(Sigma)) * diag(ncol(Sigma))
 #'   # design GMVP
 #'   w <- solve(Sigma, rep(1, ncol(Sigma)))
 #'   return(w/sum(w))
@@ -130,7 +130,7 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_real
 #'                                                    delay = c(0, 5, 10, 15, 20),
 #'                                                    regularize = c(FALSE, TRUE)),
 #'                                 name = "GMVP", 
-#'                                 N_realizations = 40)
+#'                                 N_funs = 40)
 #'                                 
 #' # backtest portfolios
 #' bt <- portfolioBacktest(portfolio_list, dataset10)
@@ -173,15 +173,16 @@ plotPerformanceVsParams <- function(bt_all_portfolios, params_subset = NULL,
         stop("Element ", name, " of argument \"params_subset\" is not contained in the backtest.")
     params_grid <- modifyList(params_grid, params_subset)
   }
-  cat("Parameter grid:\n"); print(params_grid)
+  message("Parameter grid:") #print(params_grid)
+  message(paste(paste("  ", paste(names(params_grid), params_grid, sep = " = ")), collapse = "\n"))
   N_grid <- sapply(params_grid, length)
   idx_fixed <- which(N_grid == 1)
   idx_numeric <- setdiff(which(lapply(params_grid, class) == "numeric"), idx_fixed)
   idx_factor <- setdiff(which(lapply(params_grid, class) %in% c("character", "factor", "logical")), idx_fixed)
   if (!setequal(union(union(idx_fixed, idx_numeric), idx_factor), 1:length(params_grid)))
     stop("Error in the partitioning of the elements of params into fixed, numeric, and factor.")
-  cat(sprintf("Parameter types: %d fixed, %d variable numeric, and %d variable non-numeric.", 
-              length(idx_fixed), length(idx_numeric), length(idx_factor)))
+  message(sprintf("\nParameter types: %d fixed, %d variable numeric, and %d variable non-numeric.", 
+                  length(idx_fixed), length(idx_numeric), length(idx_factor)))
   
   # plot
   title_name <- ifelse(length(idx_fixed) == 0, name_performance,

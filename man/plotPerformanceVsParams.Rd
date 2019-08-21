@@ -32,7 +32,7 @@ GMVP_portfolio_fun <- function(dataset) {
   X <- diff(log(prices))[-1]
   Sigma <- cov(X)
   if (regularize)
-    Sigma <- Sigma + 0.1 * sum(diag(Sigma))/ncol(Sigma) * diag(ncol(Sigma))
+    Sigma <- Sigma + 0.1 * mean(diag(Sigma)) * diag(ncol(Sigma))
   # design GMVP
   w <- solve(Sigma, rep(1, ncol(Sigma)))
   return(w/sum(w))
@@ -44,7 +44,7 @@ portfolio_list <- genRandomFuns(portfolio_fun = GMVP_portfolio_fun,
                                                    delay = c(0, 5, 10, 15, 20),
                                                    regularize = c(FALSE, TRUE)),
                                 name = "GMVP", 
-                                N_realizations = 40)
+                                N_funs = 40)
                                 
 # backtest portfolios
 bt <- portfolioBacktest(portfolio_list, dataset10)

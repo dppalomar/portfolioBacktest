@@ -339,7 +339,7 @@ portfolio_list <- genRandomFuns(portfolio_fun = quintile_portfolio_fun,
                                                    quintile = 1:5 / 10,
                                                    average_type = c("mean", "median")),
                                 name = "Quintile", 
-                                N_realizations = 40)
+                                N_funs = 40)
 
 names(portfolio_list[1:5])
 

@@ -5,7 +5,7 @@
 \title{Generate multiple versions of a function with randomly chosen parameters}
 \usage{
 genRandomFuns(portfolio_fun, params_grid, name = "portfolio",
-  N_realizations = NULL)
+  N_funs = NULL)
 }
 \arguments{
 \item{portfolio_fun}{Portfolio function with parameters unspecified.}
@@ -14,7 +14,7 @@ genRandomFuns(portfolio_fun, params_grid, name = "portfolio",
 
 \item{name}{String with the name of the portfolio function.}
 
-\item{N_realizations}{Number of random realizations of the parameters.}
+\item{N_funs}{Number of functions to be generated.}
 }
 \description{
 Portfolio functions usually contain some parameters that can be tuned. 
@@ -31,7 +31,7 @@ GMVP_portfolio_fun <- function(dataset) {
   X <- diff(log(prices))[-1]
   Sigma <- cov(X)
   if (regularize)
-    Sigma <- Sigma + 0.1 * sum(diag(Sigma))/ncol(Sigma) * diag(ncol(Sigma))
+    Sigma <- Sigma + 0.1 * mean(diag(Sigma)) * diag(ncol(Sigma))
   # design GMVP
   w <- solve(Sigma, rep(1, ncol(Sigma)))
   return(w/sum(w))
@@ -43,7 +43,7 @@ portfolio_list <- genRandomFuns(portfolio_fun = GMVP_portfolio_fun,
                                                    delay = c(0, 5, 10, 15, 20),
                                                    regularize = c(FALSE, TRUE)),
                                 name = "GMVP", 
-                                N_realizations = 40)
+                                N_funs = 40)
 names(portfolio_list)
 portfolio_list[[1]]
 rlang::env_print(portfolio_list[[1]])

@@ -216,6 +216,9 @@ stockDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datasets =
     if (!is.null(elems_1)) dataset[[i]][elems_1] <- lapply(X[elems_1], function(x) {x[t_mask, ]})
   }
   names(dataset) <- paste("dataset", 1:num_datasets)
+  message(sprintf("%d datasets resampled (with N = %d stocks and length T = %d) from the stock data between %s and %s.", 
+                  num_datasets, N_sample, T_sample, index(first(X$adjusted)), index(last(X$adjusted))))
+
   return(dataset)
 }
 
