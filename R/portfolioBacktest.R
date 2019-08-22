@@ -577,7 +577,7 @@ returnPortfolio <- function(R, weights,
               "next day" = lag.xts(w, 2),  # w[t] is executed one period later at price[t+1], so will multiply return[t+2]
               stop("Execution method unknown"))
   after_rebalance_indices <- which(!is.na(w[, 1]))
-  # loop    (NAV contains the NAV at the beginning of the day (i.e., end of previous day), like w,
+  # loop    (NAV contains the NAV at the beginning of the day before the open (i.e., end of previous day), like w,
   #          whereas ret contains the returns at the end of the day, so lag(ret) equals (NAV - lag(NAV))/lag(NAV))
   NAV <- ret <- xts(rep(NA, nrow(R)), order.by = index(R))
   colnames(ret) <- "portfolio return"
@@ -621,8 +621,8 @@ returnPortfolio <- function(R, weights,
   # sanity check: PnL <- diff(NAV); PnL_rel <- PnL/lag.xts(NAV); all.equal(na.omit(lag(ret)), na.omit(PnL_rel), check.attributes = FALSE)
 
   # compute ROT based on normalized dollars
-  sum_PnL_rel <- sum(rets[-1])  # because the initial huge turnover was removed
-  sum_turnover_rel <- sum(abs(delta_rel)) * length(after_rebalance_indices)/(length(after_rebalance_indices)-1)  # to compensate for the removed fist turnover
+  sum_turnover_rel <- sum(abs(delta_rel))  # turnover only for indices: after_rebalance_indices[-1] (only when rebalancing except the first)
+  sum_PnL_rel <- sum(ret[after_rebalance_indices[1]:(tail(after_rebalance_indices, 1)-1), ])  # returns only for indices: after_rebalance_indices[1] to after_rebalance_indices[end]-1
   ROT_bips <- 1e4*sum_PnL_rel/sum_turnover_rel
 
   return(list(rets = rets,
