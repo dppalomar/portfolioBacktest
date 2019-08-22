@@ -289,8 +289,6 @@ backtestBoxPlot(bt, measure = "Sharpe ratio")
 ## Transaction costs
 By default, transaction costs are not included in the backtesting, but the user can easily specify the cost to be used for a more realistic backtesting:
 ```{r}
-library(ggfortify)  # to nicely plot time series with ggplot2
-
 # backtest without transaction costs
 bt <- portfolioBacktest(my_portfolio, dataset10)
 
