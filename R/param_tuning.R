@@ -110,6 +110,7 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_funs
 #' @seealso \code{\link{genRandomFuns}}
 #' 
 #' @examples
+#' \donttest{
 #' library(portfolioBacktest)
 #' 
 #' # define GMVP with parameters "delay", "lookback", and "regularize"
@@ -140,7 +141,10 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_funs
 #' plotPerformanceVsParams(bt, params_subset = list(regularize = TRUE))
 #' plotPerformanceVsParams(bt, params_subset = list(delay = 5))
 #' plotPerformanceVsParams(bt, params_subset = list(delay = 5, regularize = TRUE))
+#' }
 #' 
+#' @importFrom stats as.formula
+#' @importFrom utils tail
 #' @export
 plotPerformanceVsParams <- function(bt_all_portfolios, params_subset = NULL, 
                                     name_performance = "Sharpe ratio", summary_fun = median) {
@@ -202,10 +206,10 @@ plotPerformanceVsParams <- function(bt_all_portfolios, params_subset = NULL,
              p <- p + facet_wrap(as.formula(paste("~", names(params_grid[idx_factor[3]]))), 
                                  labeller = labeller(.cols = label_both))
            if (length(idx_factor) == 4)  # third and fourth factor to facets
-             p <- p + facet_wrap(as.formula(paste(names(params_grid[idx_factor[3]]), "~", names(params_grid[idx_factor[4]]))), 
-                                 labeller = labeller(.cols = label_both))
+             p <- p + facet_grid(as.formula(paste(names(params_grid[idx_factor[3]]), "~", names(params_grid[idx_factor[4]]))), 
+                                 labeller = labeller(.cols = label_both, .rows = label_both))
            if (length(idx_factor) > 4)
-             stop("Cannot deal with one numeric parameter and more than 4 string parameters.")
+             stop("Cannot deal with one numeric parameter and more than 4 non-numeric parameters.")
          },
          "2" = {
            p <- ggplot(portfolio_data, 
@@ -217,15 +221,15 @@ plotPerformanceVsParams <- function(bt_all_portfolios, params_subset = NULL,
              p <- p + facet_wrap(as.formula(paste("~", names(params_grid[idx_factor[1]]))), 
                                  labeller = labeller(.cols = label_both))
            if (length(idx_factor) == 2)  # first and second factors to facets
-             p <- p + facet_wrap(as.formula(paste(names(params_grid[idx_factor[1]]), "~", names(params_grid[idx_factor[2]]))), 
-                                 labeller = labeller(.cols = label_both))
+             p <- p + facet_grid(as.formula(paste(names(params_grid[idx_factor[1]]), "~", names(params_grid[idx_factor[2]]))), 
+                                 labeller = labeller(.cols = label_both, .rows = label_both))
            if (length(idx_factor) > 2)
-             stop("Cannot deal with 2 numeric parameters and more than 2 string parameters.")
+             stop("Cannot deal with 2 numeric parameters and more than 2 non-numeric parameters.")
          },
          stop("Cannot deal with more than 2 numeric parameters."))
   return(p)
 }
-  
+ 
   
   
   

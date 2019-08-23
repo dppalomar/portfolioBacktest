@@ -24,6 +24,7 @@ with the function \code{\link{genRandomFuns}} and doing the backtesting, this fu
 can be used to plot the performance vs choice of parameters.
 }
 \examples{
+\donttest{
 library(portfolioBacktest)
 
 # define GMVP with parameters "delay", "lookback", and "regularize"
@@ -54,6 +55,7 @@ plotPerformanceVsParams(bt)
 plotPerformanceVsParams(bt, params_subset = list(regularize = TRUE))
 plotPerformanceVsParams(bt, params_subset = list(delay = 5))
 plotPerformanceVsParams(bt, params_subset = list(delay = 5, regularize = TRUE))
+}
 
 }
 \seealso{

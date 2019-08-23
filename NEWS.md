@@ -1,4 +1,4 @@
-## Changes in portfolioBacktest version 0.1.2 (2019-XX-XX)
+## Changes in portfolioBacktest version 0.2.0 (2019-08-23)
 
 * Now stockDataDownload() will store the downloaded data into a local file 
   and if called again with the same arguments will use it (Issue: #2).

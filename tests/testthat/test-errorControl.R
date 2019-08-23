@@ -107,14 +107,14 @@ test_that("Error control test for \"genRandomFuns\"", {
                              params_grid = list(lookback = c(100, 120, 140, 160),
                                                 delay = c(0, 5, 10, 15, 20),
                                                 regularize = c(FALSE, TRUE))),
-               "Number of random realizations N_realizations has to be specified")
+               "Number of functions to be generated \"N_funs\" has to be specified")
   
   expect_warning(tmp <- genRandomFuns(portfolio_fun = uniform_portfolio_fun,
                                       params_grid = list(lookback = c(100, 120, 140, 160),
                                                          delay = c(0, 5, 10, 15, 20),
                                                          regularize = c(FALSE, TRUE)),
-                                      N_realizations = 100),
-               "Too many realizations requested for only 40 possible combinations. Using instead N_realizations = 40.")
+                                      N_funs = 100),
+               "Too many functions requested for only 40 possible combinations: using instead N_funs = 40.")
   expect_equal(attr(tmp, "params_grid"), list(lookback = c(100, 120, 140, 160),
                                               delay = c(0, 5, 10, 15, 20),
                                               regularize = c(FALSE, TRUE)))
@@ -127,7 +127,7 @@ test_that("Error control test for \"plotPerformanceVsParams\"", {
                                   params_grid = list(lookback = c(100, 120, 140, 160),
                                                      delay = c(0, 5, 10, 15, 20),
                                                      regularize = c(FALSE, TRUE)),
-                                  N_realizations = 5)  
+                                  N_funs = 5)  
   bt <- portfolioBacktest(portfolio_list, dataset10[1:2])
   
   expect_error(p <- plotPerformanceVsParams(bt, params_subset = list(lookback3 = TRUE)),

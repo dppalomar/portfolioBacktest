@@ -1,10 +1,10 @@
 ---
 always_allow_html: yes
 output:
-  md_document:
-    variant: markdown_github
   html_document:
     keep_md: yes
+    variant: markdown_github
+  md_document:
     variant: markdown_github
 ---
 
@@ -129,6 +129,9 @@ knitr::include_graphics("man/figures/README-barplot.png")
 knitr::include_graphics("man/figures/README-boxplot.png")
 ```
 
+## Documentation
+For more detailed information, please check the
+[vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
 
 
 ## Links

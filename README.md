@@ -1,3 +1,12 @@
+---
+always_allow_html: yes
+output:
+  html_document:
+    keep_md: yes
+    variant: markdown_github
+  md_document:
+    variant: markdown_github
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -87,7 +96,7 @@ backtestSummary(bt)$performance
 #> annual volatility   0.1218623
 #> Sterling ratio      2.2138192
 #> Omega ratio         1.2950904
-#> ROT bps           696.9894933
+#> ROT (bps)         730.5353223
 ```
 
 For a more detailed explanation on how to use the package with all the features, check the [vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
@@ -111,6 +120,9 @@ This package backtests a list of portfolios over multiple datasets on a rolling-
 
 <img src="man/figures/README-boxplot.png" width="65%" style="display: block; margin: auto;" />
 
+## Documentation
+For more detailed information, please check the
+[vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
 
 
 ## Links
