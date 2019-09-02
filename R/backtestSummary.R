@@ -266,7 +266,7 @@ backtestSelector <- function(bt, portfolio_index = NULL, portfolio_name = NULL, 
   result <- list()
   mask_performance <- setdiff(measures, c('error', 'error_message', 'cpu_time', 'return', 'portfolio'))
   if (length(mask_performance) > 0)
-    result$performance <- t(sapply(bt[[portfolio_name]], function(x){x$performance[mask_performance]}))
+    result$performance <- do.call(rbind, lapply(bt[[portfolio_name]], function(x){x$performance[mask_performance]}))
   if ('error' %in% measures) 
     result$error <- sapply(bt[[portfolio_name]], function(x){x$error})
   if ('error_message' %in% measures) 
