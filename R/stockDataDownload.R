@@ -93,7 +93,7 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_s
   # show download information
   message("\nSuccesses: ", valid_count, "\t fails: ", n_stocks - valid_count, "\n")
   if (valid_count == 0) stop("Failed to download data from any stock.", call. = FALSE)
-  if (valid_count < n_stocks) message("Failed to download: ", stocks_fail, "\n")
+  if (valid_count < n_stocks) message("Failed to download: ", paste0(stocks_fail, collapse = ", "), "\n")
   
   stockdata <- list("open"     = multipleXTSMerge(open),
                     "high"     = multipleXTSMerge(high),
