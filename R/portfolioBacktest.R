@@ -104,7 +104,7 @@
 #' @importFrom zoo index
 #' @importFrom doSNOW registerDoSNOW
 #' @importFrom foreach foreach %dopar%
-#' @importFrom snow makeCluster stopCluster
+#' @importFrom snow makeCluster stopCluster clusterExport
 #' @export
 portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path = NULL, price_name = "adjusted",
                               paral_portfolios = 1, paral_datasets = 1,
@@ -183,9 +183,9 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       registerDoSNOW(cl)
       exports <- ls(envir = .GlobalEnv)
       exports <- exports[! exports %in% c("portfolio_fun", "dataset_list", "show_progress_bar")]
+      clusterExport(cl = cl, list = exports, envir = .GlobalEnv)
       portfolio_fun <- NULL  # ugly hack to deal with CRAN note
-      result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .export = exports, 
-                        .packages = .packages(), .options.snow = opts) %dopar% {
+      result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .packages = .packages(), .options.snow = opts) %dopar% {
         return(list(safeEvalPortf(portfolio_fun, dataset_list, price_name,
                                   paral_datasets, show_progress_bar,
                                   shortselling, leverage,
@@ -362,8 +362,9 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, price_name, mar
     registerDoSNOW(cl)
     exports <- ls(envir = .GlobalEnv)
     exports <- exports[! exports %in% c("portfolio_fun", "dat")]
+    clusterExport(cl = cl, list = exports, envir = .GlobalEnv)
     dat <- NULL  # ugly hack to deal with CRAN note
-    result <- foreach(dat = dataset_list, .combine = c, .packages = .packages(), .export = ls(envir = .GlobalEnv), .options.snow = opts) %dopar% {
+    result <- foreach(dat = dataset_list, .combine = c, .packages = .packages(), .options.snow = opts) %dopar% {
       return(list(singlePortfolioSingleXTSBacktest(portfolio_fun, dat, price_name, market,
                                                    shortselling, leverage,
                                                    T_rolling_window, optimize_every, rebalance_every, 
