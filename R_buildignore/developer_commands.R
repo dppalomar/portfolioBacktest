@@ -18,7 +18,7 @@ vignette(package = "portfolioBacktest")
 
 
 ##
-## Developer commands (http://r-pkgs.had.co.nz/)
+## Developer commands (https://r-pkgs.org/)
 ##
 devtools::load_all()  #or Ctrl-Shift-L
 devtools::install()
