@@ -462,7 +462,7 @@ auxiliary_function <- function(x) {
   # here whatever code
 }
 
-portfolio_fun <- function(prices) {
+portfolio_fun <- function(data) {
   X <- as.matrix(diff(log(data$adjusted))[-1])  # compute log returns
   mu <- colMeans(X)  # compute mean vector
   Sigma <- cov(X)  # compute the SCM
