@@ -35,7 +35,7 @@ devtools::test()
 #covr::package_coverage()  #coverage of tests
 
 
-# CRAN check and submission (http://r-pkgs.had.co.nz/release.html)
+# CRAN check and submission (https://r-pkgs.org/release.html)
 #  checklist: https://kalimu.github.io/post/checklist-for-r-package-submission-to-cran/
 devtools::check()  # run_dont_test = TRUE
 rcmdcheck::rcmdcheck()  # build_args = "--run-donttest"
