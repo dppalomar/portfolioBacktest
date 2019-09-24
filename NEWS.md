@@ -2,6 +2,10 @@
 
 * Bug fixed with global variables when using paral_portfolios > 1.
 
+* Typos fixed in vignette.
+
+* Data SP500_symbols updated.
+
 
 ## Changes in portfolioBacktest version 0.2.0 (2019-08-23)
 

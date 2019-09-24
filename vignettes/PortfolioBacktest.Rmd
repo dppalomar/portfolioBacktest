@@ -289,6 +289,8 @@ backtestBoxPlot(bt, measure = "Sharpe ratio")
 ## Transaction costs
 By default, transaction costs are not included in the backtesting, but the user can easily specify the cost to be used for a more realistic backtesting:
 ```{r}
+library(ggfortify)
+
 # backtest without transaction costs
 bt <- portfolioBacktest(my_portfolio, dataset10)
 
@@ -307,7 +309,7 @@ autoplot(wealth, facets = FALSE, main = "Wealth") +
 ```
 
 
-## Incoporating benchmarks
+## Incorporating benchmarks
 When performing the backtest of the designed portfolio functions, one may want to incorporate some benchmarks. The package currently suppports two benchmarks: `uniform portfolio` and `index` of the market. (Note that to incorporate the `index` benchmark each dataset needs to contain one `xts` object named `index`.) Once can easily choose the benchmarks by passing the corresponding value to argument `benchmark`:
 ```{r, cache=TRUE}
 bt <- portfolioBacktest(portfolios, dataset10, benchmark = c("uniform", "index"))

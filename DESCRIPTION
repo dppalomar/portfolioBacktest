@@ -46,6 +46,7 @@ Imports:
 Suggests:
     CVXR,
     DT,
+    ggfortify,
     gridExtra,
     knitr,
     prettydoc,
