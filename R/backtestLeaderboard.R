@@ -83,7 +83,7 @@ backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median,
   # sort the vaild scores
   weights_rescaled <- weights_comb / sum(weights_comb)
   mask_valid <- failure_ratio != 1
-  scores <- cbind(apply(t(t(performance_summary) * attr(portfolioPerformance(), "judge")), 2, rank_percentile),
+  scores <- cbind(apply(t(t(performance_summary[mask_valid, ]) * attr(portfolioPerformance(), "judge")), 2, rank_percentile),
                   rank_percentile(-cpu_time_summary[mask_valid]),
                   rank_percentile(-failure_ratio[mask_valid]))
   final_score <- scores %*% weights_rescaled
