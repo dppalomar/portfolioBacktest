@@ -2,7 +2,7 @@
 title: "Portfolio Backtesting"
 author: |
   | Daniel P. Palomar and Rui ZHOU
-  | Hong Kong University of Science and Technology (HKUST)
+  | The Hong Kong University of Science and Technology (HKUST)
 date: "`r Sys.Date()`"
 output:
   prettydoc::html_pretty:
@@ -66,7 +66,7 @@ summaryTable(res_sum, type = "DT", order_col = "Sharpe ratio", order_dir = "desc
 
 * Barplot:
 
-```{r, echo=FALSE, out.width="75%"}
+```{r, echo=FALSE, fig.width=7, fig.height=3, out.width="80%"}
 summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"))
 ```
 
@@ -74,12 +74,12 @@ summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"))
 
 * Boxplot:
 
-```{r, echo=FALSE, out.width="75%"}
+```{r, echo=FALSE, fig.width=7, fig.height=3, out.width="80%"}
 backtestBoxPlot(bt, measure = "Sharpe ratio")
 ```
 
-# Quick Start
 
+# Quick Start
 Do the backtest on your own portfolio following few steps:
 ```{r, echo=FALSE, message=FALSE}
 library(portfolioBacktest)
@@ -142,7 +142,7 @@ Note that each dataset contains an `xts` object called `"adjusted"` (adjusted pr
 
 ## Obtaining more data
 We emphasize that 10 datasets are not enough for properly backtesting portfolios. In this package, we provide the function `stockDataDownload()` to download online data resources in the required data format. Then, the function `stockDataResample()` can help resample the downloaded data into multiple datasets (each resample is obtained by randomly choosing a subset of the stock names and randomly choosing a time period over the available long period), which can be directly passed to `portfolioBacktest()`. We recommend using these two functions to generate multiple datasets for serious backtesting:
-```{r, eval = FALSE}
+```{r, eval=FALSE}
 data("SP500_symbols")  # load the SP500 symbols
 # download data from internet
 SP500 <- stockDataDownload(stock_symbols = SP500_symbols, 
@@ -157,7 +157,7 @@ Since the function `stockDataDownload()` may take a long time to download the da
 
 ## Expanding the datasets
 Additional data can be helpful in designing portfolios. One can add as many other `xts` objects in each dataset as desired. For example, if the Moving Average Convergence Divergence (MACD) information is needed by the portfolio functions, one can manually add it to the dataset as follows:
-```{r, eval = FALSE}
+```{r, eval=FALSE}
 for (i in 1:length(dataset10))
   dataset10[[i]]$MACD <- apply(dataset10[[i]]$adjusted, 2, 
                                function(x) { TTR::MACD(x)[ , "macd"] })
@@ -167,7 +167,7 @@ for (i in 1:length(dataset10))
 
 # Defining Portfolios
 The portfolios have to be defined in the form of function that takes as input a dataset (which will be automatically windowed during the backtesting following a rolling-window basis) containing a list of `xts` objects (following the format of the elements of the argument `dataset_list`) and returns the portfolio as a numerical vector of normalized weights of the same length as the number of stocks. We give the examples for the **quintile portfolio**, the **global minimum variance portfolio (GMVP)**, and the **Markowitz mean-variance portfolio** as follows (under practical constraints $\mathbf{w} \ge \mathbf{0}$ and $\mathbf{1}^{T} \mathbf{w} =1$):
-```{r, echo = TRUE, results = 'hide'}
+```{r, echo=TRUE, results="hide"}
 # define quintile portfolio
 quintile_portfolio_fun <- function(dataset) {
   X <- diff(log(dataset$adjusted))[-1]  # compute log returns
@@ -179,13 +179,13 @@ quintile_portfolio_fun <- function(dataset) {
   return(w)
 }
 
-# define GMVP (allowing shorting)
+# define GMVP (with heuristic not to allow shorting)
 GMVP_portfolio_fun <- function(dataset) {
   X <- diff(log(dataset$adjusted))[-1]  # compute log returns
   Sigma <- cov(X)  # compute SCM
   # design GMVP
   w <- solve(Sigma, rep(1, nrow(Sigma)))
-  w <- w/sum(abs(w))
+  w <- abs(w)/sum(abs(w))
   return(w)
 }
 
@@ -209,7 +209,7 @@ Markowitz_portfolio_fun <- function(dataset) {
 # Backtesting and Plotting
 ## Backtesting your portfolios
 With the datasets and portfolios ready, we can now do the backtest easily. For example, to obtain the three portfolios' performance over the datasets, we just need combine them in a list and run the backtest in one line:
-```{r, results = 'hide'}
+```{r, results="hide"}
 portfolios <- list("Quintile"  = quintile_portfolio_fun,
                    "GMVP"      = GMVP_portfolio_fun,
                    "Markowitz" = Markowitz_portfolio_fun)
@@ -224,7 +224,7 @@ names(bt)
 ```
 
 Each element of `bt` is also a list storing more information for each of the datasets:
-```{r, echo = FALSE}
+```{r, echo=FALSE}
 library(data.tree)
 tmp <- bt
 for (i in 1:length(tmp))
@@ -270,16 +270,42 @@ summaryTable(res_sum, type = "DT", order_col = "Sharpe ratio", order_dir = "desc
 
 <br>
 
-* Barplot:
-```{r}
+
+* Barplot (provides information from `summaryTable()` in a visual way):
+```{r, fig.width=7, fig.height=4}
 summaryBarPlot(bt_sum, measures = c("Sharpe ratio", "max drawdown"))
 ```
 
 <br>
 
-* BoxPlot:
-```{r}
+
+* BoxPlot (probably the best way to properly compare the performance of different portfolios with a single performance measure):
+```{r, fig.width=7, fig.height=4}
 backtestBoxPlot(bt, measure = "Sharpe ratio")
+```
+
+
+* Cumulative return or wealth plot of a single backtest:
+```{r, warning=FALSE, fig.width=7, fig.height=4}
+backtestChartCumReturns(bt, c("Quintile", "GMVP", "index"))
+```
+```{r, warning=FALSE, fig.width=7, fig.height=3}
+backtestChartDrawdown(bt, c("Quintile", "GMVP", "index"))
+```
+
+<br>
+
+
+* Portfolio allocation evolution of a particular portfolio over a particular backtest:
+```{r, fig.width=7, fig.height=3}
+# for better illustration, let's use only the first 5 stocks
+dataset10_5stocks <- lapply(dataset10, 
+                            function(x) {x$adjusted <- x$adjusted[, 1:5]; return(x)})
+# backtest
+bt <- portfolioBacktest(list("GMVP" = GMVP_portfolio_fun), dataset10_5stocks, 
+                        rebalance_every = 20)
+# chart
+backtestChartStackedBar(bt, "GMVP", legend = TRUE)
 ```
 
 
@@ -288,7 +314,7 @@ backtestBoxPlot(bt, measure = "Sharpe ratio")
 # Advanced Usage
 ## Transaction costs
 By default, transaction costs are not included in the backtesting, but the user can easily specify the cost to be used for a more realistic backtesting:
-```{r}
+```{r, message=FALSE}
 library(ggfortify)
 
 # backtest without transaction costs
@@ -352,7 +378,7 @@ bt <- portfolioBacktest(portfolio_list, dataset10)
 ```
 
 Finally we can observe the performance for all combinations of parameters backtested:
-```{r,fig.width=7, fig.height=4}
+```{r, fig.width=7, fig.height=4}
 plotPerformanceVsParams(bt)
 ```
 In this case, we can conclude that the best combination is to use the median of the past 160 days and using the 0.3 top quintile.
@@ -361,7 +387,7 @@ In this case, we can conclude that the best combination is to use the median of 
 
 ## Progress bar
 In order to monitor the backtest progress, one can choose to turn on a progress bar by setting the argument `show_progress_bar`:
-```{r, eval = FALSE}
+```{r, eval=FALSE}
 bt <- portfolioBacktest(portfolios, dataset10, show_progress_bar = TRUE)
 ```
 
