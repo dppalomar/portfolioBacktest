@@ -6,6 +6,8 @@
 
 * Data SP500_symbols updated.
 
+* Bug fix in backtestLeaderboard() when some portfolios have 100% failure rate.
+
 * Three new plotting function: backtestChartCumReturns(), backtestChartDrawdown(), backtestChartStackedBar().
 
 
