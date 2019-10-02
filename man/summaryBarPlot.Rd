@@ -57,7 +57,9 @@ summaryBarPlot(bt_summary_median, measures = c("max drawdown", "annual volatilit
 
 }
 \seealso{
-\code{\link{summaryTable}}
+\code{\link{summaryTable}}, \code{\link{backtestBoxPlot}},
+         \code{\link{backtestChartCumReturns}}, \code{\link{backtestChartDrawdown}},
+         \code{\link{backtestChartStackedBar}}
 }
 \author{
 Daniel P. Palomar and Rui Zhou

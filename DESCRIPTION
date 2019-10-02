@@ -39,6 +39,7 @@ Imports:
     PerformanceAnalytics,
     quantmod,
     R.utils,
+    rlang,
     snow,
     utils,
     xts,

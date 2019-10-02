@@ -93,6 +93,7 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
 
 
 
+
 #' @title Create barplot from backtest summary
 #' 
 #' @description After performing a backtest with \code{\link{portfolioBacktest}} 
@@ -111,7 +112,9 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
-#' @seealso \code{\link{summaryTable}}
+#' @seealso \code{\link{summaryTable}}, \code{\link{backtestBoxPlot}},
+#'          \code{\link{backtestChartCumReturns}}, \code{\link{backtestChartDrawdown}},
+#'          \code{\link{backtestChartStackedBar}}
 #' 
 #' @examples
 #' \donttest{
@@ -141,7 +144,8 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
 #' 
 #' @importFrom grDevices topo.colors
 #' @importFrom graphics barplot legend par
-#' @import ggplot2
+#' @importFrom ggplot2 ggplot aes aes_string geom_bar scale_x_discrete facet_wrap labs
+#' @importFrom rlang .data
 #' @export
 summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "simple"), ...) {
   # extract table
@@ -169,7 +173,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
          },
          "ggplot2" = {
            df <- as.data.frame.table(res_table)
-           ggplot(df, aes_string(x = "Var1", y = "Freq", fill = "Var1")) + 
+           ggplot(df, aes(x = .data$Var1, y = .data$Freq, fill = .data$Var1)) + 
              geom_bar(stat = "identity") +  #position = position_dodge()
              scale_x_discrete(breaks = NULL) +
              facet_wrap(~ Var2, scales = "free_y") +
@@ -177,6 +181,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
          },
          stop("Barplot type unknown."))
 }
+
 
 
 
@@ -201,6 +206,9 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
+#' @seealso \code{\link{summaryBarPlot}}, \code{\link{backtestChartCumReturns}}, 
+#'          \code{\link{backtestChartDrawdown}}, \code{\link{backtestChartStackedBar}}
+#'          
 #' @examples
 #' \donttest{
 #' library(portfolioBacktest)
@@ -228,7 +236,8 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' @importFrom grDevices topo.colors
 #' @importFrom graphics boxplot par
 #' @importFrom stats quantile
-#' @import ggplot2
+#' @importFrom ggplot2 ggplot aes aes_string geom_boxplot geom_point scale_x_discrete coord_flip labs
+#' @importFrom rlang .data
 #' @export
 backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "simple"), ...) {
   # extract correct performance measure
@@ -263,7 +272,7 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
            })
            plot_limits <- c(min(limits["limit_min", ]), max(limits["limit_max", ]))
            df <- as.data.frame.table(res_table)
-           ggplot(df, aes_string(x = "Var2", y = "Freq", fill = "Var2")) +
+           ggplot(df, aes(x = .data$Var2, y = .data$Freq, fill = .data$Var2)) +
              geom_boxplot(show.legend = FALSE) +  # (outlier.shape = NA)
              geom_point(size = 0.5, alpha = params$alpha, show.legend = FALSE) +  # geom_jitter(width = 0) +
              scale_x_discrete(limits = rev(levels(df$Var2))) +
@@ -271,5 +280,229 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
              labs(title = measure, x = NULL, y = NULL)
          },
          stop("Boxplot type unknown."))
+}
+
+
+
+
+#' @title Chart of the cumulative returns or wealth for a single backtest
+#' 
+#' @description Create chart of the cumulative returns or wealth for a single backtest
+#' obtained with the function \code{\link{portfolioBacktest}}.
+#' By default the chart is based on the package \code{ggplot2}, but the user can also 
+#' specify a plot based on \code{PerformanceAnalytics}.
+#' 
+#' @inheritParams backtestBoxPlot
+#' @param portfolios String with portfolio names to be charted. 
+#'                   Default charts all portfolios in the backtest.
+#' @param dataset_num Dataset index to be charted. Default is \code{dataset_num = 1}.
+#' 
+#' @param ... Additional parameters.
+#' 
+#' @author Daniel P. Palomar and Rui Zhou
+#' 
+#' @seealso \code{\link{summaryBarPlot}}, \code{\link{backtestBoxPlot}}, 
+#'          \code{\link{backtestChartDrawdown}}, \code{\link{backtestChartStackedBar}}
+#' 
+#' @examples
+#' \donttest{
+#' library(portfolioBacktest)
+#' data(dataset10)  # load dataset
+#' 
+#' # define your own portfolio function
+#' quintile_portfolio <- function(data) {
+#'   X <- diff(log(data$adjusted))[-1]  
+#'   N <- ncol(X)
+#'   ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
+#'   w <- rep(0, N)
+#'   w[ranking[1:round(N/5)]] <- 1/round(N/5)
+#'   return(w)
+#' }
+#' 
+#' # do backtest
+#' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
+#'                         benchmark = c("uniform", "index"))
+#' 
+#' # Now we can chart
+#' backtestChartCumReturns(bt)
+#' }
+#' 
+#' @importFrom grDevices topo.colors
+#' @importFrom graphics par
+#' @importFrom PerformanceAnalytics chart.CumReturns
+#' @importFrom ggplot2 ggplot fortify aes geom_line theme element_blank ggtitle xlab ylab
+#' @importFrom rlang .data
+#' @export
+backtestChartCumReturns <- function(bt, portfolios = names(bt), dataset_num = 1, type = c("ggplot2", "simple"), ...) {
+  # extract data
+  bt <- bt[portfolios]
+  wealth <- do.call(cbind, lapply(bt, function(x) x[[dataset_num]]$wealth))
+  return <- do.call(cbind, lapply(bt, function(x) x[[dataset_num]]$return))
+  colnames(return) <- colnames(wealth) <- names(bt)
+  
+  # plot
+  params <- list(...)
+  switch(match.arg(type),
+         "simple" = {
+           if (is.null(params$col)) params$col <- topo.colors(length(bt))
+           chart.CumReturns(return, main = "Cumulative Return", wealth.index = TRUE, legend.loc = "topleft", colorset = params$col)
+         },
+         "ggplot2" = {
+           ggplot(fortify(wealth, melt = TRUE), aes(x = .data$Index, y = .data$Value, col = .data$Series)) +
+             geom_line() +
+             theme(legend.title = element_blank()) +
+             #scale_x_date(date_breaks = "1 month", date_labels = "%b %Y", date_minor_breaks = "1 week")
+             ggtitle("Cumulative Return") + xlab(element_blank()) + ylab(element_blank())
+         },
+         stop("Unknown plot type."))
+}
+
+
+
+
+#' @title Chart of the drawdown for a single backtest
+#' 
+#' @description Create chart of the drawdown for a single backtest
+#' obtained with the function \code{\link{portfolioBacktest}}.
+#' By default the chart is based on the package \code{ggplot2}, but the user can also 
+#' specify a plot based on \code{PerformanceAnalytics}.
+#' 
+#' @inheritParams backtestChartCumReturns
+#' 
+#' @author Daniel P. Palomar and Rui Zhou
+#' 
+#' @seealso \code{\link{summaryBarPlot}}, \code{\link{backtestBoxPlot}}, 
+#'          \code{\link{backtestChartCumReturns}}, \code{\link{backtestChartStackedBar}}
+#' 
+#' @examples
+#' \donttest{
+#' library(portfolioBacktest)
+#' data(dataset10)  # load dataset
+#' 
+#' # define your own portfolio function
+#' quintile_portfolio <- function(data) {
+#'   X <- diff(log(data$adjusted))[-1]  
+#'   N <- ncol(X)
+#'   ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
+#'   w <- rep(0, N)
+#'   w[ranking[1:round(N/5)]] <- 1/round(N/5)
+#'   return(w)
+#' }
+#' 
+#' # do backtest
+#' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
+#'                         benchmark = c("uniform", "index"))
+#' 
+#' # Now we can chart
+#' backtestChartDrawdown(bt)
+#' }
+#' 
+#' @importFrom grDevices topo.colors
+#' @importFrom graphics par
+#' @importFrom PerformanceAnalytics Drawdowns chart.Drawdown
+#' @importFrom ggplot2 ggplot fortify aes geom_line theme element_blank ggtitle xlab ylab
+#' @importFrom rlang .data
+#' @export
+backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, type = c("ggplot2", "simple"), ...) {
+  # extract data
+  bt <- bt[portfolios]
+  return <- do.call(cbind, lapply(bt, function(x) x[[dataset_num]]$return))
+  colnames(return) <- names(bt)
+  drawdown <- Drawdowns(return)
+  
+  # plot
+  params <- list(...)
+  switch(match.arg(type),
+         "simple" = {
+           if (is.null(params$col)) params$col <- topo.colors(length(bt))
+           chart.Drawdown(return, main = "Drawdown", legend.loc = "bottomleft", colorset = params$col)
+         },
+         "ggplot2" = {
+           ggplot(fortify(drawdown, melt = TRUE), aes(x = .data$Index, y = .data$Value, col = .data$Series)) +
+             geom_line() +
+             theme(legend.title = element_blank()) +
+             ggtitle("Drawdown") + xlab(element_blank()) + ylab(element_blank())
+         },
+         stop("Unknown plot type."))
+}
+
+
+
+
+#' @title Chart of the weight allocation over time for a portfolio over a single backtest
+#' 
+#' @description Create chart of the weight allocation over time for a portfolio over a single 
+#' backtest obtained with the function \code{\link{portfolioBacktest}}.
+#' By default the chart is based on the package \code{ggplot2}, but the user can also 
+#' specify a plot based on \code{PerformanceAnalytics}.
+#' 
+#' @inheritParams backtestChartCumReturns
+#' @param portfolio String with portfolio name to be charted. 
+#'                  Default charts the first portfolio in the backtest.
+#' @param legend Boolean to choose whether legend is plotted or not. Default is \code{legend = FALSE}.
+#' 
+#' @author Daniel P. Palomar and Rui Zhou
+#' 
+#' @seealso \code{\link{summaryBarPlot}}, \code{\link{backtestBoxPlot}}, 
+#'          \code{\link{backtestChartCumReturns}}, \code{\link{backtestChartDrawdown}}
+#' 
+#' @examples
+#' \donttest{
+#' library(portfolioBacktest)
+#' data(dataset10)  # load dataset
+#' 
+#' # for better illustration, let's use only the first 5 stocks
+#' dataset10_5stocks <- lapply(dataset10, function(x) {x$adjusted <- x$adjusted[, 1:5]; return(x)})
+#' 
+#' # define GMVP (with heuristic not to allow shorting)
+#' GMVP_portfolio_fun <- function(dataset) {
+#'   X <- diff(log(dataset$adjusted))[-1]  # compute log returns
+#'   Sigma <- cov(X)  # compute SCM
+#'   # design GMVP
+#'   w <- solve(Sigma, rep(1, nrow(Sigma)))
+#'   w <- abs(w)/sum(abs(w))
+#'   return(w)
+#' }
+#' 
+#' # backtest
+#' bt <- portfolioBacktest(list("GMVP" = GMVP_portfolio_fun), dataset10_5stocks, rebalance_every = 20)
+#' 
+#' # Now we can chart
+#' backtestChartStackedBar(bt, "GMVP", type = "simple")
+#' backtestChartStackedBar(bt, "GMVP", type = "simple", legend = TRUE)
+#' backtestChartStackedBar(bt, "GMVP")
+#' backtestChartStackedBar(bt, "GMVP", legend = TRUE)
+#' }
+#' 
+#' @importFrom PerformanceAnalytics chart.StackedBar
+#' @importFrom ggplot2 ggplot fortify aes geom_bar ggtitle xlab element_blank ylab labs theme
+#' @importFrom rlang .data
+#' 
+#' @export
+backtestChartStackedBar <- function(bt, portfolio = names(bt[1]), dataset_num = 1, type = c("ggplot2", "simple"), legend = FALSE) {
+  # extract data
+  w <- bt[[portfolio]][[dataset_num]]$w_designed
+  title <- sprintf("Weight allocation over time for portfolio %s", portfolio)
+  
+  # plot
+  #params <- list(...)
+  switch(match.arg(type),
+         "simple" = {
+           #if (is.null(params$col)) params$col <- topo.colors(nrow(w))
+           legend.loc <- if (legend) "under" else NULL
+           chart.StackedBar(w, main = title,
+                            ylab = "weights", space = 0, border = NA, legend.loc = legend.loc)
+         },
+         "ggplot2" = {
+           p <- ggplot(fortify(w, melt = TRUE), aes(x = .data$Index, y = .data$Value, fill = .data$Series)) +
+             geom_bar(stat = "identity") +
+             ggtitle(title) + xlab(element_blank()) + ylab("weight")
+           if (legend)
+             p <- p + labs(fill = "Assets") #theme(legend.title = element_blank())
+           else
+             p <- p + theme(legend.position = "none")
+           p
+         },
+         stop("Unknown plot type."))
 }
 

@@ -6,6 +6,8 @@
 
 * Data SP500_symbols updated.
 
+* Three new plotting function: backtestChartCumReturns(), backtestChartDrawdown(), backtestChartStackedBar().
+
 
 ## Changes in portfolioBacktest version 0.2.0 (2019-08-23)
 

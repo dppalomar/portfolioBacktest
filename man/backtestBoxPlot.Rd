@@ -54,6 +54,10 @@ backtestBoxPlot(bt, "Sharpe ratio", type = "simple")
 }
 
 }
+\seealso{
+\code{\link{summaryBarPlot}}, \code{\link{backtestChartCumReturns}}, 
+         \code{\link{backtestChartDrawdown}}, \code{\link{backtestChartStackedBar}}
+}
 \author{
 Daniel P. Palomar and Rui Zhou
 }
