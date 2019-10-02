@@ -443,7 +443,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
   # compute w
   error <- flag_timeout <- FALSE; error_message <- NA; error_capture <- NULL; cpu_time <- c(); 
   w <- xts(matrix(NA, length(rebalance_indices), N), order.by = index(prices)[rebalance_indices])
-  colnames(w) <- colnames(prices)
+  colnames(w) <- gsub(".Adjusted", "", colnames(prices))
   
   for (i in 1:length(rebalance_indices)) {
     
@@ -571,7 +571,7 @@ returnPortfolio <- function(R, weights,
   tc <- 0
 
   # fill in w with NA to match the dates of R and lag appropriately
-  w <- R; w[] <- NA
+  w <- R; w[] <- NA; colnames(w) <- colnames(weights)
   w[index(weights), ] <- weights
   w <- switch(match.arg(execution),  # w[t] used info up to (including) price[t]
               "same day" = lag.xts(w, 1),  # w[t] is (idealistically) executed at price[t], so will multiply return[t+1]
