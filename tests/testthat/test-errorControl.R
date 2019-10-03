@@ -39,11 +39,13 @@ test_that("Error control test for \"portfolioBacktest\"", {
   
   expect_error(portfolioBacktest(), "The \"folder_path\" and \"portfolio_fun_list\" cannot be both NULL.")
   
-  expect_error(portfolioBacktest(list("fun1" = 1, 2)), "Each element of \"portfolio_funs\" must has a unique name.")
+  expect_error(portfolioBacktest(list("fun1" = 1), my_dataset),  "Each element of \"dataset_list\" must be a list of xts objects. Try to surround your passed \"dataset_list\" with list().")
   
-  expect_error(portfolioBacktest(list("fun1" = 1, "fun1" = 2)), "\"portfolio_funs\" contains repeated names.")
+  expect_error(portfolioBacktest(list("fun1" = 1, 2), dataset10), "Each element of \"portfolio_funs\" must has a unique name.")
   
-  expect_error(portfolioBacktest(list("fun1" = 1), my_dataset),  "Fail to find price data with name \"adjusted\" in given dataset_list.")
+  expect_error(portfolioBacktest(list("fun1" = 1, "fun1" = 2), dataset10), "\"portfolio_funs\" contains repeated names.")
+  
+  expect_error(portfolioBacktest(list("fun1" = 1), list(my_dataset)),  "Fail to find price data with name \"adjusted\" in given dataset_list.")
   
   expect_error(portfolioBacktest(list("fun1" = 1), list(list("adjusted" = 1))),  "prices have to be xts.")
   
