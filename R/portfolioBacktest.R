@@ -563,7 +563,12 @@ returnPortfolio <- function(R, weights,
                             initial_cash = 1) {
   ######## error control  #########
   if (!is.xts(R) || !is.xts(weights)) stop("This function only accepts xts")
-  if (attr(index(R), "class") != "Date") stop("This function only accepts daily data")
+  if (indexClass(R) != "Date") {
+    if (periodicity(R)$scale == "daily")
+      R <- convertIndex(R, "Date")
+    else
+      stop("This function only accepts daily data")
+  }
   if (!all(index(weights) %in% index(R))) stop("Weight dates do not appear in the returns")
   if (ncol(R) != ncol(weights)) stop("Number of weights does not match the number of assets in the returns")
   if (anyNA(R[-1])) stop("Returns contain NAs")
