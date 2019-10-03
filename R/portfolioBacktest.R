@@ -355,7 +355,7 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, price_name, mar
                                                       execution, cost,
                                                       cpu_time_limit,
                                                       return_portfolio, return_returns)
-      if (show_progress_bar) opts$progress(i) # show progress bar
+      if (show_progress_bar) opts$progress(i)
     }
   } else {               ########### parallel mode
     cl <- makeCluster(paral_datasets)
@@ -414,7 +414,10 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
     res$performance <- portfolioPerformance(rets = idx_return)
     res$performance["ROT (bps)"] <- Inf
     res$cpu_time <- 0
-    if (return_returns) {res$return <- idx_return; res$wealth <- idx_prices_window[-1]/as.numeric(idx_prices_window[1])}
+    if (return_returns) {
+      res$return <- idx_return
+      res$wealth <- idx_prices_window/as.numeric(idx_prices_window[1])  # initial_cash = 1
+      }
     return(res)
   }
   

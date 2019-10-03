@@ -45,7 +45,7 @@ quintile_portfolio <- function(data) {
 bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
                         benchmark = c("uniform", "index"))
 
-# Now we can chart
+# now we can chart
 backtestChartDrawdown(bt)
 }
 

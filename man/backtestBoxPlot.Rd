@@ -48,7 +48,7 @@ quintile_portfolio <- function(data) {
 bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
                         benchmark = c("uniform", "index"))
 
-# Now we can plot
+# now we can plot
 backtestBoxPlot(bt, "Sharpe ratio")
 backtestBoxPlot(bt, "Sharpe ratio", type = "simple")
 }

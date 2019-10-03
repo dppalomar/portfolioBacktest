@@ -47,7 +47,7 @@ GMVP_portfolio_fun <- function(dataset) {
 # backtest
 bt <- portfolioBacktest(list("GMVP" = GMVP_portfolio_fun), dataset10_5stocks, rebalance_every = 20)
 
-# Now we can chart
+# now we can chart
 backtestChartStackedBar(bt, "GMVP", type = "simple")
 backtestChartStackedBar(bt, "GMVP", type = "simple", legend = TRUE)
 backtestChartStackedBar(bt, "GMVP")

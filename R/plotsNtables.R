@@ -228,7 +228,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
 #'                         benchmark = c("uniform", "index"))
 #' 
-#' # Now we can plot
+#' # now we can plot
 #' backtestBoxPlot(bt, "Sharpe ratio")
 #' backtestBoxPlot(bt, "Sharpe ratio", type = "simple")
 #' }
@@ -323,7 +323,7 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
 #' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
 #'                         benchmark = c("uniform", "index"))
 #' 
-#' # Now we can chart
+#' # now we can chart
 #' backtestChartCumReturns(bt)
 #' }
 #' 
@@ -339,7 +339,7 @@ backtestChartCumReturns <- function(bt, portfolios = names(bt), dataset_num = 1,
   wealth <- do.call(cbind, lapply(bt, function(x) x[[dataset_num]]$wealth))
   return <- do.call(cbind, lapply(bt, function(x) x[[dataset_num]]$return))
   colnames(return) <- colnames(wealth) <- names(bt)
-  
+
   # plot
   params <- list(...)
   switch(match.arg(type),
@@ -393,7 +393,7 @@ backtestChartCumReturns <- function(bt, portfolios = names(bt), dataset_num = 1,
 #' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
 #'                         benchmark = c("uniform", "index"))
 #' 
-#' # Now we can chart
+#' # now we can chart
 #' backtestChartDrawdown(bt)
 #' }
 #' 
@@ -467,7 +467,7 @@ backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, t
 #' # backtest
 #' bt <- portfolioBacktest(list("GMVP" = GMVP_portfolio_fun), dataset10_5stocks, rebalance_every = 20)
 #' 
-#' # Now we can chart
+#' # now we can chart
 #' backtestChartStackedBar(bt, "GMVP", type = "simple")
 #' backtestChartStackedBar(bt, "GMVP", type = "simple", legend = TRUE)
 #' backtestChartStackedBar(bt, "GMVP")

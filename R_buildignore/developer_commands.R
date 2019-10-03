@@ -33,6 +33,7 @@ devtools::document()  #to generate all documentation via roxygen
 # Code tests
 devtools::test()
 #covr::package_coverage()  #coverage of tests
+#lintr
 
 
 # CRAN check and submission (https://r-pkgs.org/release.html)
