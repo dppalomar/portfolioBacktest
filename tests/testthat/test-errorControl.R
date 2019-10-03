@@ -6,7 +6,6 @@ my_dataset <- dataset10[[1]]
 names(my_dataset) <- c("open", "index")
 
 
-
 test_that("Error control test for \"stockDataDownload\"", {
   
   sink(file = tempfile())
@@ -66,6 +65,22 @@ uniform_portfolio_fun <- function(dataset) {
   N <- ncol(dataset$adjusted)
   return(rep(1/N, N))
 }
+
+
+test_that("Error control for index type of xts data", {
+  dataset_tmp <- dataset10
+  indexClass(dataset_tmp[[1]]$adjusted)
+  dataset_tmp[[1]]$adjusted <- convertIndex(dataset_tmp[[1]]$adjusted, "POSIXct")
+  indexClass(dataset_tmp[[1]]$adjusted)
+  expect_silent(portfolioBacktest(uniform_portfolio_fun, dataset_tmp[1]))
+  
+  dataset_tmp[[2]]$adjusted <- to.monthly(dataset_tmp[[2]]$adjusted)
+  indexClass(dataset_tmp[[2]]$adjusted)
+  expect_error(portfolioBacktest(uniform_portfolio_fun, dataset_tmp[2], T_rolling_window = 10),
+               "This function only accepts daily data")
+})
+
+
 
 bt <- portfolioBacktest(uniform_portfolio_fun, dataset10, benchmark = c("uniform", "index"))
 

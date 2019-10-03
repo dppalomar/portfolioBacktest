@@ -434,6 +434,12 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
   if (optimize_every%%rebalance_every != 0) stop("The reoptimization period has to be a multiple of the rebalancing period.")
   if (anyNA(prices)) stop("prices contain NAs.")
   if (!is.function(portfolio_fun)) stop("portfolio_fun is not a function.")
+  if (! "Date" %in% indexClass(prices)) {
+    if (periodicity(prices)$scale == "daily")
+      prices <- convertIndex(prices, "Date")
+    else
+      stop("This function only accepts daily data")
+  }
   #################################
   
   # indices
@@ -580,7 +586,7 @@ returnPortfolio <- function(R, weights,
 
   # fill in w with NA to match the dates of R and lag appropriately
   w <- R; w[] <- NA; colnames(w) <- colnames(weights)
-  w[index(weights), ] <- weights
+  w[as.character(index(weights)), ] <- weights
   w <- switch(match.arg(execution),  # w[t] used info up to (including) price[t]
               "same day" = lag.xts(w, 1),  # w[t] is (idealistically) executed at price[t], so will multiply return[t+1]
               "next day" = lag.xts(w, 2),  # w[t] is executed one period later at price[t+1], so will multiply return[t+2]

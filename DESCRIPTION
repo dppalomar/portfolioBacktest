@@ -54,7 +54,6 @@ Suggests:
     readtext,
     rmarkdown,
     R.rsp,
-    rlang,
     stringi,
     testthat
 VignetteBuilder:

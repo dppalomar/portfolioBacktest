@@ -145,6 +145,8 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_funs
 #' 
 #' @importFrom stats as.formula
 #' @importFrom utils tail
+#' @importFrom ggplot2 ggplot aes aes_string geom_point geom_line ggtitle facet_wrap facet_grid labeller geom_tile scale_fill_viridis_c label_both
+#' @importFrom rlang .data
 #' @export
 plotPerformanceVsParams <- function(bt_all_portfolios, params_subset = NULL, 
                                     name_performance = "Sharpe ratio", summary_fun = median) {
