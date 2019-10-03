@@ -123,6 +123,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   if (!is.null(portfolio_funs) && !is.list(portfolio_funs)) portfolio_funs <- list(portfolio_funs)
   cost <- modifyList(list(buy = 0, sell = 0, short = 0, long_leverage = 0), cost)
   if (length(cost) != 4) stop("Problem in specifying the cost: the elements can only be buy, sell, short, and long_leverage.")
+  if (is.xts(dataset_list[[1]])) stop("Each element of \"dataset_list\" must be a list of xts objects. Try to surround your passed \"dataset_list\" with list().")
   ##############################
   
   # when portfolio_funs is passed
