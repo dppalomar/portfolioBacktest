@@ -1,5 +1,7 @@
 context("Checking package error control")
 
+#library(testthat)
+#library(portfolioBacktest)
 library(xts)
 data(dataset10)
 my_dataset <- dataset10[[1]]
@@ -71,13 +73,13 @@ uniform_portfolio_fun <- function(dataset) {
 
 test_that("Error control for index type of xts data", {
   dataset_tmp <- dataset10
-  indexClass(dataset_tmp[[1]]$adjusted)
+  #tclass(dataset_tmp[[1]]$adjusted)
   dataset_tmp[[1]]$adjusted <- convertIndex(dataset_tmp[[1]]$adjusted, "POSIXct")
-  indexClass(dataset_tmp[[1]]$adjusted)
-  expect_silent(portfolioBacktest(uniform_portfolio_fun, dataset_tmp[1]))
+  #tclass(dataset_tmp[[1]]$adjusted)
+  expect_silent(bt <- portfolioBacktest(uniform_portfolio_fun, dataset_tmp[1]))
   
   dataset_tmp[[2]]$adjusted <- to.monthly(dataset_tmp[[2]]$adjusted)
-  indexClass(dataset_tmp[[2]]$adjusted)
+  #tclass(dataset_tmp[[2]]$adjusted)
   expect_error(portfolioBacktest(uniform_portfolio_fun, dataset_tmp[2], T_rolling_window = 10),
                "This function only accepts daily data")
 })

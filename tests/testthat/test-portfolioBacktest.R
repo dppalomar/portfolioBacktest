@@ -1,6 +1,9 @@
 context("Checking portfolioBacktest and result handling functions")
 
-data("dataset10") 
+#library(testthat)
+#library(portfolioBacktest)
+library(xts)
+data(dataset10)
 
 # define uniform portfolio
 uniform_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
