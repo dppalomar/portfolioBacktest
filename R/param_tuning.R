@@ -145,7 +145,7 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_funs
 #' 
 #' @importFrom stats as.formula
 #' @importFrom utils tail
-#' @importFrom ggplot2 ggplot aes aes_string geom_point geom_line ggtitle facet_wrap facet_grid labeller geom_tile scale_fill_viridis_c label_both
+#' @importFrom ggplot2 ggplot aes geom_point geom_line ggtitle xlab ylab facet_wrap facet_grid labeller geom_tile scale_fill_viridis_c label_both guides guide_legend
 #' @importFrom rlang .data
 #' @export
 plotPerformanceVsParams <- function(bt_all_portfolios, params_subset = NULL, 
@@ -197,13 +197,19 @@ plotPerformanceVsParams <- function(bt_all_portfolios, params_subset = NULL,
   switch(as.character(length(idx_numeric)),
          "0" = stop("No numeric parameter to plot!"),
          "1" = {
-           p <- ggplot(portfolio_data, aes_string(x = names(params_grid[idx_numeric]), y = "score")) +
+           p <- ggplot(portfolio_data, 
+                       aes(x = .data[[names(params_grid[idx_numeric])]], y = .data$score)) +
+                       #aes_string(x = names(params_grid[idx_numeric]), y = "score")
              geom_point() + geom_line() +
-             ggtitle(title_name)
+             ggtitle(title_name) + xlab(names(params_grid[idx_numeric])) + ylab(name_performance)
            if (length(idx_factor) >= 1)  # first factor to color
-             p <- p + aes_string(col = names(params_grid[idx_factor[1]]))
+             #p <- p + aes_string(col = names(params_grid[idx_factor[1]]))
+             p <- p + aes(col = .data[[names(params_grid[idx_factor[1]])]]) +
+               guides(col = guide_legend(title = names(params_grid[idx_factor[1]])))
            if (length(idx_factor) >= 2)  # second factor to shape
-             p <- p + aes_string(shape = names(params_grid)[idx_factor[2]])
+             #p <- p + aes_string(shape = names(params_grid)[idx_factor[2]])
+             p <- p + aes(shape = .data[[names(params_grid)[idx_factor[2]]]]) +
+               guides(shape = guide_legend(title = names(params_grid)[idx_factor[2]]))
            if (length(idx_factor) == 3)  # third factor to facets
              p <- p + facet_wrap(as.formula(paste("~", names(params_grid[idx_factor[3]]))), 
                                  labeller = labeller(.cols = label_both))
@@ -215,10 +221,12 @@ plotPerformanceVsParams <- function(bt_all_portfolios, params_subset = NULL,
          },
          "2" = {
            p <- ggplot(portfolio_data, 
-                       aes_string(x = names(params_grid[idx_numeric[1]]), y = names(params_grid[idx_numeric[2]]), fill = "score")) +
+                       aes(x = .data[[names(params_grid[idx_numeric[1]])]], y = .data[[names(params_grid[idx_numeric[2]])]], fill = .data$score)) +
+                       #aes_string(x = names(params_grid[idx_numeric[1]]), y = names(params_grid[idx_numeric[2]]), fill = "score")
              geom_tile() +  # geom_raster()
              scale_fill_viridis_c(name = name_performance, na.value = "transparent") +
-             ggtitle(title_name)
+             ggtitle(title_name) + xlab(names(params_grid[idx_numeric[1]])) + ylab(names(params_grid[idx_numeric[2]]))
+           
            if (length(idx_factor) == 1)  # first factor to facets
              p <- p + facet_wrap(as.formula(paste("~", names(params_grid[idx_factor[1]]))), 
                                  labeller = labeller(.cols = label_both))
@@ -231,9 +239,10 @@ plotPerformanceVsParams <- function(bt_all_portfolios, params_subset = NULL,
          stop("Cannot deal with more than 2 numeric parameters."))
   return(p)
 }
- 
+#https://ggplot2.tidyverse.org/dev/articles/ggplot2-in-packages.html
   
   
+
   
 # plotPerformanceVsParams_old <- function(portfolio_funs, bt_summary, params_nominal = list(NULL), measure = "Sharpe ratio") {
 #   score_all_funs <- summaryTable(bt_summary, measures = measure, type = "simple")
