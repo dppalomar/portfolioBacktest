@@ -224,10 +224,10 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                                        execution, cost,
                                        cpu_time_limit,
                                        return_portfolio, return_returns)
-        NULL
-      }, warning = function(w) return(ifelse(!is.null(w$message), w$message, ""))
-       , error   = function(e) return(ifelse(!is.null(e$message), e$message, ""))
-      )     
+        NULL}, 
+        warning = function(w) return(ifelse(!is.null(w$message), w$message, "")),
+        error   = function(e) return(ifelse(!is.null(e$message), e$message, ""))
+        )
       packages_now <- search()  # detach the newly loaded packages
       packages_det <- packages_now[!(packages_now %in% packages_default)]
       detachPackages(packages_det)
@@ -435,20 +435,16 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
   if (optimize_every%%rebalance_every != 0) stop("The reoptimization period has to be a multiple of the rebalancing period.")
   if (anyNA(prices)) stop("prices contain NAs.")
   if (!is.function(portfolio_fun)) stop("portfolio_fun is not a function.")
-  if (! "Date" %in% indexClass(prices)) {
-    if (periodicity(prices)$scale == "daily")
-      prices <- convertIndex(prices, "Date")
-    else
-      stop("This function only accepts daily data")
-  }
+  if (periodicity(prices)$scale != "daily") stop("This function only accepts daily data.")
+  #if (tzone(prices) != Sys.timezone()) tzone(prices) <- Sys.timezone()
+  if (tzone(prices) != "UTC") tzone(prices) <- "UTC"
   #################################
   
   # indices
   #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= T_rolling_window)]
   optimize_indices <- seq(from = T_rolling_window, to = T, by = optimize_every)
   rebalance_indices <- seq(from = T_rolling_window, to = T, by = rebalance_every)
-  if (any(!(optimize_indices %in% rebalance_indices))) stop("The reoptimization indices have to be a subset of the rebalancing indices")
-  
+  if (any(!(optimize_indices %in% rebalance_indices))) stop("The reoptimization indices have to be a subset of the rebalancing indices.")
   
   # compute w
   error <- flag_timeout <- FALSE; error_message <- NA; error_capture <- NULL; cpu_time <- c(); 
@@ -569,16 +565,13 @@ returnPortfolio <- function(R, weights,
                             cost = list(buy = 0*10^(-4), sell = 0*10^(-4), short = 0*10^(-4), long_leverage = 0*10^(-4)),
                             initial_cash = 1) {
   ######## error control  #########
-  if (!is.xts(R) || !is.xts(weights)) stop("This function only accepts xts")
-  if (indexClass(R) != "Date") {
-    if (periodicity(R)$scale == "daily")
-      R <- convertIndex(R, "Date")
-    else
-      stop("This function only accepts daily data")
-  }
+  if (!is.xts(R) || !is.xts(weights)) stop("This function only accepts xts.")
+  if (periodicity(R)$scale != "daily")
+    stop("This function only accepts daily data.")
   if (!all(index(weights) %in% index(R))) stop("Weight dates do not appear in the returns")
   if (ncol(R) != ncol(weights)) stop("Number of weights does not match the number of assets in the returns")
   if (anyNA(R[-1])) stop("Returns contain NAs")
+  #if (tzone(R) != Sys.timezone()) stop("Timezone of data is not the same as local timezone.")
   #################################
   
   # transaction cost
