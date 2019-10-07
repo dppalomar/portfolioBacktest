@@ -21,13 +21,9 @@ vignette(package = "portfolioBacktest")
 ## Developer commands (https://r-pkgs.org/)
 ##
 devtools::load_all()  #or Ctrl-Shift-L
+devtools::document()  #to generate all documentation via roxygen
 devtools::install()
 library(portfolioBacktest)
-
-# Documentation
-devtools::document()  #to generate all documentation via roxygen
-?portfolioBacktest
-?dataset10
 
 
 # Code tests
