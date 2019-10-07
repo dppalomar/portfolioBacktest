@@ -1,4 +1,4 @@
-## Changes in portfolioBacktest version 0.2.0.9000
+## Changes in portfolioBacktest version 0.2.1 (2019-10-07)
 
 * Bug fixed with global variables when using paral_portfolios > 1.
 
