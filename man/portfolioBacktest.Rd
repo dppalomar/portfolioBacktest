@@ -107,6 +107,7 @@ are stored for debugging purposes). See
 for a detailed explanation.
 }
 \examples{
+\donttest{
 library(portfolioBacktest)
 data(dataset10)  # load dataset
 
@@ -125,6 +126,7 @@ backtestSelector(bt, portfolio_name = "Uniform", measures = c("Sharpe ratio", "m
 backtestTable(bt, measures = c("Sharpe ratio", "max drawdown"))
 bt_summary <- backtestSummary(bt)
 summaryTable(bt_summary)
+}
 
 }
 \seealso{

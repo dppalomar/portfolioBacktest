@@ -40,6 +40,7 @@ List with the following elements:
 Summarize the results from a portfolio backtest.
 }
 \examples{
+\donttest{
 library(portfolioBacktest)
 data(dataset10)  # load dataset
 
@@ -56,6 +57,7 @@ bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
 bt_sum <- backtestSummary(bt)
 names(bt_sum)
 bt_sum$performance_summary
+}
 
 }
 \author{

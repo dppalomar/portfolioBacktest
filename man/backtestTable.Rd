@@ -40,6 +40,7 @@ List with the following elements:
 Create table with the results from a portfolio backtest.
 }
 \examples{
+\donttest{
 library(portfolioBacktest)
 data(dataset10)  # load dataset
 
@@ -55,6 +56,7 @@ bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
 # show the backtest results in table
 bt_tab <- backtestTable(bt)
 bt_tab[c("Sharpe ratio", "max drawdown")]
+}
 
 }
 \author{
