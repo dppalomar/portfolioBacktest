@@ -28,6 +28,7 @@
 #' @author Rui Zhou and Daniel P. Palomar
 #' 
 #' @examples
+#' \donttest{
 #' library(portfolioBacktest)
 #' data(dataset10)  # load dataset
 #' 
@@ -44,6 +45,7 @@
 #' bt_sum <- backtestSummary(bt)
 #' names(bt_sum)
 #' bt_sum$performance_summary
+#' }
 #' 
 #' @export
 backtestSummary <- function(bt, portfolio_indexes = NA, portfolio_names = NA, 
@@ -117,7 +119,8 @@ backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fu
 #' 
 #' @author Rui Zhou and Daniel P. Palomar
 #' 
-#' @examples 
+#' @examples
+#' \donttest{
 #' library(portfolioBacktest)
 #' data(dataset10)  # load dataset
 #' 
@@ -133,6 +136,7 @@ backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fu
 #' # show the backtest results in table
 #' bt_tab <- backtestTable(bt)
 #' bt_tab[c("Sharpe ratio", "max drawdown")]
+#' }
 #' 
 #' @export  
 backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA, 
@@ -281,4 +285,17 @@ backtestSelector <- function(bt, portfolio_index = NULL, portfolio_name = NULL, 
   }
   
   return(result)
+}
+
+
+
+
+mergeBacktests <- function(bt1, bt2) {
+  #TODO{Rui} it assumes no benchmark in bt1, to be fixed. It both have, then compare to make sure they are the same as a sanity check  
+  bt_merged <- c(bt1, bt2)
+  #attr(bt_merged, "names")  # this one is already fine!
+  attr(bt_merged, "portfolio_index") <- c(1:length(bt1), attr(bt2, "portfolio_index") + length(bt1))
+  attr(bt_merged, "contain_benchmark") <- TRUE
+  attr(bt_merged, "benchmark_index") <- attr(bt2, "benchmark_index") + length(bt1)
+  return(bt_merged)  
 }
