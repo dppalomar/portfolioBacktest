@@ -482,7 +482,7 @@ backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, t
 backtestChartStackedBar <- function(bt, portfolio = names(bt[1]), dataset_num = 1, type = c("ggplot2", "simple"), legend = FALSE) {
   # extract data
   w <- bt[[portfolio]][[dataset_num]]$w_designed
-  title <- sprintf("Weight allocation over time for portfolio %s", portfolio)
+  title <- sprintf("Weight allocation over time for %s", portfolio)
   
   # plot
   #params <- list(...)
@@ -495,7 +495,7 @@ backtestChartStackedBar <- function(bt, portfolio = names(bt[1]), dataset_num = 
          },
          "ggplot2" = {
            p <- ggplot(fortify(w, melt = TRUE), aes(x = .data$Index, y = .data$Value, fill = .data$Series)) +
-             geom_bar(stat = "identity") +
+             geom_bar(stat = "identity", color = "black") +
              ggtitle(title) + xlab(element_blank()) + ylab("weight")
            if (legend)
              p <- p + labs(fill = "Assets") #theme(legend.title = element_blank())

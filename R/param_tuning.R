@@ -119,7 +119,7 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_funs
 #'   X <- diff(log(prices))[-1]
 #'   Sigma <- cov(X)
 #'   if (regularize)
-#'     Sigma <- Sigma + 0.1 * mean(diag(Sigma)) * diag(ncol(Sigma))
+#'     Sigma <- Sigma + 0.01*diag(ncol(Sigma))
 #'   # design GMVP
 #'   w <- solve(Sigma, rep(1, ncol(Sigma)))
 #'   return(w/sum(w))
@@ -240,6 +240,7 @@ plotPerformanceVsParams <- function(bt_all_portfolios, params_subset = NULL,
   return(p)
 }
 #https://ggplot2.tidyverse.org/dev/articles/ggplot2-in-packages.html
+#https://www.r-bloggers.com/tidy-evaluation-in-r-simple-examples-2/
   
   
 
