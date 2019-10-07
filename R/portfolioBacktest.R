@@ -81,6 +81,7 @@
 #'          \code{\link{backtestSummary}}, \code{\link{summaryTable}}, \code{\link{summaryBarPlot}}.
 #' 
 #' @examples
+#' \donttest{
 #' library(portfolioBacktest)
 #' data(dataset10)  # load dataset
 #' 
@@ -99,6 +100,7 @@
 #' backtestTable(bt, measures = c("Sharpe ratio", "max drawdown"))
 #' bt_summary <- backtestSummary(bt)
 #' summaryTable(bt_summary)
+#' }
 #' 
 #' @import xts
 #' @importFrom zoo index
