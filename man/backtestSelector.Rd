@@ -37,6 +37,7 @@ List with the following elements:
 Select the results from a portfolio backtest.
 }
 \examples{
+\donttest{
 library(portfolioBacktest)
 data("dataset10")  # load dataset
 
@@ -52,6 +53,7 @@ bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
 # extract your interested portfolio result
 bt_sel <- backtestSelector(bt, portfolio_name = "Uniform")
 names(bt_sel)
+}
 
 }
 \author{

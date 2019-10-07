@@ -238,7 +238,8 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
 #' 
 #' @author Rui Zhou and Daniel P. Palomar
 #' 
-#' @examples 
+#' @examples
+#' \donttest{
 #' library(portfolioBacktest)
 #' data("dataset10")  # load dataset
 #' 
@@ -254,6 +255,7 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
 #' # extract your interested portfolio result
 #' bt_sel <- backtestSelector(bt, portfolio_name = "Uniform")
 #' names(bt_sel)
+#' }
 #' 
 #' @export
 #' 
