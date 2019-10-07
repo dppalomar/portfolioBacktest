@@ -301,3 +301,17 @@ mergeBacktests <- function(bt1, bt2) {
   attr(bt_merged, "benchmark_index") <- attr(bt2, "benchmark_index") + length(bt1)
   return(bt_merged)  
 }
+
+
+selectBacktests <- function(bt, portfolio_names = names(bt)) {
+  bt_selected <- bt[c(portfolio_names)]
+  num_portfolios <- length(bt_selected)
+  if (attr(bt, "contain_benchmark"))
+    bt_selected <- c(bt_selected, bt[attr(bt, "benchmark_index")])
+  attr(bt_selected, "portfolio_index") <- c(1:num_portfolios)
+  attr(bt_selected, "contain_benchmark") <- attr(bt, "contain_benchmark")
+  attr(bt_selected, "benchmark_index") <- if (attr(bt, "contain_benchmark")) c(num_portfolios:(num_portfolios+length(attr(bt, "benchmark_index"))-1))
+  else integer(0)
+  return(bt_selected)
+}
+
