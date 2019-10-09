@@ -227,7 +227,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                                        cpu_time_limit,
                                        return_portfolio, return_returns)
         NULL}, 
-        warning = function(w) return(ifelse(!is.null(w$message), w$message, "")),
+        # warning = function(w) return(ifelse(!is.null(w$message), w$message, "")),
         error   = function(e) return(ifelse(!is.null(e$message), e$message, ""))
         )
       packages_now <- search()  # detach the newly loaded packages
