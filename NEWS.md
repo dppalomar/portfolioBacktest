@@ -10,6 +10,8 @@
 
 * Three new plotting function: backtestChartCumReturns(), backtestChartDrawdown(), backtestChartStackedBar().
 
+* Structural improvement for embedded benchmarks. Now it is easily to add more benchmarks.
+
 
 ## Changes in portfolioBacktest version 0.2.0 (2019-08-23)
 

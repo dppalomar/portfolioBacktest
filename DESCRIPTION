@@ -43,7 +43,8 @@ Imports:
     snow,
     utils,
     xts,
-    zoo
+    zoo,
+    stats
 Suggests:
     CVXR,
     DT,

@@ -37,6 +37,7 @@
 #' @param show_progress_bar Logical value indicating whether to show progress bar (default is \code{FALSE}). 
 #' @param benchmark String vector indicating the benchmark portfolios to be incorporated, currently supports:
 #' \itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks}
+#'          \item{\code{IVP} - the inverse-volatility portfolio, with weights be inversely proportional the standard deviation of returns.}
 #'          \item{\code{index} - the market index, requires an \code{xts} named `index` in the datasets.}}
 #' @param shortselling Logical value indicating whether shortselling is allowed or not 
 #'                     (default is \code{TRUE}, so no control for shorselling in the backtesting).
@@ -305,19 +306,12 @@ benchmarkBacktest <- function(dataset_list, benchmark, price_name,
                               execution, cost,
                               cpu_time_limit,
                               return_portfolio, return_returns) {
+  if (show_progress_bar & length(benchmark) > 0) 
+    message("\n\n\n Start evaluating benchmarks...")
+  
   res <- list()
-  if ("uniform" %in% benchmark) {
-    if (show_progress_bar) message("\n Evaluating benchmark uniform")
-    res$uniform <- singlePortfolioBacktest(uniform_portfolio_fun, dataset_list, price_name, market = FALSE,
-                                           paral_datasets, show_progress_bar,
-                                           shortselling, leverage,
-                                           T_rolling_window, optimize_every, rebalance_every, 
-                                           execution, cost,
-                                           cpu_time_limit,
-                                           return_portfolio, return_returns)
-  }
   if ("index" %in% benchmark) {
-    if (show_progress_bar) message("\n Evaluating benchmark index")
+    if (show_progress_bar) message("\n Backtesting index")
     res$index <- singlePortfolioBacktest(portfolio_fun = NULL, dataset_list, price_name, market = TRUE,
                                          paral_datasets, show_progress_bar,
                                          shortselling, leverage,
@@ -325,6 +319,18 @@ benchmarkBacktest <- function(dataset_list, benchmark, price_name,
                                          execution, cost,
                                          cpu_time_limit,
                                          return_portfolio, return_returns)
+  }
+  
+  benchmark <- benchmark[benchmark != "index"]
+  benchmark_portfolios <- benchmark_library[names(benchmark_library) %in% benchmark]
+  if (length(benchmark_portfolios) > 0) {
+    res <- c(res, portfolioBacktest(benchmark_portfolios, dataset_list, NULL, price_name,
+                                    1, paral_datasets, show_progress_bar, NULL,
+                                    shortselling, leverage,
+                                    T_rolling_window, optimize_every, rebalance_every,
+                                    execution, cost,
+                                    cpu_time_limit,
+                                    return_portfolio, return_returns))
   }
   return(res)
 }
