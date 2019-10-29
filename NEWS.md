@@ -10,7 +10,9 @@
 
 * Three new plotting function: backtestChartCumReturns(), backtestChartDrawdown(), backtestChartStackedBar().
 
-* Structural improvement for embedded benchmarks. Now it is easily to add more benchmarks.
+* Structural improvement for embedded benchmarks. Now it is easier to add more benchmarks.
+
+* Add the global minimum variance portfolio (GMVP) with "shrinkage" option as a benchmark.
 
 
 ## Changes in portfolioBacktest version 0.2.0 (2019-08-23)

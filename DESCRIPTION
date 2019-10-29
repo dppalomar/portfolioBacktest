@@ -44,7 +44,8 @@ Imports:
     utils,
     xts,
     zoo,
-    stats
+    stats,
+    quadprog
 Suggests:
     CVXR,
     DT,
