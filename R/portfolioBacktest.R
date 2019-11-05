@@ -536,9 +536,9 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
 #   ROT_bips
 #
 portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
-  performance <- rep(NA, 7)
+  performance <- rep(NA, 9)
   names(performance) <- c("Sharpe ratio", "max drawdown", "annual return", "annual volatility", 
-                          "Sterling ratio", "Omega ratio", "ROT (bps)")
+                          "Sterling ratio", "Omega ratio", "ROT (bps)", "VaR (0.95)", "CVaR (0.95)")
   # "judge" means how to judge the performance, 1: the bigger the better, -1: the smaller the better
   attr(performance, "judge") <- c(1, -1, 1, -1, 1, 1, 1)
   
@@ -553,6 +553,8 @@ portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
   performance["Sterling ratio"]    <- PerformanceAnalytics::Return.annualized(rets) / PerformanceAnalytics::maxDrawdown(rets)
   performance["Omega ratio"]       <- PerformanceAnalytics::Omega(rets)
   performance["ROT (bps)"]         <- ROT_bips
+  performance["VaR (0.95)"]        <- PerformanceAnalytics::VaR(rets, 0.95, method = "historical", invert = FALSE)
+  performance["CVaR (0.95)"]       <- PerformanceAnalytics::CVaR(rets, 0.95, method = "historical", invert = FALSE)
   
   return(performance)
 }
