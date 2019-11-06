@@ -187,6 +187,8 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       registerDoSNOW(cl)
       exports <- ls(envir = .GlobalEnv)
       exports <- exports[! exports %in% c("portfolio_fun", "dataset_list", "show_progress_bar")]
+      large_objs <- exports[sapply(exports, function(x) object.size(get(x, envir = .GlobalEnv))) > 10 * 1024^2]  # filter the big objects more than 10 Mb
+      exports <- exports[! exports %in% large_objs]
       clusterExport(cl = cl, list = exports, envir = .GlobalEnv)
       portfolio_fun <- NULL  # ugly hack to deal with CRAN note
       result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .packages = .packages(), .options.snow = opts) %dopar% {
@@ -371,6 +373,8 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, price_name, mar
     registerDoSNOW(cl)
     exports <- ls(envir = .GlobalEnv)
     exports <- exports[! exports %in% c("portfolio_fun", "dat")]
+    large_objs <- exports[sapply(exports, function(x) object.size(get(x, envir = .GlobalEnv))) > 10 * 1024^2]  # filter the big objects more than 10 Mb
+    exports <- exports[! exports %in% large_objs]
     clusterExport(cl = cl, list = exports, envir = .GlobalEnv)
     dat <- NULL  # ugly hack to deal with CRAN note
     result <- foreach(dat = dataset_list, .combine = c, .packages = .packages(), .options.snow = opts) %dopar% {
