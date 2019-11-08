@@ -544,7 +544,7 @@ portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
   names(performance) <- c("Sharpe ratio", "max drawdown", "annual return", "annual volatility", 
                           "Sterling ratio", "Omega ratio", "ROT (bps)", "VaR (0.95)", "CVaR (0.95)")
   # "judge" means how to judge the performance, 1: the bigger the better, -1: the smaller the better
-  attr(performance, "judge") <- c(1, -1, 1, -1, 1, 1, 1)
+  attr(performance, "judge") <- c(1, -1, 1, -1, 1, 1, 1, -1, -1)
   
   # return blank vector if no need computation
   if (anyNA(rets)) return(performance)
