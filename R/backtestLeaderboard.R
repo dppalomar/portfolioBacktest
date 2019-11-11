@@ -110,7 +110,7 @@ backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median,
   colnames(leaderboard_performance) <- names(weights_default)
   
   # return 
-  return(list("leaderboard_scores" = leaderboard[, mask_criteria],
+  return(list("leaderboard_scores" = leaderboard[, c(mask_criteria, TRUE)],
               "leaderboard_performance" = leaderboard_performance,
               "error_summary" = error_summary))
 }
