@@ -87,7 +87,7 @@ backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median,
                   rank_percentile(-cpu_time_summary[mask_valid]),
                   rank_percentile(-failure_ratio[mask_valid]))
   final_score <- scores %*% weights_rescaled
-  index_sorting <- sort(final_score, decreasing = TRUE, index = TRUE)$ix
+  index_sorting <- sort(final_score, decreasing = TRUE, index = TRUE, na.last = TRUE)$ix
   
   # combine the valid and invalid scores
   leaderboard_valid <- cbind(scores[index_sorting, ], final_score[index_sorting])
@@ -110,7 +110,7 @@ backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median,
   colnames(leaderboard_performance) <- names(weights_default)
   
   # return 
-  return(list("leaderboard_scores" = leaderboard[, mask_criteria],
+  return(list("leaderboard_scores" = leaderboard[, c(mask_criteria, TRUE)],
               "leaderboard_performance" = leaderboard_performance,
               "error_summary" = error_summary))
 }

@@ -5,3 +5,72 @@ uniform_portfolio_fun <- function(data) {
   N <- ncol(data$adjusted)
   return(rep(1/N, N))
 }
+
+# inverse-volatility portfolio function
+#' @importFrom stats cov
+IVP_portfolio_fun <- function(data) {
+  X <- diff(log(data$adjusted))[-1]
+  sigma <- sqrt(diag(cov(X)))
+  w <- 1/sigma
+  return(w/sum(w))
+}
+
+# Global Minimum Variance Portfolio
+#' @importFrom quadprog solve.QP
+GMVP <- function(data, shrinkage = FALSE) {
+  shortselling <- parent.frame(n = 2)$shortselling  # inherit shortselling from grandparent environment
+  if (is.null(shortselling)) shortselling <- FALSE
+  
+  leverage <- parent.frame(n = 2)$leverage  # inherit shortselling from grandparent environment
+  if (is.null(leverage)) leverage <- Inf
+  
+  X <- diff(log(data$adjusted))[-1]
+  Sigma <- if (shrinkage) cov_LedoitWolf(X) else cov(X)
+  
+  if (!shortselling) {
+    N <- ncol(Sigma)
+    Dmat <- 2 * Sigma
+    Amat <- cbind(rep(1, N), diag(N))
+    bvec <- c(1, rep(0, N))
+    dvec <- rep(0, N)
+    w <- solve.QP(Dmat = Dmat, dvec = dvec, Amat = Amat, bvec = bvec, meq = 1)$solution
+  } else {
+    ones <- rep(1, nrow(Sigma))
+    w <- solve(Sigma, ones)  #same as: inv(Sigma) %*% ones
+    w <- w/sum(w)  #w <- w/sum(abs(w))  # normalized to have ||w||_1=1
+  }
+  
+  if (leverage < Inf) w <- leverage * w / sum(abs(w))
+  return(w)
+}
+
+
+# benchmark library
+benchmark_library <- list(
+  "uniform" = uniform_portfolio_fun,
+  "IVP"     = IVP_portfolio_fun,
+  "GMVP"    = function(data) GMVP(data, FALSE),
+  "GMVP + shrinkage"    = function(data) GMVP(data, TRUE)
+)
+
+
+
+
+
+
+# methods for parameter estimation
+cov_LedoitWolf <- function(X) {
+  T <- nrow(X)
+  N <- ncol(X)
+  T_eff <- T  # T for biased SCM and T-1 for unbiased
+  
+  Xc <- X - matrix(colMeans(X), T, N, byrow = TRUE)  # center just in case (it does not destroy anything if it was already centered more sophisticately)
+  S <- crossprod(Xc)/T_eff  # SCM
+  Sigma_T <- mean(diag(S)) * diag(N)  # target
+  d2 <- sum((S - Sigma_T)^2)
+  b2_ <- (1/T^2) * sum(rowSums(Xc^2)^2) - (2*T_eff/T - 1)/T * sum(S^2)
+  b2 <- min(b2_, d2)  #a2 = d2 - b2
+  rho <- b2/d2
+  Sigma_clean <- (1-rho)*S + rho*Sigma_T  #rho=b2/d2, 1-rho=a2/d2
+  return(Sigma_clean)
+}

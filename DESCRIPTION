@@ -43,7 +43,9 @@ Imports:
     snow,
     utils,
     xts,
-    zoo
+    zoo,
+    stats,
+    quadprog
 Suggests:
     CVXR,
     DT,

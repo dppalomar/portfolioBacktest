@@ -41,6 +41,7 @@ computation (default is \code{"adjusted"}).}
 
 \item{benchmark}{String vector indicating the benchmark portfolios to be incorporated, currently supports:
 \itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks}
+         \item{\code{IVP} - the inverse-volatility portfolio, with weights be inversely proportional the standard deviation of returns.}
          \item{\code{index} - the market index, requires an \code{xts} named `index` in the datasets.}}}
 
 \item{shortselling}{Logical value indicating whether shortselling is allowed or not 
