@@ -1,12 +1,3 @@
----
-always_allow_html: yes
-output:
-  html_document:
-    keep_md: yes
-    variant: markdown_github
-  md_document:
-    variant: markdown_github
----
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
