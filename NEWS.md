@@ -14,6 +14,10 @@
 
 * Add the global minimum variance portfolio (GMVP) with "shrinkage" option as a benchmark.
 
+* Add two more performance criteria: VaR (alpha = 0.95) and CVaR (alpha = 0.95) of loss.
+
+* Filter global variables by size: now the variables with size > 10 MB will not be transparent to parallel threads.
+
 
 ## Changes in portfolioBacktest version 0.2.0 (2019-08-23)
 
