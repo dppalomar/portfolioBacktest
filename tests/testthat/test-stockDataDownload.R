@@ -6,5 +6,5 @@ test_that("the embedded SP500 symbols are the same", {
   sink()
   stockData <- as.numeric(lapply(stockData, mean))
   stockDataDownload_check <- quantmod::getSymbols("AAPL", from = "2018-01-01", to = "2018-01-30", auto.assign = FALSE)
-  expect_equal(as.numeric(lapply(stockData, mean)), as.numeric(colMeans(stockDataDownload_check)))
+  expect_equivalent(as.numeric(lapply(stockData, mean)), as.numeric(colMeans(stockDataDownload_check)))
 })

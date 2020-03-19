@@ -11,7 +11,7 @@ load("dataset_features_check.RData")
 test_that("the dataset used is the same", {
   dataset_check <- sapply(dataset10, function(x){sapply(x, function(x) {return(list(mean(x), mean(cov(x))))})})
   dataset_features <- unlist(dataset_check)
-  expect_equal(dataset_features, dataset_features_check)
+  expect_equivalent(dataset_features, dataset_features_check)
 })
 
 data("SP500_symbols")
@@ -21,5 +21,5 @@ data("SP500_symbols")
 load("SP500symbols_check.RData")
 
 test_that("the embedded SP500 symbols are the same", {
-  expect_equal(SP500_symbols, SP500symbols_check)
+  expect_equivalent(SP500_symbols, SP500symbols_check)
 })

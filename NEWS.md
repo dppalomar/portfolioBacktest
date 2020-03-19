@@ -18,6 +18,8 @@
 
 * Filter global variables by size: now the variables with size > 10 MB will not be transparent to parallel threads.
 
+* Revise test examples.
+
 
 ## Changes in portfolioBacktest version 0.2.0 (2019-08-23)
 
