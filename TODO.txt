@@ -1,0 +1,1 @@
+Check package memoise for local caching... Use cache_folder as argument.
