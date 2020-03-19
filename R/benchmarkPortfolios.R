@@ -64,7 +64,7 @@ cov_LedoitWolf <- function(X) {
   N <- ncol(X)
   T_eff <- T  # T for biased SCM and T-1 for unbiased
   
-  Xc <- X - matrix(colMeans(X), T, N, byrow = TRUE)  # center just in case (it does not destroy anything if it was already centered more sophisticately)
+  Xc <- X - matrix(colMeans(X), T, N, byrow = TRUE)
   S <- crossprod(Xc)/T_eff  # SCM
   Sigma_T <- mean(diag(S)) * diag(N)  # target
   d2 <- sum((S - Sigma_T)^2)
