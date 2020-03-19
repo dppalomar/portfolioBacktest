@@ -9,6 +9,7 @@
 ^R_buildignore$
 ^data-raw$
 ^resources$
+^TODO.txt$
 ^vignettes/PortfolioBacktest_cache$
 ^vignettes/PortfolioBacktest_files$
 ^vignettes/PortfolioBacktest\.Rmd$
