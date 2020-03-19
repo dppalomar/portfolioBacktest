@@ -127,7 +127,7 @@ test_that("backtest results and performance measures coincide with the precomput
   # bt_check <- bt$GMVP$`dataset 1`[-2]
   # save(bt_check, file = "bt_check.RData", version = 2)
   load("bt_check.RData")
-  expect_equal(bt$GMVP$`dataset 1`[-2], bt_check) 
+  expect_equivalent(bt$GMVP$`dataset 1`[-2], bt_check)
 
   # bt_selector_check <- backtestSelector(bt, portfolio_name = "Uniform")$performance
   # save(bt_selector_check, file = "bt_selector_check.RData", version = 2)
