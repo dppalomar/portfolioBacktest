@@ -627,7 +627,7 @@ returnPortfolio <- function(R, weights,
       w_eop <- (1 + R[t, ])*w_eop
     }
     NAV_relchange <- cash + sum(w_eop)       # NAV_relchange(t+1) = NAV(t+1)/NAV(t)
-    if (NAV_relchange <= 0) {  # if bankruptcy
+    if (NAV_relchange <= 0 && t < nrow(R)) {  # if bankruptcy
       NAV[(t+1):nrow(R)] <- as.numeric(NAV[t]*NAV_relchange)
       ret[(t+1):nrow(R)] <- 0
       break
