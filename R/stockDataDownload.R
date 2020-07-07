@@ -102,6 +102,20 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_s
                     "volume"   = multipleXTSMerge(volume),
                     "adjusted" = multipleXTSMerge(adjusted))
   
+  # fix names of stocks in each xts
+  if ("open" %in% names(stockdata))
+    colnames(stockdata$open) <- gsub(".Open", "", colnames(stockdata$open))
+  if ("high" %in% names(stockdata))
+    colnames(stockdata$high) <- gsub(".High", "", colnames(stockdata$high))
+  if ("low" %in% names(stockdata))
+    colnames(stockdata$low) <- gsub(".Low", "", colnames(stockdata$low))
+  if ("close" %in% names(stockdata))
+    colnames(stockdata$close) <- gsub(".Close", "", colnames(stockdata$close))
+  if ("volume" %in% names(stockdata))
+    colnames(stockdata$volume) <- gsub(".Volume", "", colnames(stockdata$volume))
+  if ("adjusted" %in% names(stockdata))
+    colnames(stockdata$adjusted) <- gsub(".Adjusted", "", colnames(stockdata$adjusted))  
+  
   # if required, remove stocks with non-leading missing data
   if (rm_stocks_with_na) {
     na_nonleading_mask <- apply(stockdata$adjusted, 2, function(x) {any(diff(is.na(x)) > 0)})
