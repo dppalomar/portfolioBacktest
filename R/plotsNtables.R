@@ -244,7 +244,7 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
   res_list_table <- backtestTable(bt)
   # idx <- grep(measure, names(res_list_table), ignore.case = TRUE)  # it does not work when "measure" contains brackets
   idx <- which(measure == names(res_list_table))
-  if (length(idx)!=1) stop(measure, "does not match a single performance measure")
+  if (length(idx)!=1) stop(measure, " does not match a single performance measure")
   res_table <- res_list_table[[idx]]
   
   # plot boxplot
