@@ -136,6 +136,9 @@ stockDataDownload <- function(stock_symbols, index_symbol = NULL, from, to, rm_s
     # check if the date of stock prices and market index match
     if (any(index(stockdata$adjusted) != index(stockdata$index)))
       stop("Date of stocks prices and market index do not match.", call. = FALSE)
+    
+    # fix name of index xts
+    colnames(stockdata$index) <- gsub(".Adjusted", "", colnames(stockdata$index))
   }
   
   # sanity check
