@@ -204,11 +204,11 @@ multipleXTSMerge <- function(xts_list) {
 #' @export
 stockDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datasets = 10, rm_stocks_with_na = TRUE) {
   # check data time zone
-  if ((!is.null(X$index)) && any(index(X$open) != index(X$index))) stop("The date indexes of \"X\" do not match.")
+  if ((!is.null(X$index)) && any(index(X$adjusted) != index(X$index))) stop("The date indexes of \"X\" do not match.")
   
   # if required, remove stocks with non-leading missing data
   if (rm_stocks_with_na) {
-    na_nonleading_mask <- apply(X$open, 2, function(x) {any(diff(is.na(x)) > 0)})
+    na_nonleading_mask <- apply(X$adjusted, 2, function(x) any(diff(is.na(x)) > 0))
     if (any(na_nonleading_mask)) stop("\"X\" does not satisfy monotone missing-data pattern.")
   }
   

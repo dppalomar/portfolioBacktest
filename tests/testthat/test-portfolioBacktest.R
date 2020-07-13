@@ -140,7 +140,7 @@ test_that("backtest results and performance measures coincide with the precomput
   expect_equivalent(backtestTable(bt)[1:8], bt_table_check) 
   
   # bt_summary_check <- backtestSummary(bt, summary_fun = median)[1:2]
-  # save(bt_summary_check, file = "bt_summary_check.RData")
+  # save(bt_summary_check, file = "bt_summary_check.RData", version = 2)
   load("bt_summary_check.RData")
   bt_summary <- backtestSummary(bt, summary_fun = median)[1:2]
   expect_equivalent(backtestSummary(bt, summary_fun = median)[1:2], bt_summary)  # compare except cpu time
