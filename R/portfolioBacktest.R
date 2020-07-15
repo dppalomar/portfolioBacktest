@@ -128,6 +128,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   cost <- modifyList(list(buy = 0, sell = 0, short = 0, long_leverage = 0), cost)
   if (length(cost) != 4) stop("Problem in specifying the cost: the elements can only be buy, sell, short, and long_leverage.")
   if (is.xts(dataset_list[[1]])) stop("Each element of \"dataset_list\" must be a list of xts objects. Try to surround your passed \"dataset_list\" with list().")
+  if (!(price_name %in% names(dataset_list[[1]]))) stop("Price data xts element \"", price_name, "\" does not exist in dataset_list.")
   ##############################
   
   # when portfolio_funs is passed
@@ -435,8 +436,8 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
     return(res)
   }
   
-  if (!price_name %in% names(data)) 
-    stop("Fail to find price data with name \"", price_name, "\"" , " in given dataset_list.")
+  # if (!price_name %in% names(data)) 
+  #   stop("Fail to find price data with name \"", price_name, "\"" , " in given dataset_list.")
   prices <- data[[price_name]]
   
   ######## error control  #########
@@ -500,7 +501,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
         {error <- TRUE; error_message <- c(error_message, "Leverage constraint not satisfied.")}
     }
     
-    # immediate return when error happens
+    # return immediately when error happens
     if (error) {
       res$error <- error
       res$error_message <- error_message[!is.na(error_message)]
@@ -637,7 +638,7 @@ returnPortfolio <- function(R, weights,
 
   # prepare time series to return
   rets <- ret[after_rebalance_indices[1]:nrow(ret), ]
-  wealth <- c(xts(1, index(w)[after_rebalance_indices[1] - 1]), cumprod(1 + rets))
+  wealth <- initial_cash*c(xts(1, index(w)[after_rebalance_indices[1] - 1]), cumprod(1 + rets))
   colnames(wealth) <- "portfolio wealth"
   # sanity check: all.equal(na.omit(lag(wealth)), na.omit(NAV), check.attributes = FALSE)
   # sanity check: PnL <- diff(NAV); PnL_rel <- PnL/lag.xts(NAV); all.equal(na.omit(lag(ret)), na.omit(PnL_rel), check.attributes = FALSE)
