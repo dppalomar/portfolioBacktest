@@ -50,7 +50,8 @@
 #' @export
 backtestSummary <- function(bt, portfolio_indexes = NA, portfolio_names = NA, 
                             summary_fun = median, show_benchmark = TRUE) {
-  if (anyNA(portfolio_names) && anyNA(portfolio_indexes)) portfolio_indexes <- attr(bt, 'portfolio_index')
+  if (anyNA(portfolio_names) && anyNA(portfolio_indexes)) 
+    portfolio_indexes <- setdiff(1:length(bt), attr(bt, 'benchmark_index'))
   if (!anyNA(portfolio_indexes)) portfolio_names <- names(bt)[portfolio_indexes]
   if (show_benchmark) portfolio_names <- c(portfolio_names, names(bt)[attr(bt, 'benchmark_index')])
   
@@ -142,7 +143,8 @@ backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fu
 backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA, 
                           show_benchmark = TRUE, measures = NULL) {
   # check portfolio index and names
-  if (anyNA(portfolio_names) && anyNA(portfolio_indexes)) portfolio_indexes <- attr(bt, 'portfolio_index')
+  if (anyNA(portfolio_names) && anyNA(portfolio_indexes)) 
+    portfolio_indexes <- setdiff(1:length(bt), attr(bt, 'benchmark_index'))
   if (!anyNA(portfolio_indexes)) portfolio_names <- names(bt)[portfolio_indexes]
   if (show_benchmark) portfolio_names <- c(portfolio_names, names(bt)[attr(bt, 'benchmark_index')])
   
