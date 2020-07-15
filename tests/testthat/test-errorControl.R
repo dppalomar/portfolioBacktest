@@ -5,7 +5,6 @@ context("Checking package error control")
 library(xts)
 data(dataset10)
 my_dataset <- dataset10[[1]]
-names(my_dataset) <- c("open", "index")
 
 
 test_that("Error control test for \"stockDataDownload\"", {
@@ -13,7 +12,6 @@ test_that("Error control test for \"stockDataDownload\"", {
   sink(file = tempfile())
   expect_error(stockDataDownload("NOT_SYMBOL"), 
                "Arguments from and to have to be passed.")
-
   expect_error(stockDataDownload("NOT_SYMBOL", from = "1970-01-01", to = "1970-01-31", local_file_path = NULL), 
                "Failed to download data from any stock.")
   sink()
@@ -26,9 +24,8 @@ test_that("Error control test for \"stockDataResample\"", {
   expect_error(stockDataResample(X_wrong_index), "The date indexes of \"X\" do not match.")
   
   X_non_mono <- my_dataset
-  X_non_mono$open[2, ] <- NA
+  X_non_mono$adjusted[2, ] <- NA
   expect_error(stockDataResample(X_non_mono), "\"X\" does not satisfy monotone missing-data pattern.")
-  
   expect_error(stockDataResample(my_dataset, T = 1e10,), "\"T_sample\" can not be greater than the date length of \"X\".")
   
 })
@@ -47,13 +44,20 @@ test_that("Error control test for \"portfolioBacktest\"", {
   
   expect_error(portfolioBacktest(list("fun1" = 1, "fun1" = 2), dataset10), "\"portfolio_funs\" contains repeated names.")
   
-  expect_error(portfolioBacktest(list("fun1" = 1), list(my_dataset)),  "Fail to find price data with name \"adjusted\" in given dataset_list.")
+  expect_error(portfolioBacktest(list("fun1" = 1), dataset10, price_name = "lala"),
+               "Price data xts element \"lala\" does not exist in dataset_list.")
   
+  names(my_dataset) <- c("open", "index")
+  expect_error(portfolioBacktest(list("fun1" = 1), list(my_dataset)), 
+               "Price data xts element \"adjusted\" does not exist in dataset_list.")
+
   expect_error(portfolioBacktest(list("fun1" = 1), list(list("adjusted" = 1))),  "prices have to be xts.")
   
   expect_error(portfolioBacktest(list("fun1" = 1), dataset10, T_rolling_window = 1e10),  "T is not large enough for the given sliding window length.")
   
-  expect_error(portfolioBacktest(list("fun1" = 1), dataset10, optimize_every = 3, rebalance_every = 2),  "The reoptimization period has to be a multiple of the rebalancing period.")
+  expect_error(portfolioBacktest(list("fun1" = 1), dataset10, optimize_every = 3, rebalance_every = 2),  
+               "The reoptimization period has to be a multiple of the rebalancing period.")
+  
   
   X_wNA <- dataset10
   X_wNA$`dataset 1`$adjusted[1, ] <- NA
