@@ -29,7 +29,8 @@ library(portfolioBacktest)
 # Code tests
 devtools::test()
 #covr::package_coverage()  #coverage of tests
-#lintr
+devtools::run_examples(run = TRUE)
+pkgload::run_example("man/backtestLeaderboard.Rd", run_donttest = TRUE)
 
 
 # CRAN check and submission (https://r-pkgs.org/release.html)

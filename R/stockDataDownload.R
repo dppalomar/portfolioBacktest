@@ -31,13 +31,13 @@
 #' @seealso \code{\link{stockDataResample}}
 #' 
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' library(portfolioBacktest)
 #' data(SP500_symbols)
 #' 
 #' # download data from internet
-#' SP500_data <- stockDataDownload(stock_symbols = SP500_symbols, 
-#'                                 from = "2008-12-01", to = "2009-12-01")
+#' SP500_data <- stockDataDownload(stock_symbols = SP500_symbols,
+#'                                 from = "2009-01-01", to = "2009-12-31")
 #' }
 #' 
 #' @import xts 
@@ -188,15 +188,17 @@ multipleXTSMerge <- function(xts_list) {
 #' @seealso \code{\link{stockDataDownload}}, \code{\link{portfolioBacktest}}
 #' 
 #' @examples 
-#' \donttest{
+#' \dontrun{
 #' library(portfolioBacktest)
 #' data(SP500_symbols)
 #' 
-#' # download data from internet
-#' SP500_data <- stockDataDownload(stock_symbols = SP500_symbols, 
-#'                                 from = "2008-12-01", to = "2011-12-01")
-#' # resample from downloaded, each with 50 stocks and 2-year continuous data
-#' my_dataset_list <- stockDataResample(SP500_data, N = 50, T = 2*252, num_datasets = 10)
+#' # download data from internet (remove last argument if a local copy of the data is desired)
+#' SP500_data <- stockDataDownload(stock_symbols = SP500_symbols[1:10], 
+#'                                 from = "2009-01-01", to = "2009-12-31",
+#'                                 local_file_path = NULL) 
+#'                                 
+#' # resample from downloaded, each with 5 stocks and one quarter continuous data
+#' my_dataset_list <- stockDataResample(SP500_data, N = 5, T = 252/4, num_datasets = 10)
 #' }
 #' 
 #' @import xts

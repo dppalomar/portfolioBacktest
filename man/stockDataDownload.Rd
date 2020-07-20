@@ -50,13 +50,13 @@ will be ignored and reported. Also, stocks with missing values can be
 optionally removed.
 }
 \examples{
-\donttest{
+\dontrun{
 library(portfolioBacktest)
 data(SP500_symbols)
 
 # download data from internet
-SP500_data <- stockDataDownload(stock_symbols = SP500_symbols, 
-                                from = "2008-12-01", to = "2009-12-01")
+SP500_data <- stockDataDownload(stock_symbols = SP500_symbols,
+                                from = "2009-01-01", to = "2009-12-31")
 }
 
 }
