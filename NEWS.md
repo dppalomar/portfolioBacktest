@@ -1,3 +1,9 @@
+## Changes in portfolioBacktest version 0.2.1.9000 (2020-xx-xx)
+
+* Fix some CRAN small issue with function examples.
+
+
+
 ## Changes in portfolioBacktest version 0.2.1 (2019-10-07)
 
 * Bug fixed with global variables when using paral_portfolios > 1.
@@ -18,7 +24,7 @@
 
 * Filter global variables by size: now the variables with size > 10 MB will not be transparent to parallel threads.
 
-* Revise test examples.
+* Revised test examples.
 
 
 ## Changes in portfolioBacktest version 0.2.0 (2019-08-23)

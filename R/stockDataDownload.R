@@ -192,13 +192,12 @@ multipleXTSMerge <- function(xts_list) {
 #' library(portfolioBacktest)
 #' data(SP500_symbols)
 #' 
-#' # download data from internet (remove last argument if a local copy of the data is desired)
-#' SP500_data <- stockDataDownload(stock_symbols = SP500_symbols[1:10], 
-#'                                 from = "2009-01-01", to = "2009-12-31",
-#'                                 local_file_path = NULL) 
+#' # download data from internet
+#' SP500_data <- stockDataDownload(stock_symbols = SP500_symbols, 
+#'                                 from = "2009-01-01", to = "2009-12-31") 
 #'                                 
-#' # resample from downloaded, each with 5 stocks and one quarter continuous data
-#' my_dataset_list <- stockDataResample(SP500_data, N = 5, T = 252/4, num_datasets = 10)
+#' # generate 20 resamples from data, each with 10 stocks and one quarter continuous data
+#' my_dataset_list <- stockDataResample(SP500_data, N = 10, T = 252/4, num_datasets = 20)
 #' }
 #' 
 #' @import xts

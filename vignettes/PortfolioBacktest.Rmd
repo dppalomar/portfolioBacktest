@@ -143,7 +143,7 @@ Note that each dataset contains an `xts` object called `"adjusted"` (adjusted pr
 ## Obtaining more data
 We emphasize that 10 datasets are not enough for properly backtesting portfolios. In this package, we provide the function `stockDataDownload()` to download online data resources in the required data format. Then, the function `stockDataResample()` can help resample the downloaded data into multiple datasets (each resample is obtained by randomly choosing a subset of the stock names and randomly choosing a time period over the available long period), which can be directly passed to `portfolioBacktest()`. We recommend using these two functions to generate multiple datasets for serious backtesting:
 ```{r, eval=FALSE}
-data("SP500_symbols")  # load the SP500 symbols
+data(SP500_symbols)  # load the SP500 symbols
 # download data from internet
 SP500 <- stockDataDownload(stock_symbols = SP500_symbols, 
                            from = "2008-12-01", to = "2018-12-01")
