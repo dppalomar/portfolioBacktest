@@ -3,7 +3,6 @@
 * Fix some CRAN small issue with function examples.
 
 
-
 ## Changes in portfolioBacktest version 0.2.1 (2019-10-07)
 
 * Bug fixed with global variables when using paral_portfolios > 1.
