@@ -4,14 +4,26 @@
 \alias{portfolioBacktest}
 \title{Backtest multiple portfolios over multiple datasets of stock prices in a rolling-window basis}
 \usage{
-portfolioBacktest(portfolio_funs = NULL, dataset_list,
-  folder_path = NULL, price_name = "adjusted", paral_portfolios = 1,
-  paral_datasets = 1, show_progress_bar = FALSE, benchmark = NULL,
-  shortselling = TRUE, leverage = Inf, T_rolling_window = 252,
-  optimize_every = 20, rebalance_every = 1, execution = c("same day",
-  "next day"), cost = list(buy = 0, sell = 0, short = 0, long_leverage =
-  0), cpu_time_limit = Inf, return_portfolio = TRUE,
-  return_returns = TRUE)
+portfolioBacktest(
+  portfolio_funs = NULL,
+  dataset_list,
+  folder_path = NULL,
+  price_name = "adjusted",
+  paral_portfolios = 1,
+  paral_datasets = 1,
+  show_progress_bar = FALSE,
+  benchmark = NULL,
+  shortselling = TRUE,
+  leverage = Inf,
+  T_rolling_window = 252,
+  optimize_every = 20,
+  rebalance_every = 1,
+  execution = c("same day", "next day"),
+  cost = list(buy = 0, sell = 0, short = 0, long_leverage = 0),
+  cpu_time_limit = Inf,
+  return_portfolio = TRUE,
+  return_returns = TRUE
+)
 }
 \arguments{
 \item{portfolio_funs}{List of functions (can also be a single function), each of them taking as input 

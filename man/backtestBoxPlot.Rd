@@ -4,8 +4,12 @@
 \alias{backtestBoxPlot}
 \title{Create boxplot from backtest results}
 \usage{
-backtestBoxPlot(bt, measure = "Sharpe ratio", type = c("ggplot2",
-  "simple"), ...)
+backtestBoxPlot(
+  bt,
+  measure = "Sharpe ratio",
+  type = c("ggplot2", "simple"),
+  ...
+)
 }
 \arguments{
 \item{bt}{Backtest results as produced by the function \code{\link{portfolioBacktest}}.}

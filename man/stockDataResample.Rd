@@ -4,8 +4,13 @@
 \alias{stockDataResample}
 \title{Generate random resamples from stock data}
 \usage{
-stockDataResample(X, N_sample = 50, T_sample = 2 * 252,
-  num_datasets = 10, rm_stocks_with_na = TRUE)
+stockDataResample(
+  X,
+  N_sample = 50,
+  T_sample = 2 * 252,
+  num_datasets = 10,
+  rm_stocks_with_na = TRUE
+)
 }
 \arguments{
 \item{X}{List of \code{xts} objects matching the structure returned by the function \code{\link{stockDataDownload}}.}

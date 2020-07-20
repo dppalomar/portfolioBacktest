@@ -4,8 +4,12 @@
 \alias{backtestSelector}
 \title{Selector of portfolio backtest results}
 \usage{
-backtestSelector(bt, portfolio_index = NULL, portfolio_name = NULL,
-  measures = NULL)
+backtestSelector(
+  bt,
+  portfolio_index = NULL,
+  portfolio_name = NULL,
+  measures = NULL
+)
 }
 \arguments{
 \item{bt}{Backtest results as produced by the function \code{\link{portfolioBacktest}}.}

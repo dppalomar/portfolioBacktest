@@ -4,8 +4,15 @@
 \alias{stockDataDownload}
 \title{Download stock data from the Internet}
 \usage{
-stockDataDownload(stock_symbols, index_symbol = NULL, from, to,
-  rm_stocks_with_na = TRUE, local_file_path = getwd(), ...)
+stockDataDownload(
+  stock_symbols,
+  index_symbol = NULL,
+  from,
+  to,
+  rm_stocks_with_na = TRUE,
+  local_file_path = getwd(),
+  ...
+)
 }
 \arguments{
 \item{stock_symbols}{String vector containing the symbols of the stocks to be downloaded.

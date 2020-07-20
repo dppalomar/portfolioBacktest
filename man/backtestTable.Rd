@@ -4,8 +4,13 @@
 \alias{backtestTable}
 \title{Table with portfolio backtest results}
 \usage{
-backtestTable(bt, portfolio_indexes = NA, portfolio_names = NA,
-  show_benchmark = TRUE, measures = NULL)
+backtestTable(
+  bt,
+  portfolio_indexes = NA,
+  portfolio_names = NA,
+  show_benchmark = TRUE,
+  measures = NULL
+)
 }
 \arguments{
 \item{bt}{Backtest results as produced by the function \code{\link{portfolioBacktest}}.}

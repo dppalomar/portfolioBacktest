@@ -4,8 +4,13 @@
 \alias{backtestChartStackedBar}
 \title{Chart of the weight allocation over time for a portfolio over a single backtest}
 \usage{
-backtestChartStackedBar(bt, portfolio = names(bt[1]), dataset_num = 1,
-  type = c("ggplot2", "simple"), legend = FALSE)
+backtestChartStackedBar(
+  bt,
+  portfolio = names(bt[1]),
+  dataset_num = 1,
+  type = c("ggplot2", "simple"),
+  legend = FALSE
+)
 }
 \arguments{
 \item{bt}{Backtest results as produced by the function \code{\link{portfolioBacktest}}.}

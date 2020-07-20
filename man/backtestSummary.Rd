@@ -4,8 +4,13 @@
 \alias{backtestSummary}
 \title{Summary of portfolio backtest}
 \usage{
-backtestSummary(bt, portfolio_indexes = NA, portfolio_names = NA,
-  summary_fun = median, show_benchmark = TRUE)
+backtestSummary(
+  bt,
+  portfolio_indexes = NA,
+  portfolio_names = NA,
+  summary_fun = median,
+  show_benchmark = TRUE
+)
 }
 \arguments{
 \item{bt}{Backtest results as produced by the function \code{\link{portfolioBacktest}}.}

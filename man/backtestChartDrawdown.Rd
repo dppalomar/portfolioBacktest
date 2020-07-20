@@ -4,8 +4,13 @@
 \alias{backtestChartDrawdown}
 \title{Chart of the drawdown for a single backtest}
 \usage{
-backtestChartDrawdown(bt, portfolios = names(bt), dataset_num = 1,
-  type = c("ggplot2", "simple"), ...)
+backtestChartDrawdown(
+  bt,
+  portfolios = names(bt),
+  dataset_num = 1,
+  type = c("ggplot2", "simple"),
+  ...
+)
 }
 \arguments{
 \item{bt}{Backtest results as produced by the function \code{\link{portfolioBacktest}}.}

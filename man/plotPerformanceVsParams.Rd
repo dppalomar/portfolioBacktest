@@ -4,8 +4,12 @@
 \alias{plotPerformanceVsParams}
 \title{Plot performance of portfolio function vs choice of parameters}
 \usage{
-plotPerformanceVsParams(bt_all_portfolios, params_subset = NULL,
-  name_performance = "Sharpe ratio", summary_fun = median)
+plotPerformanceVsParams(
+  bt_all_portfolios,
+  params_subset = NULL,
+  name_performance = "Sharpe ratio",
+  summary_fun = median
+)
 }
 \arguments{
 \item{bt_all_portfolios}{Backtest results as produced by the function \code{\link{portfolioBacktest}}.}

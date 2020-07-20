@@ -4,8 +4,10 @@
 \name{SP500_symbols}
 \alias{SP500_symbols}
 \title{Stock symbols of the S&P 500 constituents}
-\format{String vector of stock symbols of the S&P 500 constituents. 
-        The market index symbol is concluded as the attribute "index_symbol".}
+\format{
+String vector of stock symbols of the S&P 500 constituents. 
+        The market index symbol is concluded as the attribute "index_symbol".
+}
 \source{
 \href{https://finance.yahoo.com}{Yahoo! Finance}
 }

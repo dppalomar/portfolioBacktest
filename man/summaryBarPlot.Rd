@@ -4,8 +4,7 @@
 \alias{summaryBarPlot}
 \title{Create barplot from backtest summary}
 \usage{
-summaryBarPlot(bt_summary, measures = NULL, type = c("ggplot2",
-  "simple"), ...)
+summaryBarPlot(bt_summary, measures = NULL, type = c("ggplot2", "simple"), ...)
 }
 \arguments{
 \item{bt_summary}{Backtest summary as obtained from the function \code{backtestSummary}.}

@@ -4,8 +4,12 @@
 \alias{backtestLeaderboard}
 \title{Leaderboard of portfolios from the backtest results}
 \usage{
-backtestLeaderboard(bt = NA, weights = list(), summary_fun = median,
-  show_benchmark = TRUE)
+backtestLeaderboard(
+  bt = NA,
+  weights = list(),
+  summary_fun = median,
+  show_benchmark = TRUE
+)
 }
 \arguments{
 \item{bt}{Backtest results as produced by the function \code{\link{portfolioBacktest}}.}

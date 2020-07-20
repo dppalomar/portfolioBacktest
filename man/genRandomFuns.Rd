@@ -4,8 +4,7 @@
 \alias{genRandomFuns}
 \title{Generate multiple versions of a function with randomly chosen parameters}
 \usage{
-genRandomFuns(portfolio_fun, params_grid, name = "portfolio",
-  N_funs = NULL)
+genRandomFuns(portfolio_fun, params_grid, name = "portfolio", N_funs = NULL)
 }
 \arguments{
 \item{portfolio_fun}{Portfolio function with parameters unspecified.}

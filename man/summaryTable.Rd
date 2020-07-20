@@ -4,9 +4,14 @@
 \alias{summaryTable}
 \title{Create table from backtest summary}
 \usage{
-summaryTable(bt_summary, measures = NULL, type = c("simple", "DT",
-  "grid.table"), order_col = NULL, order_dir = c("asc", "desc"),
-  page_length = 10)
+summaryTable(
+  bt_summary,
+  measures = NULL,
+  type = c("simple", "DT", "grid.table"),
+  order_col = NULL,
+  order_dir = c("asc", "desc"),
+  page_length = 10
+)
 }
 \arguments{
 \item{bt_summary}{Backtest summary as obtained from the function \code{backtestSummary}.}

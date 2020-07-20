@@ -4,8 +4,13 @@
 \alias{backtestChartCumReturns}
 \title{Chart of the cumulative returns or wealth for a single backtest}
 \usage{
-backtestChartCumReturns(bt, portfolios = names(bt), dataset_num = 1,
-  type = c("ggplot2", "simple"), ...)
+backtestChartCumReturns(
+  bt,
+  portfolios = names(bt),
+  dataset_num = 1,
+  type = c("ggplot2", "simple"),
+  ...
+)
 }
 \arguments{
 \item{bt}{Backtest results as produced by the function \code{\link{portfolioBacktest}}.}
