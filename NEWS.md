@@ -2,6 +2,10 @@
 
 * Fix some CRAN small issue with function examples.
 
+* New function to add new performance measure: `add_performance()`.
+
+* Vignette revised (included references on the dangers of backtesting).
+
 
 ## Changes in portfolioBacktest version 0.2.1 (2019-10-07)
 

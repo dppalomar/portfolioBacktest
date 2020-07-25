@@ -71,7 +71,9 @@ backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median,
   cpu_time_summary    <- tmp$cpu_time_summary
   error_message       <- tmp$error_message
   
-  weights_defname <- c(names(portfolioPerformance()), "cpu time", "failure rate")
+  performance_names <- names(bt[[1]][[1]]$performance)
+  judge <- attr(bt[[1]][[1]]$performance, "judge")
+  weights_defname <- c(performance_names, "cpu time", "failure rate")
   weights_default <- as.list(rep(0, length(weights_defname)))
   names(weights_default) <- weights_defname
   weights_comb <- modifyList(weights_default, weights)
@@ -80,10 +82,10 @@ backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median,
   weights_comb <- unlist(weights_comb)
   mask_criteria <- weights_comb > 0
   
-  # sort the vaild scores
+  # sort the valid scores
   weights_rescaled <- weights_comb / sum(weights_comb)
   mask_valid <- failure_ratio != 1
-  scores <- cbind(apply(t(t(performance_summary[mask_valid, ]) * attr(portfolioPerformance(), "judge")), 2, rank_percentile),
+  scores <- cbind(apply(t(t(performance_summary[mask_valid, ]) * judge), 2, rank_percentile),
                   rank_percentile(-cpu_time_summary[mask_valid]),
                   rank_percentile(-failure_ratio[mask_valid]))
   final_score <- scores %*% weights_rescaled
