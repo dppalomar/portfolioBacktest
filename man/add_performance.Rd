@@ -39,8 +39,12 @@ bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
 
 # add a new performance measure
 bt <- add_performance(bt, name = "SR arithmetic", 
-                      fun = function(return, ...)
+                      fun = function(return, ...) 
                                PerformanceAnalytics::SharpeRatio.annualized(return, geometric = FALSE))
+                               
+bt <- add_performance(bt, name = "avg leverage", desired_direction = -1,
+                      fun = function(w_bop, ...)
+                               if(anyNA(w_bop)) NA else mean(rowSums(abs(w_bop))))
 }
 
 }

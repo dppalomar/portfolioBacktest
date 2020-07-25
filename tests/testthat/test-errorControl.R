@@ -94,14 +94,13 @@ bt <- portfolioBacktest(uniform_portfolio_fun, dataset10, benchmark = c("uniform
 
 test_that("Error control test for \"backtestSelector\"", {
   
-  expect_error(backtestSelector(measures = "NOT_MEASURE"), "\"measures\" contains invalid element.")
+  expect_error(backtestSelector(bt, portfolio_index = 1, measures = "NOT_MEASURE"), "\"measures\" contains invalid element.")
   
-  expect_error(backtestSelector(measures = integer(0)), "\"measures\" must have length > 1.")
+  expect_error(backtestSelector(bt, portfolio_index = 1, measures = integer(0)), "\"measures\" must have length > 1.")
   
-  expect_error(backtestSelector(), "must select a portfolio.")
+  expect_error(backtestSelector(bt), "must select a portfolio.")
   
   expect_error(backtestSelector(bt, portfolio_name = c("FIRST", "SECOND")), "Only one portfolio can be selected.")
-  
 })
 
 
