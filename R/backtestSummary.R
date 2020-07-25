@@ -55,10 +55,8 @@ backtestSummary <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
   if (!anyNA(portfolio_indexes)) portfolio_names <- names(bt)[portfolio_indexes]
   if (show_benchmark) portfolio_names <- c(portfolio_names, names(bt)[attr(bt, 'benchmark_index')])
   
-  n_portfolio <- length(portfolio_names)
-  result <- list()
-  summary_container <- matrix(NA, n_portfolio, length(portfolioPerformance()))
-  
+  performance_names <- names(bt[[portfolio_names[1]]][[1]]$performance)
+  summary_container <- matrix(NA, length(portfolio_names), length(performance_names))
   performance <- failure_rate <- cpu_time_summary <- list()
   res_table <- backtestTable(bt)
   for (portfolio_name in portfolio_names) {
@@ -75,25 +73,26 @@ backtestSummary <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
   rt$error_message <- res_table$error_message
   
   colnames(rt$performance_summary) <- names(rt$failure_rate) <- names(rt$cpu_time_summary) <- portfolio_names
-  rownames(rt$performance_summary) <- names(portfolioPerformance())
+  rownames(rt$performance_summary) <- performance_names
   return(rt)
 }
 
 
 backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fun) {
-  # assume the res_table contains all performance metric
-  performance <- portfolioPerformance()
-  mask_performance <- names(performance)
+  performance_names <- setdiff(names(res_table), c("error", "error_message", "cpu_time"))
+  performance <- rep(NA, length(performance_names))
+  names(performance) <- performance_names
+
   fail_mask <- res_table$error[, portfolio_name]
   failure_rate <- mean(fail_mask)
   cpu_time_summary <- NA
   if (failure_rate < 1) {
-    for (metric in mask_performance)
+    for (metric in performance_names)
       performance[metric] <- summary_fun(res_table[[metric]][!fail_mask, portfolio_name])
     cpu_time_summary <- summary_fun(res_table$cpu_time[!fail_mask, portfolio_name])
   }
-  return(list(performance = performance, 
-              failure_rate = failure_rate,
+  return(list(performance      = performance, 
+              failure_rate     = failure_rate,
               cpu_time_summary = cpu_time_summary))
 }
 
@@ -149,28 +148,28 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
   if (show_benchmark) portfolio_names <- c(portfolio_names, names(bt)[attr(bt, 'benchmark_index')])
   
   # check measures
-  measures_range <- c(names(portfolioPerformance()), 'error', 'error_message', 'cpu_time')
-  if (is.null(measures)) measures <- measures_range
-  if (any(!(measures %in% measures_range))) stop("\"measures\" contains invalid element.")
+  performance_names <- names(bt[[portfolio_names[1]]][[1]]$performance)
+  all_measures <- c(performance_names, "error", "error_message", "cpu_time")
+  if (is.null(measures)) measures <- all_measures
+  if (any(!(measures %in% all_measures))) stop("\"measures\" contains invalid element.")
   
   # check if source_error happen
-  valid_mask <- sapply(bt[portfolio_names], function(x){is.null(x$source_error_message)})
+  valid_mask <- sapply(bt[portfolio_names], function(x) is.null(x$source_error_message))
   if (!any(valid_mask)) stop("all files fail to be sourced")
   
   # extract results and combine into matrix
-  N_dataset <- length(bt[[portfolio_names[valid_mask][1]]])
-  N_portfolio <- length(portfolio_names)
+  num_datasets <- length(bt[[portfolio_names[valid_mask][1]]])
+  num_portfolios <- length(portfolio_names)
   mask_performance <- setdiff(measures, c('error', 'error_message', 'cpu_time'))
   
-  
-  container <- matrix(NA, N_dataset, N_portfolio)
+  container <- matrix(NA, num_datasets, num_portfolios)
   colnames(container) <- portfolio_names
   rownames(container) <- names(bt[[1]])
   cpu_time <- error <- container
   performance <- error_message <- list()
   
   # fill in all results
-  for (i in 1:N_portfolio) {
+  for (i in 1:num_portfolios) {
     
     tmp <- backtestSelector(bt = bt, portfolio_name = portfolio_names[i], measures = measures)
     
@@ -262,30 +261,32 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
 #' @export
 #' 
 backtestSelector <- function(bt, portfolio_index = NULL, portfolio_name = NULL, measures = NULL) {
-  measures_range <- c(names(portfolioPerformance()), 'error', 'error_message', 'cpu_time', 'return', 'portfolio')
-  if (is.null(measures)) measures <- measures_range
-  if (any(!(measures %in% measures_range))) stop("\"measures\" contains invalid element.")
-  if (length(measures) == 0) stop("\"measures\" must have length > 1.")
   if (length(portfolio_name) > 1 || length(portfolio_index) > 1) stop("Only one portfolio can be selected.")
   if (is.null(portfolio_name) && is.null(portfolio_index)) stop("must select a portfolio.") 
   if (!is.null(portfolio_index)) portfolio_name <- names(bt)[portfolio_index]
   if (!is.null(bt[[portfolio_name]]$source_error_message)) return(bt[[portfolio_name]])
+  performance_names <- names(bt[[portfolio_name]][[1]]$performance)
+  measures_range <- c(performance_names, 'error', 'error_message', 'cpu_time', 'return', 'w_designed')
+  if (is.null(measures)) measures <- measures_range
+  if (any(!(measures %in% measures_range))) stop("\"measures\" contains invalid element.")
+  if (length(measures) == 0) stop("\"measures\" must have length > 1.")
+  
   
   result <- list()
-  mask_performance <- setdiff(measures, c('error', 'error_message', 'cpu_time', 'return', 'portfolio'))
+  mask_performance <- setdiff(measures, c('error', 'error_message', 'cpu_time'))
   if (length(mask_performance) > 0)
-    result$performance <- do.call(rbind, lapply(bt[[portfolio_name]], function(x){x$performance[mask_performance]}))
+    result$performance <- do.call(rbind, lapply(bt[[portfolio_name]], function(x) x$performance[mask_performance]))
   if ('error' %in% measures) 
-    result$error <- sapply(bt[[portfolio_name]], function(x){x$error})
+    result$error <- sapply(bt[[portfolio_name]], function(x) x$error)
   if ('error_message' %in% measures) 
-    result$error_message <- lapply(bt[[portfolio_name]], function(x){x$error_message})
+    result$error_message <- lapply(bt[[portfolio_name]], function(x) x$error_message)
   if ('cpu_time' %in% measures)
-    result$cpu_time <- sapply(bt[[portfolio_name]], function(x){x$cpu_time})
-  if ('portfolio' %in% measures)
-    result$portfolio <- lapply(bt[[portfolio_name]], function(x){x$portfolio})
+    result$cpu_time <- sapply(bt[[portfolio_name]], function(x) x$cpu_time)
+  if ('w_designed' %in% measures)
+    result$portfolio <- lapply(bt[[portfolio_name]], function(x) x$w_designed)
   if ('return' %in% measures) {
-    result$return <- lapply(bt[[portfolio_name]], function(x){x$return})
-    result$wealth <- lapply(bt[[portfolio_name]], function(x){x$wealth})
+    result$return <- lapply(bt[[portfolio_name]], function(x) x$return)
+    result$wealth <- lapply(bt[[portfolio_name]], function(x) x$wealth)
   }
   
   return(result)
