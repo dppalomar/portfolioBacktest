@@ -536,6 +536,66 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
 }
 
 
+#' @title Add a new performance measure to backtests
+#'
+#' @param bt Backtest results as produced by the function \code{\link{portfolioBacktest}}.
+#' @param name String with name of new performance measure.
+#' @param fun Function to compute new performance measure from any element returned by 
+#'            \code{\link{portfolioBacktest}}, e.g., \code{return}, \code{wealth}, and \code{w_bop}.
+#' @param desired_direction Number indicating whether the new measure is desired to be larger (1),
+#'                          which is the default, or smaller (-1).
+#' 
+#' @return List with the portfolio backtest results, see \code{\link{portfolioBacktest}}.
+#' 
+#' 
+#' @author Daniel P. Palomar and Rui Zhou
+#' 
+#' @examples
+#' \donttest{
+#' library(portfolioBacktest)
+#' data(dataset10)  # load dataset
+#' 
+#' # define your own portfolio function
+#' uniform_portfolio <- function(dataset) {
+#'   N <- ncol(dataset$adjusted)
+#'   return(rep(1/N, N))
+#' }
+#' 
+#' # do backtest
+#' bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
+#' 
+#' # add a new performance measure
+#' bt <- add_performance(bt, name = "SR arithmetic", 
+#'                       fun = function(return, ...) 
+#'                                PerformanceAnalytics::SharpeRatio.annualized(return, geometric = FALSE))
+#'                                
+#' bt <- add_performance(bt, name = "avg leverage", desired_direction = -1,
+#'                       fun = function(w_bop, ...)
+#'                                if(anyNA(w_bop)) NA else mean(rowSums(abs(w_bop))))
+#' }
+#' 
+#' @export
+add_performance <- function(bt, name, fun, desired_direction = 1) {
+  
+  each_dataset <- function(bt_single) {
+    judge_tmp <- attr(bt_single$performance, "judge")
+    names_tmp <- names(bt_single$performance)
+    bt_single$performance <- c(bt_single$performance,
+                               do.call(fun, bt_single))
+    names(bt_single$performance) <- c(names_tmp, name)
+    attr(bt_single$performance, "judge") <- c(judge_tmp, desired_direction)
+    return(bt_single)
+  }
+  
+  each_portfolio <- function(bt_portfolio)
+    lapply(bt_portfolio, each_dataset)
+  
+  bt_attributes <- attributes(bt)
+  bt <- lapply(bt, each_portfolio)
+  attributes(bt) <- bt_attributes
+  return(bt)
+}
+
 
 # analyse the performance of portfolio returns
 #   rets: is an xts recording portfolio's return
