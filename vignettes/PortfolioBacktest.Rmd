@@ -36,6 +36,7 @@ opts_chunk$set(
   pngquant = "--speed=1"
 )
 knit_hooks$set(pngquant = hook_pngquant)
+options(width = 90)
 # rmarkdown::render("vignettes/PortfolioBacktest.Rmd", "prettydoc::html_pretty")
 ```
 
@@ -48,7 +49,9 @@ in a fully automated and convenient manner. The results can be nicely formatted 
 
 
 # Package Snapshot
-This package backtests a list of portfolios over multiple datasets on a rolling-window basis, producing final results as in the following.
+Backtesting is a dangerous task fraught with many potential pitfalls [@Luo_etal2014_sevensins]. By performing a large number of randomized backtests, instead of visually inspecting a single backtest, one can obtain more realistic results.
+
+This package backtests a list of portfolios over multiple datasets on a rolling-window basis (aka walk forward), producing final results as in the following.
 ```{r, echo=FALSE, message=FALSE}
 library(portfolioBacktest)
 load("figures/bt.RData")
@@ -199,7 +202,7 @@ Markowitz_portfolio_fun <- function(dataset) {
   w <- Variable(nrow(Sigma))
   prob <- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma)),
                   constraints = list(w >= 0, sum(w) == 1))
-  result <- solve(prob)
+  result <- CVXR::solve(prob)
   return(as.vector(result$getValue(w)))
 }
 ```
@@ -381,7 +384,7 @@ Finally we can observe the performance for all combinations of parameters backte
 ```{r, fig.width=7, fig.height=4}
 plotPerformanceVsParams(bt)
 ```
-In this case, we can conclude that the best combination is to use the median of the past 160 days and using the 0.3 top quintile.
+In this case, we can conclude that the best combination is to use the median of the past 160 days and using the 0.3 top quintile. Extreme caution has to be taken when tuning hyper-parameter of strategies due to the danger of overfitting [@BaileyBorweinDePrado2016].
 
 
 
@@ -498,25 +501,28 @@ portfolio_fun <- function(data) {
   w <- Variable(nrow(Sigma))
   prob <- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma)),
                   constraints = list(w >= 0, sum(w) == 1))
-  result <- solve(prob)
+  result <- CVXR::solve(prob)
   return(as.vector(result$getValue(w)))
 }
 ```
 
 
+
 # Appendix
 ## Performance criteria
-The performance criteria currently considered by the package are:
+The performance criteria currently considered by default in the package are:
 
-- **annual return**: the [annualized return](https://en.wikipedia.org/wiki/Rate_of_return)
-- **annual volatility**: the [annualized standard deviation](https://en.wikipedia.org/wiki/Volatility_(finance)) of returns 
-- **max drawdown**: the [maximum drawdown](https://en.wikipedia.org/wiki/Drawdown_(economics)) is defined as the maximum loss from a peak to a trough of a portfolio
-- **Sharpe ratio**: [annualized Sharpe ratio](https://en.wikipedia.org/wiki/Sharpe_ratio), the ratio between `annualized return` and `annualized standard deviation`
+- **annual return**: the (geometric) [annualized return](https://en.wikipedia.org/wiki/Rate_of_return);
+- **annual volatility**: the [annualized standard deviation](https://en.wikipedia.org/wiki/Volatility_(finance)) of returns; 
+- **max drawdown**: the [maximum drawdown](https://en.wikipedia.org/wiki/Drawdown_(economics)) is defined as the maximum loss from a peak to a trough of a portfolio;
+- **Sharpe ratio**: the [annualized Sharpe ratio](https://en.wikipedia.org/wiki/Sharpe_ratio), the ratio between the (geometric) annualized return and the annualized standard deviation;
 - **Sterling ratio**: the return over average drawdown, see [here](https://en.m.wikipedia.org/wiki/Sterling_ratio) for complete definition. In the package, we use $$
- \text{Sterling ratio} = \frac{\text{annualized return}}{\text{max drawdown}} $$
-- **Omega ratio**: the probability weighted ratio of gains over losses for some threshold return target, see [here](https://en.m.wikipedia.org/wiki/Omega_ratio) for complete definition. The ratio is calculated as: $$ \Omega(r) = \frac{\int_{r}^{\infty} (1-F(x))dx}{\int_{-\infty}^{r} F(x)dx} $$
+ \text{Sterling ratio} = \frac{\text{annualized return}}{\text{max drawdown}};$$
+- **Omega ratio**: the probability weighted ratio of gains over losses for some threshold return target, see [here](https://en.m.wikipedia.org/wiki/Omega_ratio) for complete definition. The ratio is calculated as: $$ \Omega(r) = \frac{\int_{r}^{\infty} (1-F(x))dx}{\int_{-\infty}^{r} F(x)dx};$$
  In the package, we use $\Omega(0)$, which is also known as Gain-Loss-Ratio.
 - **ROT bps**: Return over Turnover (ROT) defined as the sum of cummulative return over the sum of turnover.
+
+One can easily add new performance measures with the function `add_performance()`.
 
 
 ## Future features
@@ -525,4 +531,11 @@ The package currently has the following limitations that we plan to address in t
 - **Turnover term**: the portfolio function currently only receives as argument the dataset, but not the currently held portfolio $\mathbf{w}_{t-1}$, so the the turnover $\lVert \mathbf{w}_{t} - \mathbf{w}_{t-1} \rVert _{1}$ cannot be taken into account in the design.
 - **Additional performance measures**: there are countless of additional performance measures that could be included such as the [Sortino ratio](https://en.wikipedia.org/wiki/Sortino_ratio).
 
+
+
+# References {-}
+\setlength{\parindent}{-0.2in}
+\setlength{\leftskip}{0.2in}
+\setlength{\parskip}{8pt}
+\noindent
 
