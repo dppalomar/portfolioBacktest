@@ -1,4 +1,4 @@
-## Changes in portfolioBacktest version 0.2.1.9000 (2020-xx-xx)
+## Changes in portfolioBacktest version 0.2.2 (2020-07-29)
 
 * Fix some CRAN small issue with function examples.
 

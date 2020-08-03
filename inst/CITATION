@@ -4,12 +4,12 @@ citEntry(entry = "Manual",
          title        = "{portfolioBacktest: Automated Backtesting of Portfolios over Multiple Datasets}",
          author       = personList(as.person("D. P. Palomar"),
                                    as.person("Rui ZHOU")),
-         note         = "R package version 0.2.1",
+         note         = "R package version 0.2.2",
          year         = "2019",
          url          = "https://CRAN.R-project.org/package=portfolioBacktest",
          textVersion  =
            paste("D. P. Palomar and Rui ZHOU (2019).",
                  "portfolioBacktest: Automated Backtesting of Portfolios over Multiple Datasets.",
-                 "R package version 0.2.1.",
+                 "R package version 0.2.2.",
                  "https://CRAN.R-project.org/package=portfolioBacktest")
 )

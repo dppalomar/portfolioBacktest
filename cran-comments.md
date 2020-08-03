@@ -1,9 +1,9 @@
-Fourth release in CRAN, version 0.2.1 (2019-10-07), (package also available in GitHub).
+Fifth release in CRAN, version 0.2.2 (2020-07-29), (package also available in GitHub).
 
 ---
 
 ## Test environments
-* OS X, R 3.6.0
+* OS X, R 4.0.2
 * Windows at https://win-builder.r-project.org/
 
 ## R CMD check results

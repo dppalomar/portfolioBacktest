@@ -41,6 +41,6 @@ devtools::build()
 #devtools::revdep(pkg = "portfolioBacktest")  # to check reverse dependencies
 #devtools::check_win_release()  #to check under windows
 #R CMD build .  # this is to generate tarball
-#R CMD check portfolioBacktest_0.2.1.9000.tar.gz --as-cran --run-donttest  # this is before submission to CRAN
-#R CMD install portfolioBacktest_0.2.1.tar.gz
+#R CMD check portfolioBacktest_0.2.2.tar.gz --as-cran --run-donttest  # this is before submission to CRAN
+#R CMD install portfolioBacktest_0.2.2.tar.gz
 #submit the tarball directly via the webform: https://cran.r-project.org/submit.html
