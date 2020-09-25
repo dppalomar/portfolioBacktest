@@ -7,7 +7,7 @@ portfolio_fun <- function(data) {
   w <- Variable(nrow(Sigma))
   prob <- Problem(Minimize(quad_form(w, Sigma)), 
                   constraints = list(w >= 0, sum(w) == 1))
-  result <- CVXR::solve(prob)
+  result <- solve(prob)
   return(as.vector(result$getValue(w)))
 }
 

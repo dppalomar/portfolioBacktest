@@ -202,7 +202,7 @@ Markowitz_portfolio_fun <- function(dataset) {
   w <- Variable(nrow(Sigma))
   prob <- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma)),
                   constraints = list(w >= 0, sum(w) == 1))
-  result <- CVXR::solve(prob)
+  result <- solve(prob)
   return(as.vector(result$getValue(w)))
 }
 ```
@@ -256,7 +256,7 @@ backtestTable(bt, measures = c("Sharpe ratio", "max drawdown"))
 ```
 * Summary of performance measures:
 ```{r}
-bt_sum <- backtestSummary(bt)
+res_sum <- backtestSummary(bt)
 names(res_sum)
 res_sum$performance_summary 
 ```
@@ -276,7 +276,7 @@ summaryTable(res_sum, type = "DT", order_col = "Sharpe ratio", order_dir = "desc
 
 * Barplot (provides information from `summaryTable()` in a visual way):
 ```{r, fig.width=7, fig.height=4}
-summaryBarPlot(bt_sum, measures = c("Sharpe ratio", "max drawdown"))
+summaryBarPlot(res_sum, measures = c("Sharpe ratio", "max drawdown"))
 ```
 
 <br>
@@ -501,7 +501,7 @@ portfolio_fun <- function(data) {
   w <- Variable(nrow(Sigma))
   prob <- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma)),
                   constraints = list(w >= 0, sum(w) == 1))
-  result <- CVXR::solve(prob)
+  result <- solve(prob)
   return(as.vector(result$getValue(w)))
 }
 ```
