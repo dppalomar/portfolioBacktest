@@ -45,17 +45,51 @@ GMVP <- function(data, shrinkage = FALSE) {
 }
 
 
+# Markowitz Maximum Sharpe-Ratio Portfolio (MSRP)
+MSRP <- function(data) {
+  X <- diff(log(data$adjusted))[-1]
+  mu <- colMeans(X)
+  Sigma <- cov(X)
+  w <- MSRP_solver(mu, Sigma)
+  return(w)
+}
+
+# Most diversified portfolio (MDP)
+MDP <- function(data) {
+  X <- diff(log(data$adjusted))[-1]
+  Sigma <- cov(X)
+  mu <- sqrt(diag(Sigma))
+  w <- MSRP_solver(mu, Sigma)
+  return(w)
+}
+
+
 # benchmark library
 benchmark_library <- list(
   "uniform" = uniform_portfolio_fun,
   "IVP"     = IVP_portfolio_fun,
   "GMVP"    = function(data) GMVP(data, FALSE),
+  "MSRP"    = MSRP,
+  "MDP"     = MDP,
   "GMVP + shrinkage"    = function(data) GMVP(data, TRUE)
 )
 
 
 
 
+#  method for solving Markowitz Maximum Sharpe-Ratio Portfolio (MSRP)
+#' @importFrom quadprog solve.QP
+MSRP_solver <- function(mu, Sigma) {
+  N <- ncol(Sigma)
+  if (all(mu <= 1e-8)) return(rep(0, N))
+  Dmat <- 2 * Sigma
+  Amat <- diag(N)
+  Amat <- cbind(mu, Amat)
+  bvec <- c(1, rep(0, N))
+  dvec <- rep(0, N)
+  w <- solve.QP(Dmat = Dmat, dvec = dvec, Amat = Amat, bvec = bvec, meq = 1)$solution
+  return(w/sum(w))
+}
 
 
 # methods for parameter estimation
