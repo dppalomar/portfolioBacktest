@@ -612,16 +612,20 @@ portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
   if (!anyNA(rets)) {
     fraction_in <- sum(rets != 0)/nrow(rets)
     rets <- rets[rets != 0]  # remove data where return is zero
-    # fill the elements one by one
-    performance["Sharpe ratio"]      <- PerformanceAnalytics::SharpeRatio.annualized(rets) * sqrt(fraction_in)
-    performance["max drawdown"]      <- PerformanceAnalytics::maxDrawdown(rets)
-    performance["annual return"]     <- PerformanceAnalytics::Return.annualized(rets) * fraction_in        # prod(1 + rets)^(252/nrow(rets)) - 1 or mean(rets) * 252
-    performance["annual volatility"] <- PerformanceAnalytics::StdDev.annualized(rets) * sqrt(fraction_in)  # sqrt(252) * sd(rets, na.rm = TRUE)
-    performance["Sterling ratio"]    <- performance["annual return"] / performance["max drawdown"]
-    performance["Omega ratio"]       <- PerformanceAnalytics::Omega(rets)
-    performance["ROT (bps)"]         <- ROT_bips
-    performance["VaR (0.95)"]        <- PerformanceAnalytics::VaR(rets, 0.95, method = "historical", invert = FALSE)
-    performance["CVaR (0.95)"]       <- PerformanceAnalytics::CVaR(rets, 0.95, method = "historical", invert = FALSE)
+    if (nrow(rets) == 0) {
+      performance[] <- c(NA, 0, 0, 0, NA, NA, NA, 0, 0)
+    } else {
+      # fill the elements one by one
+      performance["Sharpe ratio"]      <- PerformanceAnalytics::SharpeRatio.annualized(rets) * sqrt(fraction_in)
+      performance["max drawdown"]      <- PerformanceAnalytics::maxDrawdown(rets)
+      performance["annual return"]     <- PerformanceAnalytics::Return.annualized(rets) * fraction_in        # prod(1 + rets)^(252/nrow(rets)) - 1 or mean(rets) * 252
+      performance["annual volatility"] <- PerformanceAnalytics::StdDev.annualized(rets) * sqrt(fraction_in)  # sqrt(252) * sd(rets, na.rm = TRUE)
+      performance["Sterling ratio"]    <- performance["annual return"] / performance["max drawdown"]
+      performance["Omega ratio"]       <- PerformanceAnalytics::Omega(rets)
+      performance["ROT (bps)"]         <- ROT_bips
+      performance["VaR (0.95)"]        <- PerformanceAnalytics::VaR(rets, 0.95, method = "historical", invert = FALSE)
+      performance["CVaR (0.95)"]       <- PerformanceAnalytics::CVaR(rets, 0.95, method = "historical", invert = FALSE)
+    }
   }
   return(performance)
 }
