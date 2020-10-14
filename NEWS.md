@@ -1,3 +1,10 @@
+## Changes in portfolioBacktest version 0.2.3 (2020-10-14)
+
+* Add MDP and MSRP as benchmark
+
+* Fix performance computation when no investment happens in some days
+
+
 ## Changes in portfolioBacktest version 0.2.2 (2020-07-29)
 
 * Fix some CRAN small issue with function examples.

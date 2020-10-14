@@ -610,6 +610,7 @@ portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
   attr(performance, "judge") <- c(1, -1, 1, -1, 1, 1, 1, -1, -1)
   
   if (!anyNA(rets)) {
+    rets <- rets[rets != 0]  # remove data where return is zero
     # fill the elements one by one
     performance["Sharpe ratio"]      <- PerformanceAnalytics::SharpeRatio.annualized(rets)
     performance["max drawdown"]      <- PerformanceAnalytics::maxDrawdown(rets)
