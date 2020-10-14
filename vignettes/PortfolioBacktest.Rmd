@@ -151,12 +151,12 @@ data(SP500_symbols)  # load the SP500 symbols
 SP500 <- stockDataDownload(stock_symbols = SP500_symbols, 
                            from = "2008-12-01", to = "2018-12-01")
 # resample 10 times from SP500, each with 50 stocks and 2-year consecutive data 
-my_dataset_list <- stockDataResample(SP500_YAHOO, 
+my_dataset_list <- stockDataResample(SP500, 
                                      N_sample = 50, T_sample = 252*2, 
                                      num_datasets = 10)
 ```
 Each individual dataset will contain 7 `xts` objects with names: `open`, `high`, `low`, `close`, `volume`, `adjusted`, `index`. 
-Since the function `stockDataDownload()` may take a long time to download the data from the Internet, it will automatically save the data into a local file for subsequent fast retrieval (whenever the function is called with the same arguments).
+Since the function `stockDataDownload()` may take a long time to download the data from the Internet, it will automatically save the data into a local file for subsequent fast retrieval (whenever the function is called with the same arguments). It is the responsibility of the user to download a proper universe of stocks to avoid survivorship bias.
 
 ## Expanding the datasets
 Additional data can be helpful in designing portfolios. One can add as many other `xts` objects in each dataset as desired. For example, if the Moving Average Convergence Divergence (MACD) information is needed by the portfolio functions, one can manually add it to the dataset as follows:
