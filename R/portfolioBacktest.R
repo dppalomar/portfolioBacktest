@@ -610,13 +610,14 @@ portfolioPerformance <- function(rets = NA, ROT_bips = NA) {
   attr(performance, "judge") <- c(1, -1, 1, -1, 1, 1, 1, -1, -1)
   
   if (!anyNA(rets)) {
+    fraction_in <- sum(rets != 0)/nrow(rets)
     rets <- rets[rets != 0]  # remove data where return is zero
     # fill the elements one by one
-    performance["Sharpe ratio"]      <- PerformanceAnalytics::SharpeRatio.annualized(rets)
+    performance["Sharpe ratio"]      <- PerformanceAnalytics::SharpeRatio.annualized(rets) * sqrt(fraction_in)
     performance["max drawdown"]      <- PerformanceAnalytics::maxDrawdown(rets)
-    performance["annual return"]     <- PerformanceAnalytics::Return.annualized(rets)  # prod(1 + rets)^(252/nrow(rets)) - 1 or mean(rets) * 252
-    performance["annual volatility"] <- PerformanceAnalytics::StdDev.annualized(rets)  # sqrt(252) * sd(rets, na.rm = TRUE)
-    performance["Sterling ratio"]    <- PerformanceAnalytics::Return.annualized(rets) / PerformanceAnalytics::maxDrawdown(rets)
+    performance["annual return"]     <- PerformanceAnalytics::Return.annualized(rets) * fraction_in        # prod(1 + rets)^(252/nrow(rets)) - 1 or mean(rets) * 252
+    performance["annual volatility"] <- PerformanceAnalytics::StdDev.annualized(rets) * sqrt(fraction_in)  # sqrt(252) * sd(rets, na.rm = TRUE)
+    performance["Sterling ratio"]    <- performance["annual return"] / performance["max drawdown"]
     performance["Omega ratio"]       <- PerformanceAnalytics::Omega(rets)
     performance["ROT (bps)"]         <- ROT_bips
     performance["VaR (0.95)"]        <- PerformanceAnalytics::VaR(rets, 0.95, method = "historical", invert = FALSE)
