@@ -55,7 +55,7 @@ backtestSummary <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
   if (!anyNA(portfolio_indexes)) portfolio_names <- names(bt)[portfolio_indexes]
   if (show_benchmark) portfolio_names <- c(portfolio_names, names(bt)[attr(bt, 'benchmark_index')])
   
-  performance_names <- names(bt[[portfolio_names[1]]][[1]]$performance)
+  performance_names <- unique(names(bt[[portfolio_names[1]]][[1]]$performance))
   summary_container <- matrix(NA, length(portfolio_names), length(performance_names))
   performance <- failure_rate <- cpu_time_summary <- list()
   res_table <- backtestTable(bt)
