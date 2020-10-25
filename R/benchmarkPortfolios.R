@@ -71,7 +71,7 @@ MDP <- function(data) {
   if (is.null(leverage) || is.infinite(leverage))
     return(w)
   else
-    return(w / abs(w) * leverage)
+    return(w / sum(abs(w)) * leverage)
 }
 
 
