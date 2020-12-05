@@ -24,6 +24,7 @@ devtools::load_all()  #or Ctrl-Shift-L
 devtools::document()  #to generate all documentation via roxygen
 devtools::install()
 library(portfolioBacktest)
+#tools::showNonASCIIfile("portfolioBacktest.R")
 
 
 # Code tests
