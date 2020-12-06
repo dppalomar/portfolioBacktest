@@ -12,7 +12,13 @@ IVP_portfolio_fun <- function(data) {
   X <- diff(log(data$adjusted))[-1]
   sigma <- sqrt(diag(cov(X)))
   w <- 1/sigma
-  return(w/sum(w))
+  w <- w/sum(w)
+  
+  leverage <- parent.frame(n = 1)$leverage
+  if (is.null(leverage) || is.infinite(leverage))
+    return(w)
+  else
+    return(w * leverage)
 }
 
 # Global Minimum Variance Portfolio
@@ -60,7 +66,12 @@ MDP <- function(data) {
   Sigma <- cov(X)
   mu <- sqrt(diag(Sigma))
   w <- MSRP_solver(mu, Sigma)
-  return(w)
+  
+  leverage <- parent.frame(n = 1)$leverage
+  if (is.null(leverage) || is.infinite(leverage))
+    return(w)
+  else
+    return(w / sum(abs(w)) * leverage)
 }
 
 
