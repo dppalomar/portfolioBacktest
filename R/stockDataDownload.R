@@ -165,20 +165,20 @@ multipleXTSMerge <- function(xts_list) {
 
 
 
-#' @title Generate random resamples from stock data
+#' @title Generate random resamples from financial data
 #' 
-#' @description This function resamples the stock data downloaded by
-#' \code{\link{stockDataDownload}} to obtain many datasets for a 
+#' @description This function resamples the financial data (e.g., downloaded 
+#' with \code{\link{stockDataDownload}}) to obtain many datasets for a 
 #' subsequent backtesting with \code{\link{portfolioBacktest}}.
 #' Given the original data, each resample is obtained by randomly
-#' choosing a subset of the stock names and randomly choosing a
+#' choosing a subset of the financial instruments and randomly choosing a
 #' time period over the available long period.
 #' 
 #' @param X List of \code{xts} objects matching the structure returned by the function \code{\link{stockDataDownload}}.
-#' @param N_sample Number of stocks in each resample.
-#' @param T_sample Length of each resample (consecutive samples with a random initial time).
-#' @param num_datasets Number of resampled datasets (chosen randomly among the stock universe).
-#' @param rm_stocks_with_na Logical value indicating whether to remove stocks with inner missing 
+#' @param N_sample Desired number of financial instruments in each resample.
+#' @param T_sample Desired length of each resample (consecutive samples with a random initial time).
+#' @param num_datasets Number of resampled datasets (chosen randomly among the financial instrument universe).
+#' @param rm_stocks_with_na Logical value indicating whether to remove instruments with inner missing 
 #'                          values (ignoring leading and trailing missing values). Default is \code{TRUE}.
 #' 
 #' @return List of datasets resampled from \code{X}.
@@ -197,17 +197,17 @@ multipleXTSMerge <- function(xts_list) {
 #'                                 from = "2009-01-01", to = "2009-12-31") 
 #'                                 
 #' # generate 20 resamples from data, each with 10 stocks and one quarter continuous data
-#' my_dataset_list <- stockDataResample(SP500_data, N = 10, T = 252/4, num_datasets = 20)
+#' my_dataset_list <- financialDataResample(SP500_data, N = 10, T = 252/4, num_datasets = 20)
 #' }
 #' 
 #' @import xts
 #'         zoo
 #' @export
-stockDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datasets = 10, rm_stocks_with_na = TRUE) {
+financialDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datasets = 10, rm_stocks_with_na = TRUE) {
   # error control for indices
   X_index_list <- lapply(X, function(x) index(x))
-  X_equal_indices_list <- sapply(X_index_list, function(x) all.equal(x, X_index_list[[1]]))
-  if (!all(X_equal_indices_list)) stop("The date indexes of \"X\" do not match.")
+  X_equal_indices_list <- sapply(X_index_list, function(x) identical(x, X_index_list[[1]]))
+  if (!all(X_equal_indices_list)) stop("The date indices of \"X\" do not match.")
 
   # separate univariate from multivariate
   num_cols <- sapply(X, ncol)
@@ -226,7 +226,7 @@ stockDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datasets =
   
   # resampling
   T <- nrow(X[[1]])
-  if (T < T_sample) stop("\"T_sample\" can not be greater than the date length of \"X\".")
+  if (T < T_sample) stop("\"T_sample\" cannot be greater than the date length of \"X\".")
   dataset <- vector("list", num_datasets)
   for (i in 1:num_datasets) {
     t_start <- sample(T - T_sample + 1, 1)
@@ -240,10 +240,16 @@ stockDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datasets =
     if (length(elems_1) > 0) dataset[[i]][elems_1] <- lapply(X[elems_1], function(x) x[t_mask, ])
   }
   names(dataset) <- paste("dataset", 1:num_datasets)
-  message(sprintf("%d datasets resampled (with N = %d stocks and length T = %d) from the original data between %s and %s.", 
+  message(sprintf("%d datasets resampled (with N = %d instruments and length T = %d) from the original data between %s and %s.", 
                   num_datasets, N_sample, T_sample, paste(head(X_index_list[[1]], 2))[1], last(X_index_list[[1]])))
 
   return(dataset)
+}
+
+
+#' @export
+stockDataResample <- function(...) {
+  .Deprecated("financialDataResample")
 }
 
 
