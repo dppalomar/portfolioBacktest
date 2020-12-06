@@ -18,7 +18,8 @@ portfolioBacktest(
   T_rolling_window = 252,
   optimize_every = 20,
   rebalance_every = 1,
-  execution = c("same day", "next day"),
+  bars_per_year = NA,
+  execution = c("same period", "next period"),
   cost = list(buy = 0, sell = 0, short = 0, long_leverage = 0),
   cpu_time_limit = Inf,
   return_portfolio = TRUE,
@@ -68,10 +69,13 @@ computation (default is \code{"adjusted"}).}
 
 \item{rebalance_every}{How often the portfolio is to be rebalanced (default is \code{1}).}
 
-\item{execution}{String that can be either \code{"same day"} (default) or \code{"next day"}. 
+\item{bars_per_year}{Number of bars per year. By default it will be calculated automatically 
+(e.g., for daily data there are 252 bars per year).}
+
+\item{execution}{String that can be either \code{"same period"} (default) or \code{"next period"}. 
 At the rebalancing period \code{t}, the portfolio has used information up to (and including)
-period \code{t}. Same day execution means one can get into the position at that period \code{t},
-whereas the next day execution means that one can only get into the position the following day.}
+period \code{t}. Same period execution means one can get into the position at that period \code{t},
+whereas the next period execution means that one can only get into the position the following period.}
 
 \item{cost}{List containing four different types of transaction costs (common for all assets) 
 for buying, selling, shorting, and long leveraging. The default is 
@@ -84,7 +88,7 @@ If some elements are not specified then they will be automatically set to zero.}
 \item{return_portfolio}{Logical value indicating whether to return the portfolios (default is \code{TRUE}).
 Two portfolios are returned: \code{w_designed} is the designed portfolio at each
 given rebalancing period (using all the information up to and including that period,
-which can be executed either on the same day or the following day)
+which can be executed either on the same period or the following period)
 and \code{w_bop} is the "beginning-of-period" portfolio (i.e., at each period it contains 
 the weights held in the market in the previous period so that the portfolio return at 
 that period is just the product of the asset returns and \code{w_bop} at that period.)}
