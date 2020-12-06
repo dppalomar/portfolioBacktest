@@ -8,7 +8,6 @@ my_dataset <- dataset10[[1]]
 
 
 test_that("Error control test for \"stockDataDownload\"", {
-  
   sink(file = tempfile())
   expect_error(stockDataDownload("NOT_SYMBOL"), 
                "Arguments from and to have to be passed.")
@@ -17,17 +16,16 @@ test_that("Error control test for \"stockDataDownload\"", {
   sink()
 })
 
-test_that("Error control test for \"stockDataResample\"", {
+test_that("Error control test for \"financialDataResample\"", {
   
   X_wrong_index <- my_dataset
   index(X_wrong_index$index) <- index(X_wrong_index$index) + 1
-  expect_error(stockDataResample(X_wrong_index), "The date indexes of \"X\" do not match.")
+  expect_error(financialDataResample(X_wrong_index), "The date indices of \"X\" do not match.")
   
   X_non_mono <- my_dataset
   X_non_mono$adjusted[2, ] <- NA
-  expect_error(stockDataResample(X_non_mono), "\"X\" does not satisfy monotone missing-data pattern.")
-  expect_error(stockDataResample(my_dataset, T = 1e10,), "\"T_sample\" can not be greater than the date length of \"X\".")
-  
+  expect_error(financialDataResample(X_non_mono), "\"X\" does not satisfy monotone missing-data pattern.")
+  expect_error(financialDataResample(my_dataset, T = 1e10,), "\"T_sample\" cannot be greater than the date length of \"X\".")
 })
 
 test_that("Error control test for \"portfolioBacktest\"", {
@@ -68,25 +66,27 @@ test_that("Error control test for \"portfolioBacktest\"", {
 })
 
 
-# define uniform portfolio
-uniform_portfolio_fun <- function(dataset) {
-  N <- ncol(dataset$adjusted)
-  return(rep(1/N, N))
-}
+# # define uniform portfolio
+# uniform_portfolio_fun <- function(dataset) {
+#   N <- ncol(dataset$adjusted)
+#   return(rep(1/N, N))
+# }
 
 
-test_that("Error control for index type of xts data", {
-  dataset_tmp <- dataset10
-  #tclass(dataset_tmp[[1]]$adjusted)
-  dataset_tmp[[1]]$adjusted <- convertIndex(dataset_tmp[[1]]$adjusted, "POSIXct")
-  #tclass(dataset_tmp[[1]]$adjusted)
-  expect_silent(bt <- portfolioBacktest(uniform_portfolio_fun, dataset_tmp[1]))
-  
-  dataset_tmp[[2]]$adjusted <- to.monthly(dataset_tmp[[2]]$adjusted)
-  #tclass(dataset_tmp[[2]]$adjusted)
-  expect_error(portfolioBacktest(uniform_portfolio_fun, dataset_tmp[2], T_rolling_window = 10),
-               "This function only accepts daily data")
-})
+# test_that("Error control for index type of xts data", {
+#   dataset_tmp <- dataset10
+#   #tclass(dataset_tmp[[1]]$adjusted)
+#   dataset_tmp[[1]]$adjusted <- convertIndex(dataset_tmp[[1]]$adjusted, "POSIXct")
+#   #tclass(dataset_tmp[[1]]$adjusted)
+#   
+#   #expect_message(bt <- portfolioBacktest(uniform_portfolio_fun, dataset_tmp[1]),
+#   #               "Backtesting 1 portfolios over 1 datasets (periodicity = daily data)")
+#   
+#   # dataset_tmp[[2]]$adjusted <- to.monthly(dataset_tmp[[2]]$adjusted)
+#   # #tclass(dataset_tmp[[2]]$adjusted)
+#   # expect_error(portfolioBacktest(uniform_portfolio_fun, dataset_tmp[2], T_rolling_window = 10),
+#   #              "This function only accepts daily data")
+# })
 
 
 
