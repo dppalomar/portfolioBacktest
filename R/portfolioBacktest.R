@@ -333,6 +333,7 @@ benchmarkBacktest <- function(dataset_list, benchmark, price_name,
   benchmark <- benchmark[benchmark != "index"]
   benchmark_portfolios <- benchmark_library[names(benchmark_library) %in% benchmark]
   if (length(benchmark_portfolios) > 0) {
+    dataset_list <- lapply(dataset_list, function(x) {if (!("adjusted" %in% names(x))) x$adjusted <- x[[price_name]]; return(x)})
     res <- c(res, portfolioBacktest(benchmark_portfolios, dataset_list, NULL, price_name,
                                     1, paral_datasets, show_progress_bar, NULL,
                                     shortselling, leverage,
