@@ -53,5 +53,5 @@ my_dataset_list <- financialDataResample(SP500_data, N = 10, T = 252/4, num_data
 \code{\link{stockDataDownload}}, \code{\link{portfolioBacktest}}
 }
 \author{
-Daniel P. Palomar and Rui Zhou
+Rui Zhou and Daniel P. Palomar
 }
