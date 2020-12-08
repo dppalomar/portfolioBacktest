@@ -5,10 +5,10 @@ context("Checking portfolioBacktest and result handling functions")
 library(xts)
 data(dataset10)
 
-# # define uniform portfolio
-# uniform_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
-#   return(rep(1/ncol(prices), ncol(prices)))
-# }
+# define uniform portfolio
+uniform_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
+  return(rep(1/ncol(prices), ncol(prices)))
+}
 
 # define GMVP
 GMVP_portfolio_fun <- function(data) {
@@ -139,11 +139,10 @@ test_that("backtest results and performance measures coincide with the precomput
   load("bt_table_check.RData")
   expect_equivalent(backtestTable(bt)[1:8], bt_table_check) 
   
-  # bt_summary_check <- backtestSummary(bt, summary_fun = median)[1:2]
+  # bt_summary_check <- head(backtestSummary(bt, summary_fun = median)[[1]], -2)
   # save(bt_summary_check, file = "bt_summary_check.RData", version = 2)
   load("bt_summary_check.RData")
-  bt_summary <- backtestSummary(bt, summary_fun = median)[1:2]
-  expect_equivalent(backtestSummary(bt, summary_fun = median)[1:2], bt_summary)  # compare except cpu time
+  expect_equivalent(head(backtestSummary(bt, summary_fun = median)[[1]], -2), bt_summary_check)  # compare except cpu time
 })
 
 
