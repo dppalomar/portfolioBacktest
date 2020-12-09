@@ -7,6 +7,7 @@
 summaryTable(
   bt_summary,
   measures = NULL,
+  caption = "Performance table",
   type = c("simple", "DT", "grid.table"),
   order_col = NULL,
   order_dir = c("asc", "desc"),
@@ -19,6 +20,8 @@ summaryTable(
 \item{measures}{String vector to select performane measures (default is all) from
 `Sharpe ratio`, `max drawdown`, `annual return`, `annual volatility`, 
 `Sterling ratio`, `Omega ratio`, and `ROT bps`.}
+
+\item{caption}{Table caption (only works for \code{type = "DT"}).}
 
 \item{type}{Type of table. Valid options: \code{"simple", "DT", "grid.table"}. Default is 
 \code{"simple"} and generates a simple matrix (with the other choices the 

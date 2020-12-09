@@ -17,8 +17,7 @@ backtestLeaderboard(
 \item{weights}{List of weights for the different performance measures as obtained 
 in \code{\link{backtestSummary}()$performance} (i.e., 
 \code{"Sharpe ratio"}, \code{"max drawdown"}, \code{"annual return"}, \code{"annual volatility"}, 
-\code{"Sterling ratio"}, \code{"Omega ratio"}, \code{"ROT bps"},
-\code{"cpu_time"}, and \code{"failure ratio"}), as well as
+\code{"Sterling ratio"}, \code{"Omega ratio"}, \code{"ROT bps"}, as well as
 \code{"cpu time"} and \code{"failure rate"}.
 For example: \code{weights = list("Sharpe ratio" = 8, "max drawdown" = 4)}.}
 

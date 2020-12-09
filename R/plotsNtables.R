@@ -10,7 +10,7 @@
 #' @param measures String vector to select performane measures (default is all) from
 #'                 `Sharpe ratio`, `max drawdown`, `annual return`, `annual volatility`, 
 #'                 `Sterling ratio`, `Omega ratio`, and `ROT bps`.
-#'                 
+#' @param caption Table caption (only works for \code{type = "DT"}).
 #' @param type Type of table. Valid options: \code{"simple", "DT", "grid.table"}. Default is 
 #'             \code{"simple"} and generates a simple matrix (with the other choices the 
 #'             corresponding package must be installed).
@@ -54,14 +54,13 @@
 #' }
 #' 
 #' @export
-summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "grid.table"), 
+summaryTable <- function(bt_summary, measures = NULL, caption = "Performance table",
+                         type = c("simple", "DT", "grid.table"), 
                          order_col = NULL, order_dir = c("asc", "desc"), page_length = 10) {
-  if (is.null(measures)) measures <- c("cpu time", rownames(bt_summary$performance_summary))  # by default use all
+  if (is.null(measures)) measures <- rownames(bt_summary$performance_summary)  # by default use all
   # extract performance measures
   real_measures <- intersect(measures, rownames(bt_summary$performance_summary))
   performance <- bt_summary$performance_summary[real_measures, , drop = FALSE]
-  if ("cpu time" %in% measures)
-    performance <- rbind("cpu time" = bt_summary$cpu_time_summary, performance)
   performance <- t(round(performance, 4))
   
   # show table
@@ -75,7 +74,7 @@ summaryTable <- function(bt_summary, measures = NULL, type = c("simple", "DT", "
            order_dir <- match.arg(order_dir)
            p <- DT::datatable(performance, 
                               options = list(pageLength = page_length, scrollX = TRUE, order = list(order_col, order_dir)),
-                              caption = "Leaderboard:")
+                              caption = caption)
            p <- DT::formatStyle(p, 0, target = "row", fontWeight = DT::styleEqual(c("uniform", "index"), c("bold", "bold")))
            if ("annual volatility" %in% colnames(performance))
              p <- DT::formatPercentage(p, "annual volatility", 1)
