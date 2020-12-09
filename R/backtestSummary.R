@@ -71,7 +71,7 @@ backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fu
   failure_rate <- mean(fail_mask)
   if (failure_rate < 1)
     for (metric in performance_names)
-      performance[metric] <- summary_fun(res_table[[metric]][!fail_mask, portfolio_name])
+      performance[metric] <- summary_fun(na.omit(res_table[[metric]][!fail_mask, portfolio_name]))
   
   # fix names if necessary (to be removed)
   if (any(performance_names == "cpu_time"))
