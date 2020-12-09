@@ -616,11 +616,11 @@ portfolioPerformance <- function(rets = NA, ROT_bips = NA, bars_per_year = NA) {
   attr(performance, "judge") <- c(1, -1, 1, -1, 1, 1, 1, -1, -1)
   
   if (!anyNA(rets)) {
-    fraction_in <- sum(rets != 0)/nrow(rets)
-    rets <- rets[rets != 0]  # remove data where return is zero
-    if (nrow(rets) == 0) {
+    fraction_in <- sum(abs(rets) > 1e-8)/nrow(rets)
+    rets <- rets[abs(rets) > 1e-8]  # remove data where return is zero
+    if (nrow(rets) == 0)
       performance[] <- c(NA, 0, 0, 0, NA, NA, NA, 0, 0)
-    } else {
+    else {
       # fill the elements one by one
       performance["Sharpe ratio"]      <- PerformanceAnalytics::SharpeRatio.annualized(rets, scale = bars_per_year) * sqrt(fraction_in)
       performance["max drawdown"]      <- PerformanceAnalytics::maxDrawdown(rets)
