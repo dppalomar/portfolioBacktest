@@ -190,7 +190,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
     } else {
       
       # creata the cluster
-      cl <- makeCluster(paral_portfolios, setup_strategy = "sequential")
+      cl <- makeCluster(paral_portfolios)
       
       # export global variables
       exports <- ls(envir = .GlobalEnv)
@@ -269,7 +269,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       }
     } else {
       
-      cl <- makeCluster(paral_portfolios, setup_strategy = "sequential")
+      cl <- makeCluster(paral_portfolios)
       file <- NULL  # ugly hack to deal with CRAN note
       result <- pblapply(files, function(file) safeEvalFolder(folder_path, file, dataset_list__, price_name,
                                                               paral_datasets, show_progress_bar,
@@ -361,7 +361,7 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, price_name, mar
                                                                                     cpu_time_limit,
                                                                                     return_portfolio, return_returns))
   } else {               ########### parallel mode
-    cl <- makeCluster(paral_datasets, setup_strategy = "sequential")
+    cl <- makeCluster(paral_datasets)
     # registerDoSNOW(cl)
     
     # export global variables
