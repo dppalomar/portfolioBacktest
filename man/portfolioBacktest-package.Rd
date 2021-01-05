@@ -23,7 +23,7 @@ ways with nice barplots and boxplots.
 }
 \section{Functions}{
 
-\code{\link{stockDataDownload}}, \code{\link{stockDataResample}},
+\code{\link{stockDataDownload}}, \code{\link{financialDataResample}},
 \code{\link{portfolioBacktest}}, \code{\link{backtestSelector}},
 \code{\link{backtestTable}}, \code{\link{backtestBoxPlot}}, \code{\link{backtestLeaderboard}},
 \code{\link{backtestChartCumReturns}}, \code{\link{backtestChartDrawdown}}, \code{\link{backtestChartStackedBar}}

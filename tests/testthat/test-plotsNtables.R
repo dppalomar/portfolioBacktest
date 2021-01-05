@@ -1,5 +1,11 @@
 context("Checking whether additional packages are installed or not")
 
+# define uniform portfolio
+uniform_portfolio_fun <- function(dataset) {
+  N <- ncol(dataset$adjusted)
+  return(rep(1/N, N))
+}
+
 # first generate backtest result
 bt <- portfolioBacktest(list("Uniform" = uniform_portfolio_fun), dataset10,
                         benchmark = c("uniform", "index"))

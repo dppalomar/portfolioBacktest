@@ -28,7 +28,7 @@
 #' 
 #' @author Rui Zhou and Daniel P. Palomar
 #' 
-#' @seealso \code{\link{stockDataResample}}
+#' @seealso \code{\link{financialDataResample}}
 #' 
 #' @examples
 #' \dontrun{
@@ -202,6 +202,7 @@ multipleXTSMerge <- function(xts_list) {
 #' 
 #' @import xts
 #'         zoo
+#' @importFrom utils head
 #' @export
 financialDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datasets = 10, rm_stocks_with_na = TRUE) {
   # error control for indices
