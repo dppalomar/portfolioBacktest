@@ -420,6 +420,19 @@ system.time(
 ```
 It is obvious that the evaluation time for backtesting has been significantly reduced. Note that the parallel evaluation elapsed time will not be exactly equal to the original time divided by parallel cores because starting new R sessions also takes extra time. Besides, the two parallel modes can be simultaneous used.
 
+Note that an unexpected error might be thrown out when run parallel backtesting through [RStudio in macOS](https://github.com/rstudio/rstudio/issues/6692). If that happens, one can check the default parallel setting via:
+```{r, eval = FALSE}
+parallel:::getClusterOption("setup_strategy")
+```
+
+If `"parallel"` is returned, one can set the option `setup_strategy` be `"sequential"` via:
+
+```{r, eval = FALSE}
+parallel:::setDefaultClusterOptions(setup_strategy = "sequential")
+```
+
+The problem may be fixed. However, the "sequential" strategy might be less efficient than the "parallel" strategy.
+
 
 ## Tracing where execution errors happen
 Execution errors during backtesting may happen unexpectedly when executing the different portfolio functions. Nevertheless, such errors are properly catched and bypassed by the backtesting function `portfolioBacktest()` so that the execution of the overall backtesting is not stopped. For debugging purposes, to help the user trace where and when the execution errors happen, the result of the backtesting contains all the necessary information about the errors, including the call stack when a execution error happens. Such information is given as the attribute `error_stack` of the returned `error_message`.

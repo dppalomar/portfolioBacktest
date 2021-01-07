@@ -46,15 +46,18 @@ for details.}
 
 \item{source_to_local}{Logical value indicating whether to source files to local environment (default is \code{TRUE}).
 It might be dangerous to set it to \code{FALSE} as in such case the global environment may be changed.
-We suggest you only to allow \code{FALSE} when your codes do not work when locally sourced, e.g., with package \code{CVXR}.
-Besides, we recommend you to set \code{paral_portfolios > 1} to avoid glocal environment changing when it is \code{FALSE}.}
+We suggest only to allow \code{FALSE} when the code in the source files does not work when locally 
+sourced, e.g., with some versions of package \code{CVXR}. In that case, we recommend to set 
+\code{paral_portfolios > 1} to avoid changing the global environment.}
 
 \item{price_name}{Name of the \code{xts} column in each dataset that contains the prices to be used in the portfolio return 
 computation (default is \code{"adjusted"}).}
 
-\item{paral_portfolios}{Interger indicating number of portfolios to be evaluated in parallel (default is \code{1}).}
+\item{paral_portfolios}{Interger indicating number of portfolios to be evaluated in parallel (default is \code{1}),
+see \href{https://cran.r-project.org/web/packages/portfolioBacktest/vignettes/PortfolioBacktest.html#parallel-backtesting}{vignette-paralle-mode} for details.}
 
-\item{paral_datasets}{Interger indicating number of datasets to be evaluated in parallel (default is \code{1}).}
+\item{paral_datasets}{Interger indicating number of datasets to be evaluated in parallel (default is \code{1}),
+see \href{https://cran.r-project.org/web/packages/portfolioBacktest/vignettes/PortfolioBacktest.html#parallel-backtesting}{vignette-paralle-mode} for details.}
 
 \item{show_progress_bar}{Logical value indicating whether to show progress bar (default is \code{FALSE}).}
 

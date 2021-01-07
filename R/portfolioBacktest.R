@@ -37,8 +37,10 @@
 #'                        \code{paral_portfolios > 1} to avoid changing the global environment.
 #' @param price_name Name of the \code{xts} column in each dataset that contains the prices to be used in the portfolio return 
 #'                   computation (default is \code{"adjusted"}).
-#' @param paral_portfolios Interger indicating number of portfolios to be evaluated in parallel (default is \code{1}).
-#' @param paral_datasets Interger indicating number of datasets to be evaluated in parallel (default is \code{1}).
+#' @param paral_portfolios Interger indicating number of portfolios to be evaluated in parallel (default is \code{1}),
+#'                         see \href{https://cran.r-project.org/web/packages/portfolioBacktest/vignettes/PortfolioBacktest.html#parallel-backtesting}{vignette-paralle-mode} for details.
+#' @param paral_datasets Interger indicating number of datasets to be evaluated in parallel (default is \code{1}),
+#'                        see \href{https://cran.r-project.org/web/packages/portfolioBacktest/vignettes/PortfolioBacktest.html#parallel-backtesting}{vignette-paralle-mode} for details.
 #' @param show_progress_bar Logical value indicating whether to show progress bar (default is \code{FALSE}). 
 #' @param benchmark String vector indicating the benchmark portfolios to be incorporated, currently supports:
 #' \itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks}
