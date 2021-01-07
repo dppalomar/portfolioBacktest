@@ -219,7 +219,8 @@ financialDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datase
   if (rm_stocks_with_na) {   
     inner_NA_pattern <- sapply(X[elems_N], function(x) apply(x, 2, any_inner_NA))
     columns_to_keep <- rowSums(inner_NA_pattern) == 0
-    if (any(!columns_to_keep)) stop("\"X\" does not satisfy monotone missing-data pattern.")
+    if (any(!columns_to_keep)) 
+      warning("Some xts object does not satisfy monotone missing-data pattern.\n", call. = FALSE)
     #X[elems_N] <- apply(X[elems_N], function(x) x[, columns_to_keep])
     #N <- ncol(X[[elems_N[1]]])
   }
