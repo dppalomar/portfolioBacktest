@@ -31,18 +31,19 @@ LazyData: true
 RoxygenNote: 7.1.1
 Depends: R (>= 2.10)
 Imports:
-    pbapply,
     digest,
     evaluate,
     ggplot2,
+    pbapply,
     PerformanceAnalytics,
+    parallel,
     quantmod,
     R.utils,
     rlang,
+    stats,
     utils,
     xts,
     zoo,
-    stats,
     quadprog
 Suggests:
     CVXR,
