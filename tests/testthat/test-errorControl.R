@@ -66,11 +66,11 @@ test_that("Error control test for \"portfolioBacktest\"", {
 })
 
 
-# # define uniform portfolio
-# uniform_portfolio_fun <- function(dataset) {
-#   N <- ncol(dataset$adjusted)
-#   return(rep(1/N, N))
-# }
+# define uniform portfolio
+uniform_portfolio_fun <- function(dataset) {
+  N <- ncol(dataset$adjusted)
+  return(rep(1/N, N))
+}
 
 
 # test_that("Error control for index type of xts data", {

@@ -8,6 +8,7 @@ portfolioBacktest(
   portfolio_funs = NULL,
   dataset_list,
   folder_path = NULL,
+  source_to_local = TRUE,
   price_name = "adjusted",
   paral_portfolios = 1,
   paral_datasets = 1,
@@ -36,12 +37,17 @@ weights. See
 for details.}
 
 \item{dataset_list}{List of datasets, each containing a list of \code{xts} objects, as generated
-by the function \code{\link{stockDataResample}}.}
+by the function \code{\link{financialDataResample}}.}
 
 \item{folder_path}{If \code{portfolio_funs} is not defined, this should contain the path to a folder 
 containing the portfolio functions saved in files. See 
 \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{vignette}
 for details.}
+
+\item{source_to_local}{Logical value indicating whether to source files to local environment (default is \code{TRUE}).
+It might be dangerous to set it to \code{FALSE} as in such case the global environment may be changed.
+We suggest you only to allow \code{FALSE} when your codes do not work when locally sourced, e.g., with package \code{CVXR}.
+Besides, we recommend you to set \code{paral_portfolios > 1} to avoid glocal environment changing when it is \code{FALSE}.}
 
 \item{price_name}{Name of the \code{xts} column in each dataset that contains the prices to be used in the portfolio return 
 computation (default is \code{"adjusted"}).}
@@ -112,7 +118,7 @@ Each portfolio design is easily defined as a
 function that takes as input a window of the stock prices and outputs the 
 portfolio weights. Multiple portfolios can be easily specified as a list 
 of functions or as files in a folder. Multiple datasets can be conveniently 
-obtained with the function \code{\link{stockDataResample}} that resamples
+obtained with the function \code{\link{financialDataResample}} that resamples
 the data downloaded with the function \code{\link{stockDataDownload}}.
 The results can be later assessed and arranged with tables and plots.
 The backtesting can be highly time-consuming depending on the number of 
@@ -147,7 +153,7 @@ summaryTable(bt_summary)
 
 }
 \seealso{
-\code{\link{stockDataDownload}}, \code{\link{stockDataResample}},
+\code{\link{stockDataDownload}}, \code{\link{financialDataResample}},
          \code{\link{backtestSelector}}, \code{\link{backtestTable}}, 
          \code{\link{backtestBoxPlot}}, \code{\link{backtestLeaderboard}},
          \code{\link{backtestSummary}}, \code{\link{summaryTable}}, \code{\link{summaryBarPlot}}.

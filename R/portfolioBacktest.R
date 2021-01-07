@@ -6,7 +6,7 @@
 #' function that takes as input a window of the stock prices and outputs the 
 #' portfolio weights. Multiple portfolios can be easily specified as a list 
 #' of functions or as files in a folder. Multiple datasets can be conveniently 
-#' obtained with the function \code{\link{stockDataResample}} that resamples
+#' obtained with the function \code{\link{financialDataResample}} that resamples
 #' the data downloaded with the function \code{\link{stockDataDownload}}.
 #' The results can be later assessed and arranged with tables and plots.
 #' The backtesting can be highly time-consuming depending on the number of 
@@ -25,11 +25,15 @@
 #'                       \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{vignette}
 #'                       for details.
 #' @param dataset_list List of datasets, each containing a list of \code{xts} objects, as generated
-#'                     by the function \code{\link{stockDataResample}}.
+#'                     by the function \code{\link{financialDataResample}}.
 #' @param folder_path If \code{portfolio_funs} is not defined, this should contain the path to a folder 
 #'                    containing the portfolio functions saved in files. See 
 #'                    \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{vignette}
 #'                    for details.
+#' @param source_to_local Logical value indicating whether to source files to local environment (default is \code{TRUE}).
+#'                        It might be dangerous to set it to \code{FALSE} as in such case the global environment may be changed.
+#'                        We suggest you only to allow \code{FALSE} when your codes do not work when locally sourced, e.g., with package \code{CVXR}.
+#'                        Besides, we recommend you to set \code{paral_portfolios > 1} to avoid glocal environment changing when it is \code{FALSE}.
 #' @param price_name Name of the \code{xts} column in each dataset that contains the prices to be used in the portfolio return 
 #'                   computation (default is \code{"adjusted"}).
 #' @param paral_portfolios Interger indicating number of portfolios to be evaluated in parallel (default is \code{1}).
@@ -78,7 +82,7 @@
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
-#' @seealso \code{\link{stockDataDownload}}, \code{\link{stockDataResample}},
+#' @seealso \code{\link{stockDataDownload}}, \code{\link{financialDataResample}},
 #'          \code{\link{backtestSelector}}, \code{\link{backtestTable}}, 
 #'          \code{\link{backtestBoxPlot}}, \code{\link{backtestLeaderboard}},
 #'          \code{\link{backtestSummary}}, \code{\link{summaryTable}}, \code{\link{summaryBarPlot}}.
@@ -107,12 +111,11 @@
 #' 
 #' @import xts
 #' @importFrom zoo index
-#' @importFrom doSNOW registerDoSNOW
-#' @importFrom foreach foreach %dopar%
-#' @importFrom snow makeCluster stopCluster clusterExport
+#' @importFrom pbapply pblapply pboptions
+#' @importFrom parallel makeCluster stopCluster clusterExport clusterEvalQ
 #' @importFrom utils object.size
 #' @export
-portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path = NULL, price_name = "adjusted",
+portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path = NULL, source_to_local = TRUE, price_name = "adjusted",
                               paral_portfolios = 1, paral_datasets = 1,
                               show_progress_bar = FALSE, benchmark = NULL, 
                               shortselling = TRUE, leverage = Inf,
@@ -134,6 +137,11 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   if (!is.xts(dataset_list[[1]][[1]])) stop("prices have to be xts.")
   ##############################
   
+  if (!show_progress_bar) {
+    pbo <- pboptions(type = "none")
+    on.exit(pboptions(pbo), add = TRUE)
+  }
+  
   # when portfolio_funs is passed
   if (!is.null(portfolio_funs)) {
     if (is.null(names(portfolio_funs))) portfolio_names <- paste0("fun", 1:length(portfolio_funs))
@@ -141,7 +149,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
     if ("" %in% portfolio_names) stop("Each element of \"portfolio_funs\" must has a unique name.")
     if (length(portfolio_names) != length(unique(portfolio_names))) stop("\"portfolio_funs\" contains repeated names.")
     
-    message(sprintf("Backtesting %d portfolios over %d datasets (periodicity = %s data)", 
+    message(sprintf("\n [Backtesting %d portfolios over %d datasets (periodicity = %s data)]", 
                     length(portfolio_names), length(dataset_list), periodicity(dataset_list[[1]][[1]])$scale))
     
     # in case the extra packages are loaded
@@ -180,34 +188,33 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                                      return_portfolio, return_returns)
       }
     } else {
-      # create the progress bar based on function number
-      if (show_progress_bar) {
-        sink(file = tempfile())
-        pb <- utils::txtProgressBar(max = length(portfolio_funs), style = 3)
-        sink()
-        opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
-        message("Evaluating overall ", length(portfolio_funs), " portfolio functions in parallel")
-        opts$progress(0)
-      } else opts <- list()
       
+      # creata the cluster
       cl <- makeCluster(paral_portfolios)
-      registerDoSNOW(cl)
+      
+      # export global variables
       exports <- ls(envir = .GlobalEnv)
       exports <- exports[! exports %in% c("portfolio_fun", "dataset_list", "show_progress_bar")]
       large_objs <- exports[sapply(exports, function(x) object.size(get(x, envir = .GlobalEnv))) > 10 * 1024^2]  # filter the big objects more than 10 Mb
       exports <- exports[! exports %in% large_objs]
-      clusterExport(cl = cl, list = exports, envir = .GlobalEnv)
+      clusterExport(cl = cl, varlist = exports, envir = .GlobalEnv)
+      
+      # export attached packages
+      attached_packages <- .packages()
+      clusterExport(cl = cl, varlist = "attached_packages", envir = environment())
+      invisible(clusterEvalQ(cl = cl, expr = sapply(attached_packages, function(pkg) require(pkg, character.only = TRUE))))
+      
+      # apply!
       portfolio_fun <- NULL  # ugly hack to deal with CRAN note
-      result <- foreach(portfolio_fun = portfolio_funs, .combine = c, .packages = .packages(), .options.snow = opts) %dopar% {
-        return(list(safeEvalPortf(portfolio_fun, dataset_list, price_name,
-                                  paral_datasets, show_progress_bar,
-                                  shortselling, leverage,
-                                  T_rolling_window, optimize_every, rebalance_every, bars_per_year,
-                                  execution, cost,
-                                  cpu_time_limit,
-                                  return_portfolio, return_returns)))
-      }
-      if (show_progress_bar) close(pb)
+      result <- pblapply(portfolio_funs, 
+                         function(portfolio_fun) safeEvalPortf(portfolio_fun, dataset_list, price_name,
+                                                               paral_datasets, show_progress_bar,
+                                                               shortselling, leverage,
+                                                               T_rolling_window, optimize_every, rebalance_every, bars_per_year,
+                                                               execution, cost,
+                                                               cpu_time_limit,
+                                                               return_portfolio, return_returns), cl = cl)
+      # if (show_progress_bar) close(pb)
       stopCluster(cl) 
     }
     
@@ -228,7 +235,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       packages_default <- search()  # snap the default packages
       
       error_message <- tryCatch({
-        suppressMessages(source(file.path(folder_path, file), local = TRUE))
+        suppressMessages(source(file.path(folder_path, file), local = source_to_local))
         res <- singlePortfolioBacktest(portfolio_fun, dataset_list__, price_name, market = FALSE,
                                        paral_datasets, show_progress_bar,
                                        shortselling, leverage,
@@ -261,29 +268,17 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                                       return_portfolio, return_returns)
       }
     } else {
-      # creat the progress bar based on files number
-      if (show_progress_bar) {
-        sink(file = tempfile())
-        pb <- utils::txtProgressBar(max = length(files), style = 3)
-        sink()
-        opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
-        message("Evaluating overall ", length(files), " portfolio functions (from files) in parallel")
-        opts$progress(0)
-      } else opts <- list()
       
       cl <- makeCluster(paral_portfolios)
-      registerDoSNOW(cl)
       file <- NULL  # ugly hack to deal with CRAN note
-      result <- foreach(file = files, .combine = c, .options.snow = opts) %dopar% {
-        return(list(safeEvalFolder(folder_path, file, dataset_list__, price_name,
-                                   paral_datasets, show_progress_bar,
-                                   shortselling, leverage,
-                                   T_rolling_window, optimize_every, rebalance_every, bars_per_year,
-                                   execution, cost,
-                                   cpu_time_limit,
-                                   return_portfolio, return_returns)))
-      }
-      if (show_progress_bar) close(pb)
+      result <- pblapply(files, function(file) safeEvalFolder(folder_path, file, dataset_list__, price_name,
+                                                              paral_datasets, show_progress_bar,
+                                                              shortselling, leverage,
+                                                              T_rolling_window, optimize_every, rebalance_every, bars_per_year,
+                                                              execution, cost,
+                                                              cpu_time_limit,
+                                                              return_portfolio, return_returns), cl = cl)
+      # if (show_progress_bar) close(pb)
       stopCluster(cl) 
     }
   }
@@ -334,7 +329,7 @@ benchmarkBacktest <- function(dataset_list, benchmark, price_name,
   benchmark_portfolios <- benchmark_library[names(benchmark_library) %in% benchmark]
   if (length(benchmark_portfolios) > 0) {
     dataset_list <- lapply(dataset_list, function(x) {if (!("adjusted" %in% names(x))) x$adjusted <- x[[price_name]]; return(x)})
-    res <- c(res, portfolioBacktest(benchmark_portfolios, dataset_list, NULL, price_name,
+    res <- c(res, portfolioBacktest(benchmark_portfolios, dataset_list, NULL, TRUE, price_name,
                                     1, paral_datasets, show_progress_bar, NULL,
                                     shortselling, leverage,
                                     T_rolling_window, optimize_every, rebalance_every, bars_per_year,
@@ -355,44 +350,39 @@ singlePortfolioBacktest <- function(portfolio_fun, dataset_list, price_name, mar
                                     execution, cost,
                                     cpu_time_limit,
                                     return_portfolio, return_returns) {
-  # create the progress bar
-  if (show_progress_bar) {
-    sink(file = tempfile())
-    pb <- utils::txtProgressBar(max = length(dataset_list), style = 3)
-    sink()
-    opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
-    opts$progress(0)
-  } else opts <- list()
   
   # when price is a list of xts object
   if (paral_datasets == 1) { ########## no-parallel mode
     result <- list()
-    for (i in 1:length(dataset_list)) {
-      result[[i]] <- singlePortfolioSingleXTSBacktest(portfolio_fun, dataset_list[[i]], price_name, market,
-                                                      shortselling, leverage,
-                                                      T_rolling_window, optimize_every, rebalance_every, bars_per_year,
-                                                      execution, cost,
-                                                      cpu_time_limit,
-                                                      return_portfolio, return_returns)
-      if (show_progress_bar) opts$progress(i)
-    }
+    result <- pblapply(dataset_list, function(dat) singlePortfolioSingleXTSBacktest(portfolio_fun, dat, price_name, market,
+                                                                                    shortselling, leverage,
+                                                                                    T_rolling_window, optimize_every, rebalance_every, bars_per_year,
+                                                                                    execution, cost,
+                                                                                    cpu_time_limit,
+                                                                                    return_portfolio, return_returns))
   } else {               ########### parallel mode
     cl <- makeCluster(paral_datasets)
-    registerDoSNOW(cl)
+    # registerDoSNOW(cl)
+    
+    # export global variables
     exports <- ls(envir = .GlobalEnv)
     exports <- exports[! exports %in% c("portfolio_fun", "dat")]
     large_objs <- exports[sapply(exports, function(x) object.size(get(x, envir = .GlobalEnv))) > 10 * 1024^2]  # filter the big objects more than 10 Mb
     exports <- exports[! exports %in% large_objs]
-    clusterExport(cl = cl, list = exports, envir = .GlobalEnv)
+    clusterExport(cl = cl, varlist = exports, envir = .GlobalEnv)
+    
+    # export attached packages
+    attached_packages <- .packages()
+    clusterExport(cl = cl, varlist = "attached_packages", envir = environment())
+    invisible(clusterEvalQ(cl = cl, expr = sapply(attached_packages, function(pkg) require(pkg, character.only = TRUE))))
+    
     dat <- NULL  # ugly hack to deal with CRAN note
-    result <- foreach(dat = dataset_list, .combine = c, .packages = .packages(), .options.snow = opts) %dopar% {
-      return(list(singlePortfolioSingleXTSBacktest(portfolio_fun, dat, price_name, market,
-                                                   shortselling, leverage,
-                                                   T_rolling_window, optimize_every, rebalance_every, bars_per_year,
-                                                   execution, cost,
-                                                   cpu_time_limit,
-                                                   return_portfolio, return_returns)))
-    }
+    result <- pblapply(dataset_list, function(dat) singlePortfolioSingleXTSBacktest(portfolio_fun, dat, price_name, market,
+                                                                                    shortselling, leverage,
+                                                                                    T_rolling_window, optimize_every, rebalance_every, bars_per_year,
+                                                                                    execution, cost,
+                                                                                    cpu_time_limit,
+                                                                                    return_portfolio, return_returns), cl = cl)
     stopCluster(cl) 
   }
   

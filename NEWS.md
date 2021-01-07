@@ -1,5 +1,9 @@
 ## Changes in portfolioBacktest version 0.2.3 (2020-10-14)
 
+* Reimplement parallel mode using package `pbapply`.
+
+* Add a temporary argument `source_to_local` in function `portfolioBacktest()` to address the issues of using package `CVXR` within files.
+
 * Add MDP and MSRP as benchmarks.
 
 * Fix performance computation when no investment happens in some days.

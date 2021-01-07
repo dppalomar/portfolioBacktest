@@ -61,7 +61,7 @@ SP500_data <- stockDataDownload(stock_symbols = SP500_symbols,
 
 }
 \seealso{
-\code{\link{stockDataResample}}
+\code{\link{financialDataResample}}
 }
 \author{
 Rui Zhou and Daniel P. Palomar

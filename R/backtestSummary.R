@@ -61,7 +61,7 @@ backtestSummary <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
               "error_message"       = res_table$error_message))
 }
 
-
+#' @importFrom stats na.omit
 backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fun) {
   performance_names <- setdiff(names(res_table), c("error", "error_message"))  # ignore two non-numerical metrics
   performance <- rep(NA, length(performance_names))

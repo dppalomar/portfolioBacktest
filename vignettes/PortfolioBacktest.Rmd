@@ -464,7 +464,7 @@ In some situations, one may have to backtest portfolios from different sources s
 If an instructor wants to evaluate students of a course in their portfolio design, this can be easily done by asking each student to submit an R script with a unique filename like `STUDENTNUMBER.R`. For example, suppose we have three files in the folder `portfolio_files` named `0001.R`, `0002.R`, and `0003.R`. Then:
 ```{r, cache=TRUE}
 bt_all_students <- portfolioBacktest(folder_path = "portfolio_files", 
-                                     dataset = dataset10)
+                                     dataset_list = dataset10)
 names(bt_all_students)
 ```
 

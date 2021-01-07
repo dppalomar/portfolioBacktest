@@ -31,16 +31,14 @@ LazyData: true
 RoxygenNote: 7.1.1
 Depends: R (>= 2.10)
 Imports:
+    pbapply,
     digest,
-    doSNOW,
     evaluate,
-    foreach,
     ggplot2,
     PerformanceAnalytics,
     quantmod,
     R.utils,
     rlang,
-    snow,
     utils,
     xts,
     zoo,
