@@ -463,10 +463,11 @@ In some situations, one may have to backtest portfolios from different sources s
 
 If an instructor wants to evaluate students of a course in their portfolio design, this can be easily done by asking each student to submit an R script with a unique filename like `STUDENTNUMBER.R`. For example, suppose we have three files in the folder `portfolio_files` named `0001.R`, `0002.R`, and `0003.R`. Then:
 ```{r, cache=TRUE}
-bt_all_students <- portfolioBacktest(folder_path = "portfolio_files", 
+bt_all_students <- portfolioBacktest(folder_path = "portfolio_files",
                                      dataset_list = dataset10)
 names(bt_all_students)
 ```
+Note that if the package `CVXR` is used in some of the files, it may not work depending on the version. A temporary workaround is to set the argument `source_to_local = FALSE` in `portfolioBacktest()` (the side effect is that the objects from the file will be loaded in the global environment).
 
 
 ## Leaderboard of portfolios with user-defined ranking
