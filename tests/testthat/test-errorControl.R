@@ -17,14 +17,14 @@ test_that("Error control test for \"stockDataDownload\"", {
 })
 
 test_that("Error control test for \"financialDataResample\"", {
-  
   X_wrong_index <- my_dataset
   index(X_wrong_index$index) <- index(X_wrong_index$index) + 1
   expect_error(financialDataResample(X_wrong_index), "The date indices of \"X\" do not match.")
   
   X_non_mono <- my_dataset
   X_non_mono$adjusted[2, ] <- NA
-  expect_error(financialDataResample(X_non_mono), "\"X\" does not satisfy monotone missing-data pattern.")
+  #expect_error(financialDataResample(X_non_mono), "\"X\" does not satisfy monotone missing-data pattern.")
+  expect_warning(financialDataResample(X_non_mono), "Some xts object does not satisfy monotone missing-data pattern.")
   expect_error(financialDataResample(my_dataset, T = 1e10,), "\"T_sample\" cannot be greater than the date length of \"X\".")
 })
 
