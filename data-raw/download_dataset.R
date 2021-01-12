@@ -7,7 +7,7 @@ save(SP500_YAHOO, file = "data-raw/SP500_YAHOO.RData", version = 2)
 
 sapply(SP500_YAHOO, dim)  # sanity check
 
-dataset <- stockDataResample(SP500_YAHOO, N_stock = 50, T_sample = 252*2, N_dataset = 10)
+dataset <- financialDataResample(SP500_YAHOO, N_stock = 50, T_sample = 252*2, N_dataset = 10)
 save(dataset, file = "data-raw/dataset.RData")
 
 checkDataset <- function(dataset) {

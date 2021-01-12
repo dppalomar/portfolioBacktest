@@ -249,8 +249,15 @@ financialDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datase
 }
 
 
+
+#' @title Generate random resamples from financial data
+#' 
+#' @description This function is deprecated. Use instead \code{\link{financialDataResample}()}.
+#' 
+#' @inheritParams financialDataResample
+#' 
 #' @export
-stockDataResample <- function(...) {
+stockDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datasets = 10, rm_stocks_with_na = TRUE) {
   .Deprecated("financialDataResample")
 }
 

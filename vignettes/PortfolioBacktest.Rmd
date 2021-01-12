@@ -145,16 +145,16 @@ head(dataset10$`dataset 1`$adjusted[, 1:3])
 Note that each dataset contains an `xts` object called `"adjusted"` (adjusted prices). By default, `portfolioBacktest()` will use such adjusted prices to calculate the portfolio return. But one can change this setting with the argument `price_name` in function `portfolioBacktest()`.
 
 ## Obtaining more data
-We emphasize that 10 datasets are not enough for properly backtesting portfolios. In this package, we provide the function `stockDataDownload()` to download online data resources in the required data format. Then, the function `stockDataResample()` can help resample the downloaded data into multiple datasets (each resample is obtained by randomly choosing a subset of the stock names and randomly choosing a time period over the available long period), which can be directly passed to `portfolioBacktest()`. We recommend using these two functions to generate multiple datasets for serious backtesting:
+We emphasize that 10 datasets are not enough for properly backtesting portfolios. In this package, we provide the function `stockDataDownload()` to download online data resources in the required data format. Then, the function `financialDataResample()` can help resample the downloaded data into multiple datasets (each resample is obtained by randomly choosing a subset of the stock names and randomly choosing a time period over the available long period), which can be directly passed to `portfolioBacktest()`. We recommend using these two functions to generate multiple datasets for serious backtesting:
 ```{r, eval=FALSE}
 data(SP500_symbols)  # load the SP500 symbols
 # download data from internet
 SP500 <- stockDataDownload(stock_symbols = SP500_symbols, 
                            from = "2008-12-01", to = "2018-12-01")
 # resample 10 times from SP500, each with 50 stocks and 2-year consecutive data 
-my_dataset_list <- stockDataResample(SP500, 
-                                     N_sample = 50, T_sample = 252*2, 
-                                     num_datasets = 10)
+my_dataset_list <- financialDataResample(SP500, 
+                                         N_sample = 50, T_sample = 252*2, 
+                                         num_datasets = 10)
 ```
 Each individual dataset will contain 7 `xts` objects with names: `open`, `high`, `low`, `close`, `volume`, `adjusted`, `index`. 
 Since the function `stockDataDownload()` may take a long time to download the data from the Internet, it will automatically save the data into a local file for subsequent fast retrieval (whenever the function is called with the same arguments). It is the responsibility of the user to download a proper universe of stocks to avoid survivorship bias.
@@ -422,12 +422,12 @@ system.time(
 ```
 It is obvious that the evaluation time for backtesting has been significantly reduced. Note that the parallel evaluation elapsed time will not be exactly equal to the original time divided by parallel cores because starting new R sessions also takes extra time. Besides, the two parallel modes can be simultaneous used.
 
-Note that an unexpected error might be thrown out when run parallel backtesting through [RStudio in macOS](https://github.com/rstudio/rstudio/issues/6692). If that happens, one can check the default parallel setting via:
+Note that an unexpected error might be thrown out when running a parallel backtest through [RStudio in macOS](https://github.com/rstudio/rstudio/issues/6692). If that happens, one can check the default parallel setting via:
 ```{r, eval=FALSE}
 parallel:::getClusterOption("setup_strategy")
 ```
 
-If `"parallel"` is returned, one can set the option `setup_strategy` be `"sequential"` via:
+If `"parallel"` is returned, one can set the option `setup_strategy` to `"sequential"`:
 ```{r, eval=FALSE}
 parallel:::setDefaultClusterOptions(setup_strategy = "sequential")
 ```

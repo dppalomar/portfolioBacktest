@@ -2,17 +2,17 @@
 # library(microbenchmark)
 # SP500_YAHOO <- stockDataDownload(stock_symbols = SP500_symbols, from = "2010-12-01", to = "2018-12-01")
 # op <- microbenchmark(
-#   loop = stockDataResample(SP500_YAHOO, N = 50, T = 252*2, num_datasets = 100),
-#   apply = stockDataResample_noloop(SP500_YAHOO, N = 50, T = 252*2, num_datasets = 100),
+#   loop = financialDataResample(SP500_YAHOO, N = 50, T = 252*2, num_datasets = 100),
+#   apply = financialDataResample_noloop(SP500_YAHOO, N = 50, T = 252*2, num_datasets = 100),
 #   times = 100)
 # print(op)
 #
 # set.seed(42)
-# mydataset <- stockDataResample(SP500_YAHOO, N = 50, T = 252*2, num_datasets = 1000)
+# mydataset <- financialDataResample(SP500_YAHOO, N = 50, T = 252*2, num_datasets = 1000)
 # set.seed(42)
-# mydataset2 <- stockDataResample_noloop(SP500_YAHOO, N = 50, T = 252*2, num_datasets = 1000)
+# mydataset2 <- financialDataResample_noloop(SP500_YAHOO, N = 50, T = 252*2, num_datasets = 1000)
 # identical(mydataset, mydataset2)
-stockDataResample_noloop <- function(X, N_sample = 50, T_sample = 2*252, num_datasets = 10, rm_stocks_with_na = TRUE) {
+financialDataResample_noloop <- function(X, N_sample = 50, T_sample = 2*252, num_datasets = 10, rm_stocks_with_na = TRUE) {
   # check data time zone
   if ((!is.null(X$index)) && any(index(X$open) != index(X$index))) stop("The date indexes of \"X\" do not match.")
   

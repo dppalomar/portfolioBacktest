@@ -12,7 +12,7 @@ library(portfolioBacktest)
 
 load("data-raw/SP500_YAHOO.RData")
 
-my_dataset_list <- stockDataResample(SP500_YAHOO, N = 50, T = 252*2, num_datasets = 100)
+my_dataset_list <- financialDataResample(SP500_YAHOO, N = 50, T = 252*2, num_datasets = 100)
 
 # define quintile portfolio
 quintile_portfolio_fun <- function(data) {

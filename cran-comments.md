@@ -1,9 +1,9 @@
-Fifth release in CRAN, version 0.2.2 (2020-07-29), (package also available in GitHub).
+Sixth release in CRAN, version 0.2.3 (2021-01-12), (package also available in GitHub).
 
 ---
 
 ## Test environments
-* OS X, R 4.0.2
+* OS X, R version 4.0.3 (2020-10-10)
 * Windows at https://win-builder.r-project.org/
 
 ## R CMD check results
@@ -12,4 +12,6 @@ There were no ERRORs or WARNINGs.
 
 ## Reverse dependencies
 
-There are currently no reverse dependencies for this package.
+There is one (Suggest) dependency: `riskParityPortfolio` (https://cran.r-project.org/package=riskParityPortfolio).
+The authors have been notified and it has been checked successfully.
+

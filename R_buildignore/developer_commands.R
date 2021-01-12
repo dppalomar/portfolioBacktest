@@ -34,12 +34,16 @@ devtools::run_examples(test = TRUE)
 pkgload::run_example("man/backtestLeaderboard.Rd", run_donttest = TRUE)
 
 
+# Reverse dependencies
+devtools::revdep(pkg = "portfolioBacktest")
+revdepcheck::revdep_check(num_workers = 4)  # https://github.com/r-lib/revdepcheck
+
+
 # CRAN check and submission (https://r-pkgs.org/release.html)
 #  checklist: https://kalimu.github.io/post/checklist-for-r-package-submission-to-cran/
 devtools::check()  # run_dont_test = TRUE
 rcmdcheck::rcmdcheck()  # build_args = "--run-donttest"
 devtools::build()
-#devtools::revdep(pkg = "portfolioBacktest")  # to check reverse dependencies
 #devtools::check_win_release()  #to check under windows
 #R CMD build .  # this is to generate tarball
 #R CMD check portfolioBacktest_0.2.3.tar.gz --as-cran --run-donttest  # this is before submission to CRAN
