@@ -80,14 +80,18 @@ bt <- portfolioBacktest(my_portfolio, dataset10)
 
 ```r
 backtestSummary(bt)$performance
-#>                          fun1
-#> Sharpe ratio        1.5414027
-#> max drawdown        0.0893789
-#> annual return       0.1641528
-#> annual volatility   0.1218623
-#> Sterling ratio      2.2138192
-#> Omega ratio         1.2950904
-#> ROT (bps)         730.5353223
+#>                           fun1
+#> Sharpe ratio      1.541403e+00
+#> max drawdown      8.937890e-02
+#> annual return     1.641528e-01
+#> annual volatility 1.218623e-01
+#> Sterling ratio    2.213819e+00
+#> Omega ratio       1.295090e+00
+#> ROT (bps)         6.997663e+02
+#> VaR (0.95)        1.101934e-02
+#> CVaR (0.95)       1.789425e-02
+#> cpu time          1.076923e-03
+#> failure rate      0.000000e+00
 ```
 
 For a more detailed explanation on how to use the package with all the features, check the [vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
@@ -122,4 +126,9 @@ Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest) and [GitHu
 README file: [GitHub-readme](https://github.com/dppalomar/portfolioBacktest/blob/master/README.md).
 
 Vignette: [CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
+<!---
+and [GitHub-vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/portfolioBacktest/blob/master/vignettes/PortfolioBacktest.html).
+--->
+
+
 

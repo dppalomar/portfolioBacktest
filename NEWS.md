@@ -1,4 +1,4 @@
-## Changes in portfolioBacktest version 0.2.3 (2020-10-14)
+## Changes in portfolioBacktest version 0.2.3 (2021-01-12)
 
 * Reimplement parallel mode using package `pbapply`.
 

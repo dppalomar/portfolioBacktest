@@ -1,7 +1,7 @@
 Package: portfolioBacktest
 Title: Automated Backtesting of Portfolios over Multiple Datasets
-Version: 0.2.2.9000
-Date: 2020-07-29
+Version: 0.2.3
+Date: 2021-01-12
 Description: Automated backtesting of multiple portfolios over multiple 
     datasets of stock prices in a rolling-window fashion. Intended for 
     researchers and practitioners to backtest a set of different portfolios, 
@@ -37,14 +37,14 @@ Imports:
     pbapply,
     PerformanceAnalytics,
     parallel,
+    quadprog,
     quantmod,
     R.utils,
     rlang,
     stats,
     utils,
     xts,
-    zoo,
-    quadprog
+    zoo
 Suggests:
     CVXR,
     DT,
