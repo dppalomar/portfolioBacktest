@@ -1,7 +1,7 @@
 ---
 title: "Portfolio Backtesting"
 author: |
-  | Daniel P. Palomar and Rui ZHOU
+  | Daniel P. Palomar and Rui Zhou
   | The Hong Kong University of Science and Technology (HKUST)
 date: "`r Sys.Date()`"
 output:
@@ -15,6 +15,7 @@ output:
     highlight: pygments  
     toc: yes
     toc_depth: 2
+toc-title: "Table of Contents"
 csl: ieee.csl
 bibliography: refs.bib
 vignette: >
@@ -24,7 +25,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
-```{r, echo = FALSE}
+```{r, echo=FALSE}
 library(knitr)
 opts_chunk$set(
   collapse = TRUE,
@@ -307,6 +308,7 @@ dataset10_5stocks <- lapply(dataset10,
 # backtest
 bt <- portfolioBacktest(list("GMVP" = GMVP_portfolio_fun), dataset10_5stocks, 
                         rebalance_every = 20)
+
 # chart
 backtestChartStackedBar(bt, "GMVP", legend = TRUE)
 ```
@@ -421,16 +423,14 @@ system.time(
 It is obvious that the evaluation time for backtesting has been significantly reduced. Note that the parallel evaluation elapsed time will not be exactly equal to the original time divided by parallel cores because starting new R sessions also takes extra time. Besides, the two parallel modes can be simultaneous used.
 
 Note that an unexpected error might be thrown out when run parallel backtesting through [RStudio in macOS](https://github.com/rstudio/rstudio/issues/6692). If that happens, one can check the default parallel setting via:
-```{r, eval = FALSE}
+```{r, eval=FALSE}
 parallel:::getClusterOption("setup_strategy")
 ```
 
 If `"parallel"` is returned, one can set the option `setup_strategy` be `"sequential"` via:
-
-```{r, eval = FALSE}
+```{r, eval=FALSE}
 parallel:::setDefaultClusterOptions(setup_strategy = "sequential")
 ```
-
 The problem may be fixed. However, the "sequential" strategy might be less efficient than the "parallel" strategy.
 
 
@@ -476,7 +476,8 @@ In some situations, one may have to backtest portfolios from different sources s
 
 If an instructor wants to evaluate students of a course in their portfolio design, this can be easily done by asking each student to submit an R script with a unique filename like `STUDENTNUMBER.R`. For example, suppose we have three files in the folder `portfolio_files` named `0001.R`, `0002.R`, and `0003.R`. Then:
 ```{r, cache=TRUE}
-bt_all_students <- portfolioBacktest(folder_path = "portfolio_files",
+bt_all_students <- portfolioBacktest(folder_path = "portfolio_files", 
+                                     source_to_local = FALSE,
                                      dataset_list = dataset10)
 names(bt_all_students)
 ```
@@ -485,7 +486,7 @@ Note that if the package `CVXR` is used in some of the files, it may not work de
 
 ## Leaderboard of portfolios with user-defined ranking
 Now we can rank the different portfolios/students based on a weighted combination of the rank percentiles (termed scores) of the performance measures:
-```{r, fig.height=2, fig.width=9, out.width = "90%"}
+```{r, fig.height=2, fig.width=9, out.width="90%"}
 leaderboard <- backtestLeaderboard(bt_all_students, 
                                    weights = list("Sharpe ratio"  = 7, 
                                                   "max drawdown"  = 1, 

@@ -63,7 +63,7 @@ backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median,
   if (!is.list(weights)) stop("Argument \"weights\" must be a list.")
   if (any(unlist(weights) < 0)) stop("All weights must be non-negative.")
   if (all(unlist(weights) == 0)) stop("Cannot set all weights be zero.")
-  
+
   tmp <- backtestSummary(bt, summary_fun = summary_fun, show_benchmark = show_benchmark)
   performance_summary <- t(tmp$performance_summary)
   error_message       <- tmp$error_message
@@ -82,6 +82,8 @@ backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median,
   # sort the valid scores
   weights_rescaled <- weights_comb / sum(weights_comb)
   mask_valid <- performance_summary[, "failure rate"] != 1
+  if (all(!mask_valid))
+    stop("All portfolios gave errors.")
   scores <- apply(t(t(performance_summary[mask_valid, ]) * judge), 2, rank_percentile)
   final_score <- scores %*% weights_rescaled
   index_sorting <- sort(final_score, decreasing = TRUE, index = TRUE, na.last = TRUE)$ix
