@@ -455,9 +455,10 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
   
   # indices
   #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= T_rolling_window)]
-  optimize_indices <- seq(from = T_rolling_window, to = T, by = optimize_every)
+  optimize_indices  <- seq(from = T_rolling_window, to = T, by = optimize_every)
   rebalance_indices <- seq(from = T_rolling_window, to = T, by = rebalance_every)
-  if (any(!(optimize_indices %in% rebalance_indices))) stop("The reoptimization indices have to be a subset of the rebalancing indices.")
+  if (any(!(optimize_indices %in% rebalance_indices))) 
+    stop("The reoptimization indices have to be a subset of the rebalancing indices.")
   
   # compute w
   error <- flag_timeout <- FALSE; error_message <- NA; error_capture <- NULL; cpu_time <- c(); 
@@ -507,7 +508,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name, ma
       return(res)
     }
   }
-  
+
   # compute returns of portfolio
   R_lin <- PerformanceAnalytics::CalculateReturns(prices)
   portf <- returnPortfolio(R = R_lin, weights = w, execution = execution, cost = cost)
@@ -659,7 +660,7 @@ returnPortfolio <- function(R, weights,
 
   # fill in w with NA to match the dates of R and lag appropriately
   w <- R; w[] <- NA; colnames(w) <- colnames(weights)
-  w[as.character(index(weights)), ] <- weights
+  w[index(weights), ] <- weights
   w <- switch(match.arg(execution),  # w[t] used info up to (including) price[t]
               "same period" = lag.xts(w, 1),  # w[t] is (idealistically) executed at price[t], so will multiply return[t+1]
               "next period" = lag.xts(w, 2),  # w[t] is executed one period later at price[t+1], so will multiply return[t+2]
