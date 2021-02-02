@@ -13,7 +13,7 @@ portfolioBacktest(
   paral_portfolios = 1,
   paral_datasets = 1,
   show_progress_bar = FALSE,
-  benchmark = NULL,
+  benchmarks = NULL,
   shortselling = TRUE,
   leverage = Inf,
   T_rolling_window = 252,
@@ -61,7 +61,7 @@ see \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/Portfol
 
 \item{show_progress_bar}{Logical value indicating whether to show progress bar (default is \code{FALSE}).}
 
-\item{benchmark}{String vector indicating the benchmark portfolios to be incorporated, currently supports:
+\item{benchmarks}{String vector indicating the benchmark portfolios to be incorporated, currently supports:
 \itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks}
          \item{\code{IVP} - the inverse-volatility portfolio, with weights be inversely proportional the standard deviation of returns.}
          \item{\code{index} - the market index, requires an \code{xts} named `index` in the datasets.}}}
@@ -72,14 +72,14 @@ see \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/Portfol
 \item{leverage}{Amount of leverage as in \eqn{||w||_1 <= leverage} 
 (default is \code{Inf}, so no control for leverage in the backtesting).}
 
-\item{T_rolling_window}{Length of the lookback rolling window (default is \code{252}).}
+\item{T_rolling_window}{Length of the lookback rolling window in periods (default is \code{252}).}
 
-\item{optimize_every}{How often the portfolio is to be optimized (default is \code{20}).}
+\item{optimize_every}{How often the portfolio is to be optimized in periods (default is \code{20}).}
 
-\item{rebalance_every}{How often the portfolio is to be rebalanced (default is \code{1}).}
+\item{rebalance_every}{How often the portfolio is to be rebalanced in periods (default is \code{1}).}
 
-\item{bars_per_year}{Number of bars per year. By default it will be calculated automatically 
-(e.g., for daily data there are 252 bars per year).}
+\item{bars_per_year}{Number of bars/periods per year. By default it will be calculated automatically 
+(e.g., for daily data there are 252 bars/periods per year).}
 
 \item{execution}{String that can be either \code{"same period"} (default) or \code{"next period"}. 
 At the rebalancing period \code{t}, the portfolio has used information up to (and including)
