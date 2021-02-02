@@ -5,10 +5,6 @@ context("Checking portfolioBacktest and result handling functions")
 library(xts)
 data(dataset10)
 
-# define uniform portfolio
-uniform_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
-  return(rep(1/ncol(prices), ncol(prices)))
-}
 
 # define GMVP
 GMVP_portfolio_fun <- function(data) {
@@ -20,7 +16,7 @@ GMVP_portfolio_fun <- function(data) {
   return(w)
 }
 
-portfolios <- list("Uniform"   = uniform_portfolio_fun,
+portfolios <- list("Uniform"   = portfolioBacktest:::uniform_portfolio_fun,
                    "GMVP"      = GMVP_portfolio_fun)
 
 
