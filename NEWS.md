@@ -1,3 +1,10 @@
+## Changes in portfolioBacktest version 0.3.0
+
+* Now the portfolio function received an additional argument with the current portfolio. This allows for portfolio designs that take into account transaction costs and for smart rebalancing techniques.
+
+* Lots of internal code rewritten to make it more robust to future coding bugs. Now use of ellipsis in most places (always with named arguments).
+
+
 ## Changes in portfolioBacktest version 0.2.3 (2021-01-12)
 
 * Reimplement parallel mode using package `pbapply`.
