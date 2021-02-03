@@ -147,8 +147,8 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
     pbo <- pboptions(type = "none")
     on.exit(pboptions(pbo), add = TRUE)
   }
-  
-  
+
+    
   # parse arguments for subsequent calls
   args <- list(dataset_list = dataset_list, price_name = price_name,
                paral_datasets = paral_datasets,
@@ -178,7 +178,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       result <- list()
       for (i in 1:length(portfolio_funs)) {
         if (show_progress_bar)
-          message("\n  Backtesting function ", format(portfolio_names[i], width = 15), " (", i, "/", length(portfolio_names), ")")
+          message("  Backtesting function ", format(portfolio_names[i], width = 15), " (", i, "/", length(portfolio_names), ")")
         result[[i]] <- do.call(singlePortfolioBacktest_safe, args = c(list(portfolio_fun = portfolio_funs[[i]]), args))
       }
     } else {
@@ -267,7 +267,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
     res_benchmarks <- list()
     for (i in seq_along(benchmark_portfolios)) {
       if (show_progress_bar)
-        message("\n  Backtesting benchmark ", format(benchmarks[i], width = 15), " (", i, "/", length(benchmarks), ")")
+        message("  Backtesting benchmark ", format(benchmarks[i], width = 15), " (", i, "/", length(benchmarks), ")")
       res_benchmarks[[i]] <- do.call(singlePortfolioBacktest, args = c(list(portfolio_fun = benchmark_portfolios[[i]]), args))
     }
     names(res_benchmarks) <- names(benchmark_portfolios)
@@ -275,7 +275,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
     # add index if needed
     if ("index" %in% benchmarks) {
       if (show_progress_bar) 
-        message("\n  Backtesting index")
+        message("  Backtesting index     ", format("", width = 15), " (", i+1, "/", length(benchmarks), ")")
       args$price_name <- "index"
       args$optimize_every <- 1e10
       args$rebalance_every <- 1e10
@@ -304,7 +304,7 @@ singlePortfolioBacktest <- function(...) {
   
   # do backtests
   if (paral_datasets == 1)
-    result <- lapply(dataset_list, function(data) do.call(singlePortfolioSingleXTSBacktest, args = c(list(data = data), args)))
+    result <- pblapply(dataset_list, function(data) do.call(singlePortfolioSingleXTSBacktest, args = c(list(data = data), args)))
   else {
     cl <- makeCluster(paral_datasets)
     # export global variables
@@ -338,18 +338,8 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
                                              execution, cost,
                                              cpu_time_limit,
                                              return_portfolio, return_returns) {
-  # create return container
-  res <- list(performance = portfolioPerformance(), 
-              cpu_time = NA, 
-              error = FALSE, 
-              error_message = NA,
-              w_designed = NA,
-              w_bop = NA,
-              return = NA,
-              wealth = NA)
-
-  # if (!price_name %in% names(data)) 
-  #   stop("Fail to find price data with name \"", price_name, "\"" , " in given dataset_list.")
+  if (!price_name %in% names(data))
+    stop("Failed to find price data with name \"", price_name, "\"" , " in given dataset_list.")
   prices <- data[[price_name]]
   
   ######## error control  #########
@@ -373,175 +363,97 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
   if (any(!(optimize_indices %in% rebalance_indices))) 
     stop("The reoptimization indices have to be a subset of the rebalancing indices.")
   
+
   # compute w
-  error <- flag_timeout <- FALSE; error_message <- NA; error_capture <- NULL; cpu_time <- c(); 
+  cpu_time <- c()
   w <- xts(matrix(NA, length(rebalance_indices), N), order.by = index(prices)[rebalance_indices])
   colnames(w) <- gsub(".Adjusted", "", colnames(prices))
-  for (i in 1:length(rebalance_indices)) {
+  for (i in seq_along(rebalance_indices)) {
     idx_prices <- rebalance_indices[i]
     
+    # call porfolio function if necessary
     if (idx_prices %in% optimize_indices) {  # reoptimize
       data_window  <- lapply(data, function(x) x[(idx_prices-T_rolling_window+1):idx_prices, ])
       start_time <- proc.time()[3] 
-      error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(w[i, ] <- do.call(portfolio_fun, list(data_window)), environment()), 
+      error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(w[i, ] <- do.call(portfolio_fun, list(data_window)), 
+                                                                               environment()), 
                                             timeout = cpu_time_limit, onTimeout = "silent")
       cpu_time <- c(cpu_time, as.numeric(proc.time()[3] - start_time))
-    } else { # just rebalance without reoptimizing
+    } else  # just rebalance without reoptimizing
       w[i, ] <- w[i-1, ]
-    }
     
-    # check if error happened
-    if (is.list(error_capture)) {
-      error <- TRUE
-      error_message <- error_capture$message
-      error_stack <- list("at"    = deparse(error_capture$call), 
-                          "stack" = paste(sapply(error_capture$calls[-1], deparse), collapse = "\n"))
-    }
+    # parse errors
+    portf <- check_portfolio_errors(error_capture, w[i, ], shortselling, leverage)
+    if (portf$error)
+      break  # return immediately when error happens
+  }
+  
+  
+  # return results
+  if (portf$error) {
+    res <- list(performance = portfolioPerformance(rets = NA, ROT_bps = NA, bars_per_year = NA),
+                cpu_time = NA, 
+                error = TRUE, 
+                error_message = portf$error_message)
+  } else {
+    # compute portfolio returns
+    R_lin <- PerformanceAnalytics::CalculateReturns(prices)
+    portf <- returnPortfolio(R = R_lin, weights = w, execution = execution, cost = cost)
+    # sanity check:
+    # res_check <- PerformanceAnalytics::Return.portfolio(R_lin, weights = w, verbose = TRUE)
+    # all.equal(portf$rets, res_check$returns)
+    # all.equal(portf$w_bop, res_check$BOP.Weight, check.attributes = FALSE)
     
-    # check NA
-    if (!error && anyNA(w[i, ])) {
-      error = TRUE
-      error_message <- c("Returned portfolio contains NA.")
+    res <- list(performance = portfolioPerformance(rets = portf$rets, ROT_bps = portf$ROT_bps, bars_per_year),
+                cpu_time = mean(cpu_time), 
+                error = FALSE, 
+                error_message = NA)    
+    if (return_portfolio) {
+      res$w_designed <- w
+      res$w_bop <- portf$w_bop
     }
-    
-    # check constraint
-    if (!error) {
-      if (!shortselling && any(w[i, ] + 1e-6 < 0)) 
-        {error <- TRUE; error_message <- c("No-shortselling constraint not satisfied.")}
-      if (sum(abs(w[i, ])) > leverage + 1e-6) 
-        {error <- TRUE; error_message <- c(error_message, "Leverage constraint not satisfied.")}
-    }
-    
-    # return immediately when error happens
-    if (error) {
-      res$error <- error
-      res$error_message <- error_message[!is.na(error_message)]
-      if (is.list(error_capture)) attr(res$error_message, "error_stack") <- error_stack
-      if (return_portfolio) res$portfolio <- w
-      return(res)
+    if (return_returns) {
+      res$return <- portf$rets
+      res$wealth <- portf$wealth
     }
   }
-
-  # compute returns of portfolio
-  R_lin <- PerformanceAnalytics::CalculateReturns(prices)
-  portf <- returnPortfolio(R = R_lin, weights = w, execution = execution, cost = cost)
-  # sanity check:
-  # res_check <- PerformanceAnalytics::Return.portfolio(R_lin, weights = w, verbose = TRUE)
-  # all.equal(portf$rets, res_check$returns)
-  # all.equal(portf$w_bop, res_check$BOP.Weight, check.attributes = FALSE)
-
-  res$performance <- portfolioPerformance(rets = portf$rets, ROT_bips = portf$ROT_bips, bars_per_year)
-  res$cpu_time <- mean(cpu_time)
-  res$error <- error
-  res$error_message <- error_message
-  if (return_portfolio) {
-    res$w_designed <- w
-    res$w_bop <- portf$w_bop
-  }
-  if (return_returns) {
-    res$return <- portf$rets
-    res$wealth <- portf$wealth
-  }
-
   return(res)
 }
 
 
 
 
-#' @title Add a new performance measure to backtests
-#'
-#' @param bt Backtest results as produced by the function \code{\link{portfolioBacktest}}.
-#' @param name String with name of new performance measure.
-#' @param fun Function to compute new performance measure from any element returned by 
-#'            \code{\link{portfolioBacktest}}, e.g., \code{return}, \code{wealth}, and \code{w_bop}.
-#' @param desired_direction Number indicating whether the new measure is desired to be larger (1),
-#'                          which is the default, or smaller (-1).
-#' 
-#' @return List with the portfolio backtest results, see \code{\link{portfolioBacktest}}.
-#' 
-#' 
-#' @author Daniel P. Palomar and Rui Zhou
-#' 
-#' @examples
-#' \donttest{
-#' library(portfolioBacktest)
-#' data(dataset10)  # load dataset
-#' 
-#' # define your own portfolio function
-#' uniform_portfolio <- function(dataset) {
-#'   N <- ncol(dataset$adjusted)
-#'   return(rep(1/N, N))
-#' }
-#' 
-#' # do backtest
-#' bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
-#' 
-#' # add a new performance measure
-#' bt <- add_performance(bt, name = "SR arithmetic", 
-#'                       fun = function(return, ...) 
-#'                                PerformanceAnalytics::SharpeRatio.annualized(return, 
-#'                                                                             geometric = FALSE))
-#'                                
-#' bt <- add_performance(bt, name = "avg leverage", desired_direction = -1,
-#'                       fun = function(w_bop, ...)
-#'                                if(anyNA(w_bop)) NA else mean(rowSums(abs(w_bop))))
-#' }
-#' 
-#' @export
-add_performance <- function(bt, name, fun, desired_direction = 1) {
-  
-  each_dataset <- function(bt_single) {
-    judge_tmp <- attr(bt_single$performance, "judge")
-    names_tmp <- names(bt_single$performance)
-    bt_single$performance <- c(bt_single$performance,
-                               do.call(fun, bt_single))
-    names(bt_single$performance) <- c(names_tmp, name)
-    attr(bt_single$performance, "judge") <- c(judge_tmp, desired_direction)
-    return(bt_single)
-  }
-  
-  each_portfolio <- function(bt_portfolio)
-    lapply(bt_portfolio, each_dataset)
-  
-  bt_attributes <- attributes(bt)
-  bt <- lapply(bt, each_portfolio)
-  attributes(bt) <- bt_attributes
-  return(bt)
-}
 
-
-# analyse the performance of portfolio returns
-#   rets: is an xts recording portfolio's return
-#   ROT_bips
-#
-portfolioPerformance <- function(rets = NA, ROT_bips = NA, bars_per_year = NA) {
-  performance <- rep(NA, 9)
-  names(performance) <- c("Sharpe ratio", "max drawdown", "annual return", "annual volatility", 
-                          "Sterling ratio", "Omega ratio", "ROT (bps)", "VaR (0.95)", "CVaR (0.95)")
-  # "judge" means how to judge the performance, 1: the bigger the better, -1: the smaller the better
-  attr(performance, "judge") <- c(1, -1, 1, -1, 1, 1, 1, -1, -1)
+check_portfolio_errors <- function(error_capture, w, shortselling, leverage) {
+  res <- list(error = FALSE, error_message = NA)
   
-  if (!anyNA(rets)) {
-    fraction_in <- sum(abs(rets) > 1e-8)/nrow(rets)
-    rets <- rets[abs(rets) > 1e-8]  # remove data where return is zero
-    if (nrow(rets) == 0)
-      performance[] <- c(NA, 0, 0, 0, NA, NA, NA, 0, 0)
-    else {
-      # fill the elements one by one
-      performance["Sharpe ratio"]      <- PerformanceAnalytics::SharpeRatio.annualized(rets, scale = bars_per_year) * sqrt(fraction_in)
-      performance["max drawdown"]      <- PerformanceAnalytics::maxDrawdown(rets)
-      performance["annual return"]     <- PerformanceAnalytics::Return.annualized(rets, scale = bars_per_year) * fraction_in        # prod(1 + rets)^(252/nrow(rets)) - 1 or mean(rets) * 252
-      performance["annual volatility"] <- PerformanceAnalytics::StdDev.annualized(rets, scale = bars_per_year) * sqrt(fraction_in)  # sqrt(252) * sd(rets, na.rm = TRUE)
-      performance["Sterling ratio"]    <- performance["annual return"] / performance["max drawdown"]
-      performance["Omega ratio"]       <- PerformanceAnalytics::Omega(rets)
-      performance["ROT (bps)"]         <- ROT_bips
-      performance["VaR (0.95)"]        <- PerformanceAnalytics::VaR(rets, 0.95, method = "historical", invert = FALSE)
-      performance["CVaR (0.95)"]       <- PerformanceAnalytics::CVaR(rets, 0.95, method = "historical", invert = FALSE)
+  # 1) check code execution errors
+  if (is.list(error_capture)) {
+    res$error <- TRUE
+    res$error_message <- error_capture$message
+    error_stack <- list("at"    = deparse(error_capture$call), 
+                        "stack" = paste(sapply(error_capture$calls[-1], deparse), collapse = "\n"))
+    attr(res$error_message, "error_stack") <- error_stack
+  } else {
+    # 2) check NA portfolio
+    if (anyNA(w)) {
+      res$error <- TRUE
+      res$error_message <- "Returned portfolio contains NA."
+    } else {
+      # 3) check constraints
+      if (!shortselling && any(w < -1e-6)) {
+        res$error <- TRUE
+        res$error_message <- "No-shortselling constraint not satisfied."
+      }
+      if (sum(abs(w)) > leverage + 1e-6) {
+        res$error <- TRUE
+        res$error_message <- c(res$error_message, "Leverage constraint not satisfied.")
+      }
     }
   }
-  return(performance)
+  return(res)
 }
+
 
 
 
@@ -625,11 +537,11 @@ returnPortfolio <- function(R, weights,
   # compute ROT based on normalized dollars
   sum_turnover_rel <- sum(abs(delta_rel))  # turnover only for indices: after_rebalance_indices[-1] (only when rebalancing except the first)
   sum_PnL_rel <- sum(ret[after_rebalance_indices[1]:(tail(after_rebalance_indices, 1)-1), ])  # returns only for indices: after_rebalance_indices[1] to after_rebalance_indices[end]-1
-  ROT_bips <- 1e4*sum_PnL_rel/sum_turnover_rel
+  ROT_bps <- 1e4*sum_PnL_rel/sum_turnover_rel
 
   return(list(rets = rets,
               wealth = wealth,
-              ROT_bips = ROT_bips,
+              ROT_bps = ROT_bps,
               w_bop = w[!is.na(w[, 1])]))
 }
 

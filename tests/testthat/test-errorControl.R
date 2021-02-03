@@ -16,6 +16,7 @@ test_that("Error control test for \"stockDataDownload\"", {
   sink()
 })
 
+
 test_that("Error control test for \"financialDataResample\"", {
   X_wrong_index <- my_dataset
   index(X_wrong_index$index) <- index(X_wrong_index$index) + 1
@@ -27,6 +28,7 @@ test_that("Error control test for \"financialDataResample\"", {
   expect_warning(financialDataResample(X_non_mono), "Some xts object does not satisfy monotone missing-data pattern.")
   expect_error(financialDataResample(my_dataset, T = 1e10,), "\"T_sample\" cannot be greater than the date length of \"X\".")
 })
+
 
 test_that("Error control test for \"portfolioBacktest\"", {
   

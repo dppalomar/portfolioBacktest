@@ -118,7 +118,7 @@ test_that("backtest results and performance measures coincide with the precomput
   bt <- portfolioBacktest(portfolios, dataset_list = dataset10,
                           shortselling = TRUE, leverage = Inf, 
                           return_portfolio = TRUE, return_returns = TRUE, 
-                          benchmark = c("uniform", "index"),
+                          benchmarks = c("uniform", "index"),
                           T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
   # bt_check <- bt$GMVP$`dataset 1`[-2]
   # save(bt_check, file = "bt_check.RData", version = 2)
@@ -140,6 +140,7 @@ test_that("backtest results and performance measures coincide with the precomput
   load("bt_summary_check.RData")
   expect_equivalent(head(backtestSummary(bt, summary_fun = median)[[1]], -2), bt_summary_check)  # compare except cpu time
 })
+
 
 
 test_that("backtest results with bankruptcy work fine", {
@@ -206,6 +207,7 @@ test_that("transaction cost works properly", {
 })
 
 
+
 test_that("cash is properly accounted in backtest results", {
   # create stock with bankruptcy
   dataset10_bankruptcy <- dataset10[1]
@@ -252,6 +254,19 @@ test_that("cash is properly accounted in backtest results", {
   # plot(cbind(stock_price_normalized, bt$fun1$`dataset 1`$wealth), lwd = c(2, 4))
 })
 
+
+
+
+test_that("cpu_time_limit works", {
+  infty_loop_fun <- function(dataset) {
+    while(TRUE) {
+    }
+  }
+
+  bt <- portfolioBacktest(list("infty_loop_fun" = infty_loop_fun), dataset10, cpu_time_limit = 1e-3)
+  
+
+})
 
 
 
