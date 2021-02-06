@@ -87,7 +87,7 @@ test_that("Error control test for \"portfolioBacktest\"", {
 
 
 bt <- portfolioBacktest(portfolioBacktest:::uniform_portfolio_fun, dataset10, 
-                        benchmark = c("uniform", "index"))
+                        benchmarks = c("uniform", "index"))
 
 test_that("Error control test for \"backtestSelector\"", {
   

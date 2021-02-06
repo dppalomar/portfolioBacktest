@@ -335,14 +335,15 @@ singlePortfolioBacktest <- function(...) {
 singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
                                              shortselling, leverage,
                                              T_rolling_window, optimize_every, rebalance_every, bars_per_year,
-                                             execution, cost,
+                                             execution = c("same period", "next period"), 
+                                             cost = list(buy = 0*10^(-4), sell = 0*10^(-4), short = 0*10^(-4), long_leverage = 0*10^(-4)),
                                              cpu_time_limit,
                                              return_portfolio, return_returns) {
+  ######## error control  #########
   if (!price_name %in% names(data))
     stop("Failed to find price data with name \"", price_name, "\"" , " in given dataset_list.")
   prices <- data[[price_name]]
-  
-  ######## error control  #########
+  colnames(prices) <- gsub(".Adjusted", "", colnames(prices))
   if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]].")
   if (!is.xts(prices)) stop("prices have to be xts.")
   N <- ncol(prices)
@@ -355,104 +356,147 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
   #if (tzone(prices) != Sys.timezone()) tzone(prices) <- Sys.timezone()
   if (tzone(prices) != "UTC") tzone(prices) <- "UTC"
   #################################
+
+  delay <- switch(match.arg(execution),  # w[t] used info up to (including) price[t]
+                  "same period" = 1,     # w[t] is (ideally) executed at price[t], so will multiply return[t+1]
+                  "next period" = 2,     # w[t] is executed one period later at price[t+1], so will multiply return[t+2]
+                  stop("Execution method unknown"))
   
   # indices
   #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= T_rolling_window)]
-  optimize_indices  <- seq(from = T_rolling_window, to = T, by = optimize_every)
-  rebalance_indices <- seq(from = T_rolling_window, to = T, by = rebalance_every)
+  optimize_indices  <- seq(from = T_rolling_window, to = T - delay, by = optimize_every)
+  rebalance_indices <- seq(from = T_rolling_window, to = T - delay, by = rebalance_every)
   if (any(!(optimize_indices %in% rebalance_indices))) 
     stop("The reoptimization indices have to be a subset of the rebalancing indices.")
   
 
-  # compute w
+  # create variables (w and cash are always normalized wrt NAV_bop)
+  compute_tc <- any(cost != 0); tc <- 0
   cpu_time <- c()
-  w <- xts(matrix(NA, length(rebalance_indices), N), order.by = index(prices)[rebalance_indices])
-  colnames(w) <- gsub(".Adjusted", "", colnames(prices))
-  for (i in seq_along(rebalance_indices)) {
-    idx_prices <- rebalance_indices[i]
-    
-    # call porfolio function if necessary
-    if (idx_prices %in% optimize_indices) {  # reoptimize
-      data_window  <- lapply(data, function(x) x[(idx_prices-T_rolling_window+1):idx_prices, ])
-      start_time <- proc.time()[3] 
-      error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(w[i, ] <- do.call(portfolio_fun, list(data_window)), 
+  X <- PerformanceAnalytics::CalculateReturns(prices)
+  w_designed <- empty_xts_from(prices)
+  w_bop <- empty_xts_from(prices)
+  delta_bop <- empty_xts_from(prices)
+  w_eop <- empty_xts_from(prices)
+  NAV_eop <- empty_xts_from(prices[, 1], colnames = "NAV")
+  
+  # initial values
+  initial_budget <- 1
+  w_eop[T_rolling_window + delay - 1, ] <- 0  # w_eop but normalized wrt NAV_bop
+  cash_eop <- 1  # all in cash
+  NAV_eop[T_rolling_window + delay - 1, ] <- (sum(w_eop[T_rolling_window + delay - 1, ]) + cash_eop) * initial_budget
+  
+  # loop over time
+  for(t in T_rolling_window:T) {
+    # update of w_bop as w_eop
+    if (t >= T_rolling_window + delay) {
+      NAV_bop <- as.numeric(NAV_eop[t-1])
+      if (all(is.na(w_bop[t, ])))
+        w_bop[t, ] <- w_eop[t-1, ]
+      # include tc in cash
+      delta_bop[t, ] <- w_bop[t, ] - as.numeric(w_eop[t-1, ])
+      if (t == T_rolling_window + delay)  # this is to avoid the initial huge turnover
+        delta_bop[t, ] <- 0
+      if (compute_tc)
+        tc <- cost$buy*sum(pos(delta_bop[t, ])) + cost$sell*sum(pos(-delta_bop[t, ])) +       # trading cost
+              cost$long_leverage*max(0, sum(pos(w_bop[t, ])) - 1) + cost$short*sum(pos(-w_bop[t, ]))  # borrowing cost
+      cash_eop_ <- 1 - sum(w_bop[t, ]) - tc
+      # include period return in w
+      w_eop_ <- (1 + X[t, ])*w_bop[t, ]
+      # normalize
+      NAV_eop[t] <- (sum(w_eop_) + cash_eop_) * NAV_bop
+      if (NAV_eop[t] <= 0) {  # if bankruptcy
+        break
+      }
+      w_eop[t, ] <- w_eop_     / (sum(w_eop_) + cash_eop_)
+      #cash_eop   <- cash_eop_  / (sum(w_eop_) + cash_eop_)
+    }
+
+    # design of w_designed
+    if (t %in% optimize_indices && t + delay <= T) {
+      # design portfolio
+      data_window  <- lapply(data, function(x) x[(t-T_rolling_window+1):t, ])
+      start_time <- proc.time()[3]
+      error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(w_designed[t, ] <- do.call(portfolio_fun, list(data_window)), 
                                                                                environment()), 
                                             timeout = cpu_time_limit, onTimeout = "silent")
       cpu_time <- c(cpu_time, as.numeric(proc.time()[3] - start_time))
-    } else  # just rebalance without reoptimizing
-      w[i, ] <- w[i-1, ]
-    
-    # parse errors
-    portf <- check_portfolio_errors(error_capture, w[i, ], shortselling, leverage)
-    if (portf$error)
-      break  # return immediately when error happens
+      portf <- check_portfolio_errors(error_capture, w_designed[t, ], shortselling, leverage)
+      if (portf$error) 
+        break  # return immediately if error happens
+      last_w_optimized <- w_designed[t, ]
+      w_bop[t + delay, ] <- last_w_optimized
+    } else if (t %in% rebalance_indices && t + delay <= T) {
+      w_designed[t, ] <- last_w_optimized  # <--- to be removed later
+      w_bop[t + delay, ] <- last_w_optimized
+    }
   }
-  
-  
-  # return results
-  if (portf$error) {
-    res <- list(performance = portfolioPerformance(rets = NA, ROT_bps = NA, bars_per_year = NA),
+
+  # in case of error return now
+  if (portf$error)
+    return(list(performance = portfolioPerformance(rets = NA, ROT_bps = NA, bars_per_year = NA),
                 cpu_time = NA, 
                 error = TRUE, 
-                error_message = portf$error_message)
-  } else {
-    # compute portfolio returns
-    R_lin <- PerformanceAnalytics::CalculateReturns(prices)
-    portf <- returnPortfolio(R = R_lin, weights = w, execution = execution, cost = cost)
-    # sanity check:
-    # res_check <- PerformanceAnalytics::Return.portfolio(R_lin, weights = w, verbose = TRUE)
-    # all.equal(portf$rets, res_check$returns)
-    # all.equal(portf$w_bop, res_check$BOP.Weight, check.attributes = FALSE)
-    
-    res <- list(performance = portfolioPerformance(rets = portf$rets, ROT_bps = portf$ROT_bps, bars_per_year),
-                cpu_time = mean(cpu_time), 
-                error = FALSE, 
-                error_message = NA)    
-    if (return_portfolio) {
-      res$w_designed <- w
-      res$w_bop <- portf$w_bop
-    }
-    if (return_returns) {
-      res$return <- portf$rets
-      res$wealth <- portf$wealth
-    }
+                error_message = portf$error_message))
+
+  # in case of no error, continue normally
+  w_designed <- w_designed[rebalance_indices, ]
+  w_bop <- w_bop[(T_rolling_window + delay):T, ]
+  delta_bop <- delta_bop[(T_rolling_window + delay):T, ]
+  w_eop <- w_eop[(T_rolling_window + delay - 1):T, ]
+  NAV_eop <- NAV_eop[(T_rolling_window + delay - 1):T, ]
+  returns_eop <- PerformanceAnalytics::CalculateReturns(NAV_eop)[-1]
+  colnames(returns_eop) <- "return"
+
+  # compute ROT based on normalized dollars
+  sum_turnover_norm <- sum(abs(delta_bop))
+  sum_PnL_norm <- sum(returns_eop[min(1+rebalance_every, nrow(returns_eop)):nrow(returns_eop)])  # this subsetting is because the initial huge turnover was removed
+  #sum_PnL_norm <- sum(returns_eop[1:(nrow(returns_eop) - rebalance_every)])
+  ROT_bps <- ifelse(sum_turnover_norm != 0, 1e4*sum_PnL_norm/sum_turnover_norm, NA)
+
+  # # sanity check
+  # portf <- returnPortfolio(R = X, weights = w_designed, execution = execution, cost = cost)
+  # if (!all.equal(portf$rets, returns_eop, check.attributes = FALSE) ||
+  #     !all.equal(portf$w_bop, na.omit(w_bop), check.attributes = FALSE) ||
+  #     !all.equal(portf$wealth, NAV_eop, check.attributes = FALSE)) {
+  #   stop("Sanity check failed!!")
+  # }
+
+  # return
+  res <- list(performance = portfolioPerformance(rets = returns_eop, ROT_bps = ROT_bps, bars_per_year),
+              cpu_time = mean(cpu_time), 
+              error = FALSE, 
+              error_message = NA)    
+  if (return_portfolio) {
+    res$w_designed <- w_designed
+    res$w_bop      <- w_bop
+  }
+  if (return_returns) {
+    res$return <- returns_eop
+    res$wealth <- NAV_eop
   }
   return(res)
 }
+# # sanity check:
+# res_check <- PerformanceAnalytics::Return.portfolio(na.omit(X), weights = na.omit(w_designed), verbose = TRUE)
+# portf <- returnPortfolio(R = X, weights = w_designed, execution = execution, cost = cost)
+# 
+# head(portf$w_bop[, 1:8])
+# head(w_bop[, 1:8])
+# head(res_check$BOP.Weight[, 1:8])
+# 
+# head(portf$wealth)
+# head(NAV_eop)
+# 
+# head(portf$rets)
+# head(returns_eop)
+# head(res_check$returns)  
+
+# bt <- portfolioBacktest(portfolioBacktest:::uniform_portfolio_fun, dataset10[1], 
+#                         benchmarks = c("index"))
 
 
 
-
-
-check_portfolio_errors <- function(error_capture, w, shortselling, leverage) {
-  res <- list(error = FALSE, error_message = NA)
-  
-  # 1) check code execution errors
-  if (is.list(error_capture)) {
-    res$error <- TRUE
-    res$error_message <- error_capture$message
-    error_stack <- list("at"    = deparse(error_capture$call), 
-                        "stack" = paste(sapply(error_capture$calls[-1], deparse), collapse = "\n"))
-    attr(res$error_message, "error_stack") <- error_stack
-  } else {
-    # 2) check NA portfolio
-    if (anyNA(w)) {
-      res$error <- TRUE
-      res$error_message <- "Returned portfolio contains NA."
-    } else {
-      # 3) check constraints
-      if (!shortselling && any(w < -1e-6)) {
-        res$error <- TRUE
-        res$error_message <- "No-shortselling constraint not satisfied."
-      }
-      if (sum(abs(w)) > leverage + 1e-6) {
-        res$error <- TRUE
-        res$error_message <- c(res$error_message, "Leverage constraint not satisfied.")
-      }
-    }
-  }
-  return(res)
-}
 
 
 
@@ -499,6 +543,7 @@ returnPortfolio <- function(R, weights,
   delta_rel <- xts(matrix(0, nrow(w), ncol(w)), order.by = index(w))
   NAV[after_rebalance_indices[1]] <- initial_cash
   w_eop <- w[after_rebalance_indices[1], ]  # don't want to count the initial huge turnover
+  #w_eop <- 0
   for (t in after_rebalance_indices[1]:nrow(R)) {
     if (t > after_rebalance_indices[1])
       NAV[t] <- NAV[t-1]*NAV_relchange
@@ -545,9 +590,155 @@ returnPortfolio <- function(R, weights,
               w_bop = w[!is.na(w[, 1])]))
 }
 
+
+
+
+
+# Backtesting of one portfolio function on one single xts
+#
+#' @import xts
+singlePortfolioSingleXTSBacktest_old <- function(portfolio_fun, data, price_name,
+                                             shortselling, leverage,
+                                             T_rolling_window, optimize_every, rebalance_every, bars_per_year,
+                                             execution, cost,
+                                             cpu_time_limit,
+                                             return_portfolio, return_returns) {
+  if (!price_name %in% names(data))
+    stop("Failed to find price data with name \"", price_name, "\"" , " in given dataset_list.")
+  prices <- data[[price_name]]
+  
+  ######## error control  #########
+  if (is.list(prices)) stop("prices have to be xts, not a list, make sure you index the list with double brackets [[.]].")
+  if (!is.xts(prices)) stop("prices have to be xts.")
+  N <- ncol(prices)
+  T <- nrow(prices)
+  if (T_rolling_window >= T) stop("T is not large enough for the given sliding window length.")
+  if (optimize_every%%rebalance_every != 0) stop("The reoptimization period has to be a multiple of the rebalancing period.")
+  if (anyNA(prices)) stop("prices contain NAs.")
+  if (!is.function(portfolio_fun)) stop("portfolio_fun is not a function.")
+  #if (periodicity(prices)$scale != "daily") stop("This function only accepts daily data.")
+  #if (tzone(prices) != Sys.timezone()) tzone(prices) <- Sys.timezone()
+  if (tzone(prices) != "UTC") tzone(prices) <- "UTC"
+  #################################
+  
+  # indices
+  #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= T_rolling_window)]
+  optimize_indices  <- seq(from = T_rolling_window, to = T, by = optimize_every)
+  rebalance_indices <- seq(from = T_rolling_window, to = T, by = rebalance_every)
+  if (any(!(optimize_indices %in% rebalance_indices))) 
+    stop("The reoptimization indices have to be a subset of the rebalancing indices.")
+  
+  
+  # compute w
+  cpu_time <- c()
+  w <- xts(matrix(NA, length(rebalance_indices), N), order.by = index(prices)[rebalance_indices])
+  colnames(w) <- gsub(".Adjusted", "", colnames(prices))
+  for (i in seq_along(rebalance_indices)) {
+    idx_prices <- rebalance_indices[i]
+    
+    # call porfolio function if necessary
+    if (idx_prices %in% optimize_indices) {  # reoptimize
+      data_window  <- lapply(data, function(x) x[(idx_prices-T_rolling_window+1):idx_prices, ])
+      start_time <- proc.time()[3] 
+      error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(w[i, ] <- do.call(portfolio_fun, list(data_window)), 
+                                                                               environment()), 
+                                            timeout = cpu_time_limit, onTimeout = "silent")
+      cpu_time <- c(cpu_time, as.numeric(proc.time()[3] - start_time))
+    } else  # just rebalance without reoptimizing
+      w[i, ] <- w[i-1, ]
+    
+    # parse errors
+    portf <- check_portfolio_errors(error_capture, w[i, ], shortselling, leverage)
+    if (portf$error)
+      break  # return immediately when error happens
+  }
+
+  # return results
+  if (portf$error) {
+    res <- list(performance = portfolioPerformance(rets = NA, ROT_bps = NA, bars_per_year = NA),
+                cpu_time = NA, 
+                error = TRUE, 
+                error_message = portf$error_message)
+  } else {
+    # compute portfolio returns
+    R_lin <- PerformanceAnalytics::CalculateReturns(prices)
+    portf <- returnPortfolio(R = R_lin, weights = w, execution = execution, cost = cost)
+    # sanity check:
+    # res_check <- PerformanceAnalytics::Return.portfolio(R_lin, weights = w, verbose = TRUE)
+    # all.equal(portf$rets, res_check$returns)
+    # all.equal(portf$w_bop, res_check$BOP.Weight, check.attributes = FALSE)
+    
+    res <- list(performance = portfolioPerformance(rets = portf$rets, ROT_bps = portf$ROT_bps, bars_per_year),
+                cpu_time = mean(cpu_time), 
+                error = FALSE, 
+                error_message = NA)    
+    if (return_portfolio) {
+      res$w_designed <- w
+      res$w_bop <- portf$w_bop
+    }
+    if (return_returns) {
+      res$return <- portf$rets
+      res$wealth <- portf$wealth
+    }
+  }
+  return(res)
+}
+
+
+
+
+
+
+
+empty_xts_from <- function(orig_xts, fill = NA, colnames = NULL) {
+  empty_xts <- xts(matrix(fill, nrow(orig_xts), ncol(orig_xts)), 
+                   order.by = index(orig_xts))
+  colnames(empty_xts) <- if (is.null(colnames)) colnames(orig_xts)
+                         else colnames
+  return(empty_xts)
+}
+
+
+
 pos <- function(x)
   pmax(0, as.numeric(x))
 
 #cost <- list(buy = 17*10^(-4), sell = 17*10^(-4), long = 1*10^(-4), short = 1*10^(-4))  # for HK
 #cost <- list(buy = 1*10^(-4), sell = 1*10^(-4), long = 1*10^(-4), short = 1*10^(-4))  # for US
 #cost <- list(buy = 15*10^(-4), sell = 15*10^(-4), long = 15*10^(-4), short = 15*10^(-4))  # for CH
+
+
+
+
+
+check_portfolio_errors <- function(error_capture, w, shortselling, leverage) {
+  res <- list(error = FALSE, error_message = NA)
+  
+  # 1) check code execution errors
+  if (is.list(error_capture)) {
+    res$error <- TRUE
+    res$error_message <- error_capture$message
+    error_stack <- list("at"    = deparse(error_capture$call), 
+                        "stack" = paste(sapply(error_capture$calls[-1], deparse), collapse = "\n"))
+    attr(res$error_message, "error_stack") <- error_stack
+  } else {
+    # 2) check NA portfolio
+    if (anyNA(w)) {
+      res$error <- TRUE
+      res$error_message <- "Returned portfolio contains NA."
+    } else {
+      # 3) check constraints
+      if (!shortselling && any(w < -1e-6)) {
+        res$error <- TRUE
+        res$error_message <- "No-shortselling constraint not satisfied."
+      }
+      if (sum(abs(w)) > leverage + 1e-6) {
+        res$error <- TRUE
+        res$error_message <- c(res$error_message, "Leverage constraint not satisfied.")
+      }
+    }
+  }
+  return(res)
+}
+
+
