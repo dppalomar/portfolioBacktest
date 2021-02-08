@@ -65,7 +65,7 @@ data("dataset10")
 - **Step 2** - define your own portfolio
 
 ```r
-my_portfolio <- function(dataset) {
+my_portfolio <- function(dataset, w_current) {
   prices <- dataset$adjusted
   N <- ncol(prices)
   return(rep(1/N, N))
