@@ -171,12 +171,13 @@ for (i in 1:length(dataset10))
 
 # Defining Portfolios
 A portfolio has to be defined in the form of function that takes as input:
+
   1. a dataset (which will be automatically windowed during the backtesting following a rolling-window basis) containing a list of `xts` objects (following the format of the elements of the argument `dataset_list`) and
-  2. the current portfolio `w_current` (if this is not used, then one can use instead the ellipsis `...` in the function definition)
+  2. the current portfolio `w_current` (if this argument is not used, then alternatively one can use the ellipsis `...` in the function definition).
   
 The portfolio function has to return the portfolio as a numerical vector of normalized weights of the same length as the number of stocks. 
 
-Below we give the examples for the **quintile portfolio**, the **global minimum variance portfolio (GMVP)**, and the **Markowitz mean-variance portfolio** as follows (under practical constraints $\mathbf{w} \ge \mathbf{0}$ and $\mathbf{1}^{T} \mathbf{w} =1$):
+Below we give the examples for the quintile portfolio, the global minimum variance portfolio (GMVP), and the Markowitz mean-variance portfolio (under practical constraints $\mathbf{w} \ge \mathbf{0}$ and $\mathbf{1}^{T} \mathbf{w} =1$):
 ```{r, echo=TRUE, results="hide"}
 # define quintile portfolio
 quintile_portfolio_fun <- function(dataset, w_current) {
@@ -223,7 +224,8 @@ Markowitz_portfolio_tc_fun <- function(dataset, w_current) {
   Sigma <- cov(X)       # compute the SCM
   # design mean-variance portfolio
   w <- Variable(nrow(Sigma))
-  prob <- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma) - tau*sum(abs(w - w_current))),
+  prob <- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma) - 
+                             tau*sum(abs(w - w_current))),
                   constraints = list(w >= 0, sum(w) == 1))
   result <- solve(prob)
   return(as.vector(result$getValue(w)))
@@ -561,12 +563,13 @@ The performance criteria currently considered by default in the package are:
 One can easily add new performance measures with the function `add_performance()`.
 
 
+<!---
 ## Future features
 The package currently has the following limitations that we plan to address in the future:
 
 - **Turnover term**: the portfolio function currently only receives as argument the dataset, but not the currently held portfolio $\mathbf{w}_{t-1}$, so the the turnover $\lVert \mathbf{w}_{t} - \mathbf{w}_{t-1} \rVert _{1}$ cannot be taken into account in the design.
 - **Additional performance measures**: there are countless of additional performance measures that could be included such as the [Sortino ratio](https://en.wikipedia.org/wiki/Sortino_ratio).
-
+--->
 
 
 # References {-}
