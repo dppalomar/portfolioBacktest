@@ -96,7 +96,7 @@
 #' data(dataset10)  # load dataset
 #' 
 #' # define your own portfolio function
-#' uniform_portfolio <- function(dataset) {
+#' uniform_portfolio <- function(dataset, ...) {
 #'   N <- ncol(dataset$adjusted)
 #'   return(rep(1/N, N))
 #' }
@@ -417,9 +417,10 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
       # design portfolio
       data_window  <- lapply(data, function(x) x[(t-T_rolling_window+1):t, ])
       start_time <- proc.time()[3]
-      error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(w_designed[t, ] <- do.call(portfolio_fun, list(data_window)), 
-                                                                               environment()), 
-                                            timeout = cpu_time_limit, onTimeout = "silent")
+      error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(
+        w_designed[t, ] <- do.call(portfolio_fun, list(data_window, w_current = as.matrix(w_eop[t, ])[1, ])), 
+        environment()),
+        timeout = cpu_time_limit, onTimeout = "silent")
       cpu_time <- c(cpu_time, as.numeric(proc.time()[3] - start_time))
       portf <- check_portfolio_errors(error_capture, w_designed[t, ], shortselling, leverage)
       if (portf$error) 
@@ -718,9 +719,8 @@ check_portfolio_errors <- function(error_capture, w, shortselling, leverage) {
   if (is.list(error_capture)) {
     res$error <- TRUE
     res$error_message <- error_capture$message
-    error_stack <- list("at"    = deparse(error_capture$call), 
-                        "stack" = paste(sapply(error_capture$calls[-1], deparse), collapse = "\n"))
-    attr(res$error_message, "error_stack") <- error_stack
+    attr(res$error_message, "error_stack") <- list("at"    = deparse(error_capture$call),
+                                                   "stack" = paste(sapply(error_capture$calls[-1], deparse), collapse = "\n"))
   } else {
     # 2) check NA portfolio
     if (anyNA(w)) {

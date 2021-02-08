@@ -1,4 +1,4 @@
-portfolio_fun <- function(data) {
+portfolio_fun <- function(data, ...) {
   X <- diff(log(data$adjusted))[-1]  # compute log returns
   Sigma <- cov(X)  # compute SCM
   # design GMVP

@@ -34,7 +34,7 @@ fun_factory <- function(mother_fun, ...) {
 #' library(portfolioBacktest)
 #' 
 #' # define GMVP with parameters "delay", "lookback", and "regularize"
-#' GMVP_portfolio_fun <- function(dataset) {
+#' GMVP_portfolio_fun <- function(dataset, ...) {
 #'   prices <- tail(lag(dataset$adjusted, delay), lookback)
 #'   X <- diff(log(prices))[-1]
 #'   Sigma <- cov(X)
@@ -114,7 +114,7 @@ genRandomFuns <- function(portfolio_fun, params_grid, name = "portfolio", N_funs
 #' library(portfolioBacktest)
 #' 
 #' # define GMVP with parameters "delay", "lookback", and "regularize"
-#' GMVP_portfolio_fun <- function(dataset) {
+#' GMVP_portfolio_fun <- function(dataset, ...) {
 #'   prices <- tail(lag(dataset$adjusted, delay), lookback)
 #'   X <- diff(log(prices))[-1]
 #'   Sigma <- cov(X)

@@ -30,7 +30,7 @@
 #' data(dataset10)  # load dataset
 #' 
 #' # define your own portfolio function
-#' uniform_portfolio <- function(dataset) {
+#' uniform_portfolio <- function(dataset, ...) {
 #'   N <- ncol(dataset$adjusted)
 #'   return(rep(1/N, N))
 #' }
@@ -112,7 +112,7 @@ backtestSummarySinglePortfolio <- function(res_table, portfolio_name, summary_fu
 #' data(dataset10)  # load dataset
 #' 
 #' # define your own portfolio function
-#' uniform_portfolio <- function(dataset) {
+#' uniform_portfolio <- function(dataset, ...) {
 #'   N <- ncol(dataset$adjusted)
 #'   return(rep(1/N, N))
 #' }
@@ -225,7 +225,7 @@ backtestTable <- function(bt, portfolio_indexes = NA, portfolio_names = NA,
 #' data("dataset10")  # load dataset
 #' 
 #' # define your own portfolio function
-#' uniform_portfolio <- function(dataset) {
+#' uniform_portfolio <- function(dataset, ...) {
 #'   N <- ncol(dataset$adjusted)
 #'   return(rep(1/N, N))
 #' }

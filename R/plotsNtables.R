@@ -33,7 +33,7 @@
 #' data(dataset10)  # load dataset
 #' 
 #' # define your own portfolio function
-#' quintile_portfolio <- function(data) {
+#' quintile_portfolio <- function(data, ...) {
 #'   X <- diff(log(data$adjusted))[-1]  
 #'   N <- ncol(X)
 #'   ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
@@ -121,7 +121,7 @@ summaryTable <- function(bt_summary, measures = NULL, caption = "Performance tab
 #' data(dataset10)  # load dataset
 #' 
 #' # define your own portfolio function
-#' quintile_portfolio <- function(data) {
+#' quintile_portfolio <- function(data, ...) {
 #'   X <- diff(log(data$adjusted))[-1]  
 #'   N <- ncol(X)
 #'   ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
@@ -214,7 +214,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' data(dataset10)  # load dataset
 #' 
 #' # define your own portfolio function
-#' quintile_portfolio <- function(data) {
+#' quintile_portfolio <- function(data, ...) {
 #'   X <- diff(log(data$adjusted))[-1]  
 #'   N <- ncol(X)
 #'   ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
@@ -310,7 +310,7 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
 #' data(dataset10)  # load dataset
 #' 
 #' # define your own portfolio function
-#' quintile_portfolio <- function(data) {
+#' quintile_portfolio <- function(data, ...) {
 #'   X <- diff(log(data$adjusted))[-1]  
 #'   N <- ncol(X)
 #'   ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
@@ -380,7 +380,7 @@ backtestChartCumReturns <- function(bt, portfolios = names(bt), dataset_num = 1,
 #' data(dataset10)  # load dataset
 #' 
 #' # define your own portfolio function
-#' quintile_portfolio <- function(data) {
+#' quintile_portfolio <- function(data, ...) {
 #'   X <- diff(log(data$adjusted))[-1]  
 #'   N <- ncol(X)
 #'   ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
@@ -455,7 +455,7 @@ backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, t
 #' dataset10_5stocks <- lapply(dataset10, function(x) {x$adjusted <- x$adjusted[, 1:5]; return(x)})
 #' 
 #' # define GMVP (with heuristic not to allow shorting)
-#' GMVP_portfolio_fun <- function(dataset) {
+#' GMVP_portfolio_fun <- function(dataset, ...) {
 #'   X <- diff(log(dataset$adjusted))[-1]  # compute log returns
 #'   Sigma <- cov(X)  # compute SCM
 #'   # design GMVP

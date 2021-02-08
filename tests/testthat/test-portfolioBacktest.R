@@ -7,7 +7,7 @@ data(dataset10)
 
 
 # define GMVP
-GMVP_portfolio_fun <- function(data) {
+GMVP_portfolio_fun <- function(data, ...) {
   X <- diff(log(data$adjusted))[-1]  # compute log returns
   Sigma <- cov(X)  # compute SCM
   # design GMVP
@@ -150,7 +150,7 @@ test_that("backtest results with bankruptcy work fine", {
     dataset10_bankruptcy$`dataset 1`$adjusted[, 1] - 0.08*(1:nrow(dataset10_bankruptcy$`dataset 1`$adjusted))
   #plot(dataset10_bankruptcy$`dataset 1`$adjusted[, 1])
 
-  stock1_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
+  stock1_portfolio_fun <- function(dataset, prices = dataset$adjusted, ...) {
     return(c(1, rep(0, ncol(prices)-1)))
   }
   
@@ -216,7 +216,7 @@ test_that("cash is properly accounted in backtest results", {
   #plot(dataset10_bankruptcy$`dataset 1`$adjusted[, 1])
 
   # first all invested in a stock that goes bankrupt
-  stock1_portfolio_fun <- function(dataset, prices = dataset$adjusted) {
+  stock1_portfolio_fun <- function(dataset, prices = dataset$adjusted, ...) {
     return(c(1, rep(0, ncol(prices)-1)))
   }
   bt <- portfolioBacktest(stock1_portfolio_fun, dataset_list = dataset10_bankruptcy,
@@ -258,14 +258,14 @@ test_that("cash is properly accounted in backtest results", {
 
 
 test_that("cpu_time_limit works", {
-  infty_loop_fun <- function(dataset) {
+  infty_loop_fun <- function(dataset, ...) {
     while(TRUE) {
     }
   }
 
-  bt <- portfolioBacktest(list("infty_loop_fun" = infty_loop_fun), dataset10, cpu_time_limit = 1e-3)
+  bt <- portfolioBacktest(list("infty_loop_fun" = infty_loop_fun), dataset10[1], cpu_time_limit = 1e-3)
   
-
+  expect_true(bt$infty_loop_fun$`dataset 1`$error_message %in% c("reached CPU time limit", "reached elapsed time limit"))
 })
 
 

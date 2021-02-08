@@ -1,14 +1,14 @@
 # This file is only to store some benchmark portfolios
 
 # uniform portfolio function
-uniform_portfolio_fun <- function(data) {
+uniform_portfolio_fun <- function(data, ...) {
   N <- ncol(data$adjusted)
   return(rep(1/N, N))
 }
 
 # inverse-volatility portfolio function
 #' @importFrom stats cov
-IVP_portfolio_fun <- function(data) {
+IVP_portfolio_fun <- function(data, ...) {
   X <- diff(log(data$adjusted))[-1]
   sigma <- sqrt(diag(cov(X)))
   w <- 1/sigma
@@ -23,7 +23,7 @@ IVP_portfolio_fun <- function(data) {
 
 # Global Minimum Variance Portfolio
 #' @importFrom quadprog solve.QP
-GMVP <- function(data, shrinkage = FALSE) {
+GMVP <- function(data, shrinkage = FALSE, ...) {
   shortselling <- parent.frame(n = 2)$shortselling  # inherit shortselling from grandparent environment
   if (is.null(shortselling)) shortselling <- FALSE
   
@@ -52,7 +52,7 @@ GMVP <- function(data, shrinkage = FALSE) {
 
 
 # Markowitz Maximum Sharpe-Ratio Portfolio (MSRP)
-MSRP <- function(data) {
+MSRP <- function(data, ...) {
   X <- diff(log(data$adjusted))[-1]
   mu <- colMeans(X)
   Sigma <- cov(X)
@@ -61,7 +61,7 @@ MSRP <- function(data) {
 }
 
 # Most diversified portfolio (MDP)
-MDP <- function(data) {
+MDP <- function(data, ...) {
   X <- diff(log(data$adjusted))[-1]
   Sigma <- cov(X)
   mu <- sqrt(diag(Sigma))
@@ -77,12 +77,12 @@ MDP <- function(data) {
 
 # benchmark library
 benchmark_library <- list(
-  "uniform" = uniform_portfolio_fun,
-  "IVP"     = IVP_portfolio_fun,
-  "GMVP"    = function(data) GMVP(data, FALSE),
-  "MSRP"    = MSRP,
-  "MDP"     = MDP,
-  "GMVP + shrinkage"    = function(data) GMVP(data, TRUE)
+  "uniform"          = uniform_portfolio_fun,
+  "IVP"              = IVP_portfolio_fun,
+  "GMVP"             = function(data, ...) GMVP(data, shrinkage = FALSE, ...),
+  "MSRP"             = MSRP,
+  "MDP"              = MDP,
+  "GMVP + shrinkage" = function(data, ...) GMVP(data, shrinkage = TRUE, ...)
 )
 
 

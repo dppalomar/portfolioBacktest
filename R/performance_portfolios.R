@@ -47,7 +47,7 @@ portfolioPerformance <- function(rets, ROT_bps, bars_per_year) {
 #' data(dataset10)  # load dataset
 #' 
 #' # define your own portfolio function
-#' uniform_portfolio <- function(dataset) {
+#' uniform_portfolio <- function(dataset, ...) {
 #'   N <- ncol(dataset$adjusted)
 #'   return(rep(1/N, N))
 #' }
