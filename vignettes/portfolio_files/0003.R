@@ -1,7 +1,7 @@
 library(CVXR)
 
 # Maximum Sharpe ratio
-portfolio_fun <- function(data) {
+portfolio_fun <- function(data, ...) {
   X <- as.matrix(diff(log(data$adjusted))[-1])
   mu <- colMeans(X)
   Sigma <- cov(X)

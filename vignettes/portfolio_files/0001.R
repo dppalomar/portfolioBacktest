@@ -1,7 +1,7 @@
 library(CVXR)
 
 # GMVP
-portfolio_fun <- function(data) {
+portfolio_fun <- function(data, ...) {
   X <- as.matrix(diff(log(data$adjusted))[-1])
   Sigma <- cov(X)
   w <- Variable(nrow(Sigma))

@@ -16,7 +16,7 @@ output:
     toc: yes
     toc_depth: 2
 toc-title: "Table of Contents"
-csl: ieee.csl
+csl: financial-markets-and-portfolio-management.csl  # https://www.zotero.org/styles
 bibliography: refs.bib
 vignette: >
   %\VignetteIndexEntry{Portfolio Backtesting}
@@ -98,7 +98,7 @@ data("dataset10")
 ```
 * **Step 2** - define your own portfolio
 ```{r}
-my_portfolio <- function(dataset) {
+my_portfolio <- function(dataset, ...) {
   prices <- dataset$adjusted
   N <- ncol(prices)
   return(rep(1/N, N))
@@ -170,10 +170,16 @@ for (i in 1:length(dataset10))
 
 
 # Defining Portfolios
-The portfolios have to be defined in the form of function that takes as input a dataset (which will be automatically windowed during the backtesting following a rolling-window basis) containing a list of `xts` objects (following the format of the elements of the argument `dataset_list`) and returns the portfolio as a numerical vector of normalized weights of the same length as the number of stocks. We give the examples for the **quintile portfolio**, the **global minimum variance portfolio (GMVP)**, and the **Markowitz mean-variance portfolio** as follows (under practical constraints $\mathbf{w} \ge \mathbf{0}$ and $\mathbf{1}^{T} \mathbf{w} =1$):
+A portfolio has to be defined in the form of function that takes as input:
+  1. a dataset (which will be automatically windowed during the backtesting following a rolling-window basis) containing a list of `xts` objects (following the format of the elements of the argument `dataset_list`) and
+  2. the current portfolio `w_current` (if this is not used, then one can use instead the ellipsis `...` in the function definition)
+  
+The portfolio function has to return the portfolio as a numerical vector of normalized weights of the same length as the number of stocks. 
+
+Below we give the examples for the **quintile portfolio**, the **global minimum variance portfolio (GMVP)**, and the **Markowitz mean-variance portfolio** as follows (under practical constraints $\mathbf{w} \ge \mathbf{0}$ and $\mathbf{1}^{T} \mathbf{w} =1$):
 ```{r, echo=TRUE, results="hide"}
 # define quintile portfolio
-quintile_portfolio_fun <- function(dataset) {
+quintile_portfolio_fun <- function(dataset, w_current) {
   X <- diff(log(dataset$adjusted))[-1]  # compute log returns
   N <- ncol(X)
   # design quintile portfolio
@@ -184,7 +190,7 @@ quintile_portfolio_fun <- function(dataset) {
 }
 
 # define GMVP (with heuristic not to allow shorting)
-GMVP_portfolio_fun <- function(dataset) {
+GMVP_portfolio_fun <- function(dataset, ...) {
   X <- diff(log(dataset$adjusted))[-1]  # compute log returns
   Sigma <- cov(X)  # compute SCM
   # design GMVP
@@ -195,10 +201,10 @@ GMVP_portfolio_fun <- function(dataset) {
 
 # define Markowitz mean-variance portfolio
 library(CVXR)
-Markowitz_portfolio_fun <- function(dataset) {
+Markowitz_portfolio_fun <- function(dataset, ...) {
   X <- diff(log(dataset$adjusted))[-1]  # compute log returns
-  mu <- colMeans(X)  # compute mean vector
-  Sigma <- cov(X)  # compute the SCM
+  mu    <- colMeans(X)  # compute mean vector
+  Sigma <- cov(X)       # compute the SCM
   # design mean-variance portfolio
   w <- Variable(nrow(Sigma))
   prob <- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma)),
@@ -208,6 +214,21 @@ Markowitz_portfolio_fun <- function(dataset) {
 }
 ```
 
+The argument `w_current` can be used to control the transaction cost:
+```{r, echo=TRUE, eval=FALSE}
+Markowitz_portfolio_tc_fun <- function(dataset, w_current) {
+  tau <- 0.01
+  X <- diff(log(dataset$adjusted))[-1]  # compute log returns
+  mu    <- colMeans(X)  # compute mean vector
+  Sigma <- cov(X)       # compute the SCM
+  # design mean-variance portfolio
+  w <- Variable(nrow(Sigma))
+  prob <- Problem(Maximize(t(mu) %*% w - 0.5*quad_form(w, Sigma) - tau*sum(abs(w - w_current))),
+                  constraints = list(w >= 0, sum(w) == 1))
+  result <- solve(prob)
+  return(as.vector(result$getValue(w)))
+}
+```
 
 
 # Backtesting and Plotting
@@ -352,7 +373,7 @@ names(bt)
 Portfolio functions usually contain some parameters that can be tuned. One can manually generate different versions of such portfolio functions with a variety of parameters. Fortunately, the function `genRandomFuns()` helps with this task by automatically generating different versions of the portfolios with randomly chosen paramaters:
 ```{r, cache=TRUE}
 # define a portfolio with parameters "lookback", "quintile", and "average_type"
-quintile_portfolio_fun <- function(dataset) {
+quintile_portfolio_fun <- function(dataset, ...) {
   prices <- tail(dataset$adjusted, lookback)
   X <- diff(log(prices))[-1]
   mu <- switch(average_type,
@@ -447,7 +468,7 @@ sub_function1 <- function(x) {
   return(sub_function2(x))
 }
 
-wrong_portfolio_fun <- function(data) {
+wrong_portfolio_fun <- function(data, ...) {
   N <- ncol(data$adjusted)
   uni_port <- rep(1/N, N)
   return(sub_function1(uni_port))
@@ -508,7 +529,7 @@ auxiliary_function <- function(x) {
   # here whatever code
 }
 
-portfolio_fun <- function(data) {
+portfolio_fun <- function(data, ...) {
   X <- as.matrix(diff(log(data$adjusted))[-1])  # compute log returns
   mu <- colMeans(X)  # compute mean vector
   Sigma <- cov(X)  # compute the SCM
