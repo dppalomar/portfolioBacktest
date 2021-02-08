@@ -13,6 +13,6 @@
 ^vignettes/PortfolioBacktest_cache$
 ^vignettes/PortfolioBacktest_files$
 ^vignettes/PortfolioBacktest\.Rmd$
-^vignettes/ieee\.csl$
+^vignettes/*\.csl$
 ^vignettes/refs\.bib$
 ^stockdata_from_*\.RData$

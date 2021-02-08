@@ -25,7 +25,7 @@ can be used to show the performance vs parameters.
 library(portfolioBacktest)
 
 # define GMVP with parameters "delay", "lookback", and "regularize"
-GMVP_portfolio_fun <- function(dataset) {
+GMVP_portfolio_fun <- function(dataset, ...) {
   prices <- tail(lag(dataset$adjusted, delay), lookback)
   X <- diff(log(prices))[-1]
   Sigma <- cov(X)

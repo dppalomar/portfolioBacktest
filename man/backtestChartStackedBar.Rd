@@ -40,7 +40,7 @@ data(dataset10)  # load dataset
 dataset10_5stocks <- lapply(dataset10, function(x) {x$adjusted <- x$adjusted[, 1:5]; return(x)})
 
 # define GMVP (with heuristic not to allow shorting)
-GMVP_portfolio_fun <- function(dataset) {
+GMVP_portfolio_fun <- function(dataset, ...) {
   X <- diff(log(dataset$adjusted))[-1]  # compute log returns
   Sigma <- cov(X)  # compute SCM
   # design GMVP

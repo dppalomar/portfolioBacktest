@@ -48,7 +48,7 @@ library(portfolioBacktest)
 data(dataset10)  # load dataset
 
 # define your own portfolio function
-quintile_portfolio <- function(data) {
+quintile_portfolio <- function(data, ...) {
   X <- diff(log(data$adjusted))[-1]  
   N <- ncol(X)
   ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
