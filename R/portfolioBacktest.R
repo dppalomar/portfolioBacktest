@@ -178,7 +178,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
       result <- list()
       for (i in 1:length(portfolio_funs)) {
         if (show_progress_bar)
-          message("  Backtesting function ", format(portfolio_names[i], width = 15), " (", i, "/", length(portfolio_names), ")")
+          message("  Backtesting function \"", format(portfolio_names[i], width = 15), "\" (", i, "/", length(portfolio_names), ")")
         result[[i]] <- do.call(singlePortfolioBacktest_safe, args = c(list(portfolio_fun = portfolio_funs[[i]]), args))
       }
     } else {
@@ -232,12 +232,11 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
         return(res)
     }
     
-    dataset_list__ <- args$dataset_list  # backup dataset_list in case of being masked by the sourced files
     if (paral_portfolios == 1) {
       result <- list()
       for (i in 1:length(files)) {
         if (show_progress_bar)
-          message("\n Backtesting file ", format(portfolio_names[i], width = 15), " (", i, "/", length(portfolio_names), ")")
+          message("\n Backtesting file \"", format(portfolio_names[i], width = 15), "\" (", i, "/", length(portfolio_names), ")")
         result[[i]] <- do.call(singlePortfolioBacktest_folder_safe, args = c(list(folder_path = folder_path,
                                                                                   file = files[i],
                                                                                   source_to_local = source_to_local), args))
@@ -262,12 +261,15 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   # add benchmarks if necessary
   #
   if (!is.null(benchmarks)) {
-    message("\nBacktesting benchmarks...")
+    message("Backtesting benchmarks...")
     benchmark_portfolios <- benchmark_library[names(benchmark_library) %in% benchmarks]
     res_benchmarks <- list()
     for (i in seq_along(benchmark_portfolios)) {
       if (show_progress_bar)
-        message("  Backtesting benchmark ", format(benchmarks[i], width = 15), " (", i, "/", length(benchmarks), ")")
+        message("  Backtesting benchmark \"", format(benchmarks[i], width = 15), "\" (", i, "/", length(benchmarks), ")")
+      # change order of xts elements
+      new_order_names <- c(price_name, setdiff(names(args$dataset_list[[1]]), price_name))
+      args$dataset_list <- lapply(args$dataset_list, function(xts_list) xts_list[new_order_names])
       res_benchmarks[[i]] <- do.call(singlePortfolioBacktest, args = c(list(portfolio_fun = benchmark_portfolios[[i]]), args))
     }
     names(res_benchmarks) <- names(benchmark_portfolios)
@@ -275,7 +277,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
     # add index if needed
     if ("index" %in% benchmarks) {
       if (show_progress_bar) 
-        message("  Backtesting index     ", format("", width = 15), " (", i+1, "/", length(benchmarks), ")")
+        message("  Backtesting \"index     ", format("", width = 15), "\" (", i+1, "/", length(benchmarks), ")")
       args$price_name <- "index"
       args$optimize_every <- 1e10
       args$rebalance_every <- 1e10

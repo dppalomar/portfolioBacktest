@@ -2,14 +2,14 @@
 
 # uniform portfolio function
 uniform_portfolio_fun <- function(data, ...) {
-  N <- ncol(data$adjusted)
+  N <- ncol(data[[1]])
   return(rep(1/N, N))
 }
 
 # inverse-volatility portfolio function
 #' @importFrom stats cov
 IVP_portfolio_fun <- function(data, ...) {
-  X <- diff(log(data$adjusted))[-1]
+  X <- diff(log(data[[1]]))[-1]
   sigma <- sqrt(diag(cov(X)))
   w <- 1/sigma
   w <- w/sum(w)
@@ -30,7 +30,7 @@ GMVP <- function(data, shrinkage = FALSE, ...) {
   leverage <- parent.frame(n = 2)$leverage  # inherit shortselling from grandparent environment
   if (is.null(leverage)) leverage <- Inf
   
-  X <- diff(log(data$adjusted))[-1]
+  X <- diff(log(data[[1]]))[-1]
   Sigma <- if (shrinkage) cov_LedoitWolf(X) else cov(X)
   
   if (!shortselling) {
@@ -53,7 +53,7 @@ GMVP <- function(data, shrinkage = FALSE, ...) {
 
 # Markowitz Maximum Sharpe-Ratio Portfolio (MSRP)
 MSRP <- function(data, ...) {
-  X <- diff(log(data$adjusted))[-1]
+  X <- diff(log(data[[1]]))[-1]
   mu <- colMeans(X)
   Sigma <- cov(X)
   w <- MSRP_solver(mu, Sigma)
@@ -62,7 +62,7 @@ MSRP <- function(data, ...) {
 
 # Most diversified portfolio (MDP)
 MDP <- function(data, ...) {
-  X <- diff(log(data$adjusted))[-1]
+  X <- diff(log(data[[1]]))[-1]
   Sigma <- cov(X)
   mu <- sqrt(diag(Sigma))
   w <- MSRP_solver(mu, Sigma)
