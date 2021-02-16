@@ -384,14 +384,14 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
   
   # initial values
   initial_budget <- 1
-  w_eop[T_rolling_window + delay - 1, ] <- 0  # w_eop but normalized wrt NAV_bop
+  w_eop[T_rolling_window, ] <- 0  # w_eop but normalized wrt NAV_bop
   cash_eop <- 1  # all in cash
-  NAV_eop[T_rolling_window + delay - 1, ] <- (sum(w_eop[T_rolling_window + delay - 1, ]) + cash_eop) * initial_budget
+  NAV_eop[T_rolling_window, ] <- (sum(w_eop[T_rolling_window, ]) + cash_eop) * initial_budget
   
   # loop over time
   for(t in T_rolling_window:T) {
     # update of w_bop as w_eop
-    if (t >= T_rolling_window + delay) {
+    if (t > T_rolling_window) {
       NAV_bop <- as.numeric(NAV_eop[t-1])
       if (all(is.na(w_bop[t, ])))
         w_bop[t, ] <- w_eop[t-1, ]
