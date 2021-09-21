@@ -50,5 +50,5 @@ bt <- add_performance(bt, name = "avg leverage", desired_direction = -1,
 
 }
 \author{
-Daniel P. Palomar and Rui Zhou
+Daniel P. Palomar
 }

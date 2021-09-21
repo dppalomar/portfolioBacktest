@@ -62,7 +62,7 @@ backtestChartStackedBar(bt, "GMVP", legend = TRUE)
 }
 \seealso{
 \code{\link{summaryBarPlot}}, \code{\link{backtestBoxPlot}}, 
-         \code{\link{backtestChartCumReturns}}, \code{\link{backtestChartDrawdown}}
+         \code{\link{backtestChartCumReturn}}, \code{\link{backtestChartDrawdown}}
 }
 \author{
 Daniel P. Palomar and Rui Zhou

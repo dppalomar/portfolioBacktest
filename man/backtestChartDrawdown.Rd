@@ -57,7 +57,7 @@ backtestChartDrawdown(bt)
 }
 \seealso{
 \code{\link{summaryBarPlot}}, \code{\link{backtestBoxPlot}}, 
-         \code{\link{backtestChartCumReturns}}, \code{\link{backtestChartStackedBar}}
+         \code{\link{backtestChartCumReturn}}, \code{\link{backtestChartStackedBar}}
 }
 \author{
 Daniel P. Palomar and Rui Zhou

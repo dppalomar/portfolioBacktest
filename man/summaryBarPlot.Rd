@@ -11,7 +11,7 @@ summaryBarPlot(bt_summary, measures = NULL, type = c("ggplot2", "simple"), ...)
 
 \item{measures}{String vector to select performane measures (default is all) from
 `Sharpe ratio`, `max drawdown`, `annual return`, `annual volatility`, 
-`Sterling ratio`, `Omega ratio`, and `ROT bps`.}
+`Sterling ratio`, `Omega ratio`, `ROT bps`, etc.}
 
 \item{type}{Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
 \code{"ggplot2"}.}
@@ -57,7 +57,7 @@ summaryBarPlot(bt_summary_median, measures = c("max drawdown", "annual volatilit
 }
 \seealso{
 \code{\link{summaryTable}}, \code{\link{backtestBoxPlot}},
-         \code{\link{backtestChartCumReturns}}, \code{\link{backtestChartDrawdown}},
+         \code{\link{backtestChartCumReturn}}, \code{\link{backtestChartDrawdown}},
          \code{\link{backtestChartStackedBar}}
 }
 \author{

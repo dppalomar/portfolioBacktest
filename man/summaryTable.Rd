@@ -19,7 +19,7 @@ summaryTable(
 
 \item{measures}{String vector to select performane measures (default is all) from
 `Sharpe ratio`, `max drawdown`, `annual return`, `annual volatility`, 
-`Sterling ratio`, `Omega ratio`, and `ROT bps`.}
+`Sterling ratio`, `Omega ratio`, `ROT bps`, etc.}
 
 \item{caption}{Table caption (only works for \code{type = "DT"}).}
 

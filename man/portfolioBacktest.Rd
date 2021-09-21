@@ -16,10 +16,11 @@ portfolioBacktest(
   benchmarks = NULL,
   shortselling = TRUE,
   leverage = Inf,
-  T_rolling_window = 252,
+  lookback = 252,
+  T_rolling_window = NULL,
   optimize_every = 20,
   rebalance_every = 1,
-  bars_per_year = NA,
+  bars_per_year = 252,
   execution = c("same period", "next period"),
   cost = list(buy = 0, sell = 0, short = 0, long_leverage = 0),
   cpu_time_limit = Inf,
@@ -62,8 +63,8 @@ see \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/Portfol
 \item{show_progress_bar}{Logical value indicating whether to show progress bar (default is \code{FALSE}).}
 
 \item{benchmarks}{String vector indicating the benchmark portfolios to be incorporated, currently supports:
-\itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks}
-         \item{\code{IVP} - the inverse-volatility portfolio, with weights be inversely proportional the standard deviation of returns.}
+\itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks;}
+         \item{\code{IVP} - the inverse-volatility portfolio, with weights be inversely proportional the standard deviation of returns;}
          \item{\code{index} - the market index, requires an \code{xts} named `index` in the datasets.}}}
 
 \item{shortselling}{Logical value indicating whether shortselling is allowed or not 
@@ -72,7 +73,9 @@ see \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/Portfol
 \item{leverage}{Amount of leverage as in \eqn{||w||_1 <= leverage} 
 (default is \code{Inf}, so no control for leverage in the backtesting).}
 
-\item{T_rolling_window}{Length of the lookback rolling window in periods (default is \code{252}).}
+\item{lookback}{Length of the lookback rolling window in periods (default is \code{252}).}
+
+\item{T_rolling_window}{Deprecated: use \code{lookback} instead.}
 
 \item{optimize_every}{How often the portfolio is to be optimized in periods (default is \code{20}).}
 

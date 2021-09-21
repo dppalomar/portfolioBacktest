@@ -22,7 +22,7 @@ stockDataResample(
 \item{num_datasets}{Number of resampled datasets (chosen randomly among the financial instrument universe).}
 
 \item{rm_stocks_with_na}{Logical value indicating whether to remove instruments with inner missing 
-values (ignoring leading and trailing missing values). Default is \code{TRUE}.}
+values. Default is \code{TRUE}.}
 }
 \description{
 This function is deprecated. Use instead \code{\link{financialDataResample}()}.

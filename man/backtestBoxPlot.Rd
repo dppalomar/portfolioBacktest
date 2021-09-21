@@ -59,7 +59,7 @@ backtestBoxPlot(bt, "Sharpe ratio", type = "simple")
 
 }
 \seealso{
-\code{\link{summaryBarPlot}}, \code{\link{backtestChartCumReturns}}, 
+\code{\link{summaryBarPlot}}, \code{\link{backtestChartCumReturn}}, 
          \code{\link{backtestChartDrawdown}}, \code{\link{backtestChartStackedBar}}
 }
 \author{
