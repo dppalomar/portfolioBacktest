@@ -218,9 +218,12 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
         # load the file with portfolio_fun()
         suppressMessages(source(file.path(args$folder_path, args$file), local = args$source_to_local))
         # fix the arguments
-        if (args$source_to_local && exists("portfolio_fun", envir = environment()) ||
-            !args$source_to_local && exists("portfolio_fun", envir = parent.env(environment())))  # in case the file does not contain a valid portfolio_fun()
-          args <- c(list(portfolio_fun = portfolio_fun), args)
+        if (args$source_to_local && exists("portfolio_fun", envir = environment()))
+          #args <- c(list(portfolio_fun = environment()$portfolio_fun), args)
+          args <- c(list(portfolio_fun = get(x = "portfolio_fun", envir = environment())), args)
+        if (!args$source_to_local && exists("portfolio_fun", envir = parent.env(environment())))
+          #args <- c(list(portfolio_fun = parent.env(environment())$portfolio_fun), args)
+          args <- c(list(portfolio_fun = get(x = "portfolio_fun", envir = parent.env(environment()))), args)
         args$folder_path <- args$file <- args$source_to_local <- NULL  # remove these arguments
         # do backtest
         res <- do.call(singlePortfolioBacktest, args)
