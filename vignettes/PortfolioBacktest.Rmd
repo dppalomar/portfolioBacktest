@@ -314,7 +314,7 @@ backtestBoxPlot(bt, measure = "Sharpe ratio")
 
 * Cumulative return or wealth plot of a single backtest:
 ```{r, warning=FALSE, fig.width=7, fig.height=4}
-backtestChartCumReturns(bt, c("Quintile", "GMVP", "index"))
+backtestChartCumReturn(bt, c("Quintile", "GMVP", "index"))
 ```
 ```{r, warning=FALSE, fig.width=7, fig.height=3}
 backtestChartDrawdown(bt, c("Quintile", "GMVP", "index"))
