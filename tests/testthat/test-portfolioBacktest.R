@@ -33,7 +33,7 @@ test_that("backtest results coincide with PerformanceAnalytics and base R", {
   #
   bt <- portfolioBacktest(portfolios, 
                           dataset_list = list("dataset 1" = list("adjusted" = prices)),  # just one single dataset!
-                          T_rolling_window = 1,
+                          lookback = 1,
                           optimize_every = 1, 
                           rebalance_every = 1,
                           return_portfolio = TRUE, 
@@ -59,7 +59,7 @@ test_that("backtest results coincide with PerformanceAnalytics and base R", {
   # 
   bt <- portfolioBacktest(portfolios, 
                           dataset_list = list("dataset 1" = list("adjusted" = prices)),  # just one single dataset!
-                          T_rolling_window = 20,
+                          lookback = 20,
                           optimize_every = 20, 
                           rebalance_every = 20,
                           return_portfolio = TRUE, 
@@ -93,7 +93,7 @@ test_that("backtest results coincide with PerformanceAnalytics and base R", {
   #
   bt_next_period <- portfolioBacktest(portfolios, 
                           dataset_list = list("dataset 1" = list("adjusted" = prices)),  # just one single dataset!
-                          T_rolling_window = 20,
+                          lookback = 20,
                           optimize_every = 20, 
                           rebalance_every = 20,
                           execution = "next period",
@@ -119,7 +119,7 @@ test_that("backtest results and performance measures coincide with the precomput
                           shortselling = TRUE, leverage = Inf, 
                           return_portfolio = TRUE, return_returns = TRUE, 
                           benchmarks = c("uniform", "index"),
-                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+                          lookback = 252, optimize_every = 20, rebalance_every = 5)
   # bt_check <- bt$GMVP$`dataset 1`[-2]
   # save(bt_check, file = "bt_check.RData", version = 2)
   load("bt_check.RData")
@@ -130,15 +130,15 @@ test_that("backtest results and performance measures coincide with the precomput
   load("bt_selector_check.RData")
   expect_equivalent(backtestSelector(bt, portfolio_name = "Uniform")$performance, bt_selector_check)
   
-  # bt_table_check <- backtestTable(bt)[1:8]
+  # bt_table_check <- backtestTable(bt)[1:14]
   # save(bt_table_check, file = "bt_table_check.RData", version = 2)
   load("bt_table_check.RData")
-  expect_equivalent(backtestTable(bt)[1:8], bt_table_check) 
+  expect_equivalent(backtestTable(bt)[1:14], bt_table_check) 
   
-  # bt_summary_check <- head(backtestSummary(bt, summary_fun = median)[[1]], -2)
+  # bt_summary_check <- head(backtestSummary(bt, summary_fun = median)$performance_summary, -2)
   # save(bt_summary_check, file = "bt_summary_check.RData", version = 2)
   load("bt_summary_check.RData")
-  expect_equivalent(head(backtestSummary(bt, summary_fun = median)[[1]], -2), bt_summary_check)  # compare except cpu time
+  expect_equivalent(head(backtestSummary(bt, summary_fun = median)$performance_summary, -2), bt_summary_check)  # compare except cpu time
 })
 
 
@@ -158,7 +158,7 @@ test_that("backtest results with bankruptcy work fine", {
                           shortselling = TRUE, leverage = Inf, 
                           return_portfolio = TRUE, return_returns = TRUE, 
                           benchmark = c("uniform", "index"),
-                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+                          lookback = 252, optimize_every = 20, rebalance_every = 5)
   first_date_trading <- index(bt$fun1$`dataset 1`$wealth)[1]
   stock_price_normalized <- dataset10_bankruptcy$`dataset 1`$adjusted[paste0(first_date_trading, "::"), 1]/as.numeric(dataset10_bankruptcy$`dataset 1`$adjusted[first_date_trading, 1])
   #plot(cbind(stock_price_normalized, bt$fun1$`dataset 1`$wealth))
@@ -179,20 +179,20 @@ test_that("transaction cost works properly", {
   bt <- portfolioBacktest(portfolios[1], dataset_list = dataset10[1],
                           shortselling = TRUE, leverage = Inf,
                           return_portfolio = TRUE, return_returns = TRUE,
-                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+                          lookback = 252, optimize_every = 20, rebalance_every = 5)
   
   bt2 <- portfolioBacktest(portfolios[1], dataset_list = dataset10[1],
                           shortselling = TRUE, leverage = Inf,
                           cost = list(buy = 0, sell = 0),
                           return_portfolio = TRUE, return_returns = TRUE,
-                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+                          lookback = 252, optimize_every = 20, rebalance_every = 5)
   expect_equivalent(bt$Uniform$`dataset 1`[-2], bt2$Uniform$`dataset 1`[-2])
 
   bt_tc <- portfolioBacktest(portfolios[1], dataset_list = dataset10[1],
                            shortselling = TRUE, leverage = Inf,
                            cost = list(buy = 1e-4, sell = 0),
                            return_portfolio = TRUE, return_returns = TRUE,
-                           T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+                           lookback = 252, optimize_every = 20, rebalance_every = 5)
   
   expect_equivalent(bt$Uniform$`dataset 1`[c("error", "error_message", "w_designed")], 
                     bt_tc$Uniform$`dataset 1`[c("error", "error_message", "w_designed")])
@@ -223,7 +223,7 @@ test_that("cash is properly accounted in backtest results", {
                           shortselling = TRUE, leverage = Inf, 
                           return_portfolio = TRUE, return_returns = TRUE, 
                           benchmark = c("uniform", "index"),
-                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+                          lookback = 252, optimize_every = 20, rebalance_every = 5)
   first_date_trading <- index(bt$fun1$`dataset 1`$wealth)[1]
   stock_price_normalized <- dataset10_bankruptcy$`dataset 1`$adjusted[paste0(first_date_trading, "::"), 1]/as.numeric(dataset10_bankruptcy$`dataset 1`$adjusted[first_date_trading, 1])
   #plot(cbind(stock_price_normalized, bt$fun1$`dataset 1`$wealth), lwd = c(2, 4))
@@ -238,7 +238,7 @@ test_that("cash is properly accounted in backtest results", {
                                                   shortselling = TRUE, leverage = Inf, 
                                                   return_portfolio = TRUE, return_returns = TRUE, 
                                                   benchmark = c("uniform", "index"),
-                                                  T_rolling_window = 252, optimize_every = 20, rebalance_every = 5))
+                                                  lookback = 252, optimize_every = 20, rebalance_every = 5))
   #plot(cbind(stock_price_normalized, bt$fun1$`dataset 1`$wealth), lwd = c(2, 4))
   expect_equivalent(sum(abs(bt$fun1$`dataset 1`$wealth - 1)), 0)
     
@@ -250,7 +250,7 @@ test_that("cash is properly accounted in backtest results", {
   #                         shortselling = TRUE, leverage = Inf, 
   #                         return_portfolio = TRUE, return_returns = TRUE, 
   #                         benchmark = c("uniform", "index"),
-  #                         T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+  #                         lookback = 252, optimize_every = 20, rebalance_every = 5)
   # plot(cbind(stock_price_normalized, bt$fun1$`dataset 1`$wealth), lwd = c(2, 4))
 })
 
@@ -276,14 +276,14 @@ test_that("cpu_time_limit works", {
 #                                            shortselling = TRUE, leverage = Inf, 
 #                                            return_portfolio = TRUE, return_returns = TRUE, 
 #                                            benchmark = c("uniform", "index"),
-#                                            T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+#                                            lookback = 252, optimize_every = 20, rebalance_every = 5)
 #   
 #   
 #   bt_paral_datasets <- portfolioBacktest(portfolios, dataset_list = dataset10, paral_datasets = 5,
 #                                          shortselling = TRUE, leverage = Inf, 
 #                                          return_portfolio = TRUE, return_returns = TRUE, 
 #                                          benchmark = c("uniform", "index"),
-#                                          T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+#                                          lookback = 252, optimize_every = 20, rebalance_every = 5)
 # 
 #   load("bt_table_check.RData")
 #   expect_equal(backtestTable(bt_paral_portfolios)[1:8], bt_table_check) 
@@ -294,7 +294,7 @@ test_that("portfolioBacktest over files", {
   bt_files <- portfolioBacktest(folder_path = "portfolio_files", dataset_list = dataset10,
                                 shortselling = TRUE, leverage = Inf, 
                                 return_portfolio = FALSE, return_returns = FALSE,
-                                T_rolling_window = 252, optimize_every = 20, rebalance_every = 5)
+                                lookback = 252, optimize_every = 20, rebalance_every = 5)
   bt_files <- lapply(bt_files, function(x) {sapply(x, function(x) {x$performance})})
   load("bt_files_check.RData")
   expect_equivalent(bt_files, bt_files_check)
