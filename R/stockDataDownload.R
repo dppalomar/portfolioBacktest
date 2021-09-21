@@ -179,7 +179,7 @@ multipleXTSMerge <- function(xts_list) {
 #' @param T_sample Desired length of each resample (consecutive samples with a random initial time).
 #' @param num_datasets Number of resampled datasets (chosen randomly among the financial instrument universe).
 #' @param rm_stocks_with_na Logical value indicating whether to remove instruments with inner missing 
-#'                          values (ignoring leading and trailing missing values). Default is \code{TRUE}.
+#'                          values. Default is \code{TRUE}.
 #' 
 #' @return List of datasets resampled from \code{X}.
 #' 
@@ -208,7 +208,8 @@ financialDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datase
   # error control for indices
   X_index_list <- lapply(X, function(x) index(x))
   X_equal_indices_list <- sapply(X_index_list, function(x) identical(x, X_index_list[[1]]))
-  if (!all(X_equal_indices_list)) stop("The date indices of \"X\" do not match.")
+  if (!all(X_equal_indices_list)) 
+    stop("The date indices of \"X\" do not match.")
 
   # separate univariate from multivariate
   num_cols <- sapply(X, ncol)
@@ -216,26 +217,33 @@ financialDataResample <- function(X, N_sample = 50, T_sample = 2*252, num_datase
   elems_N <- which(num_cols == N)
   elems_1 <- setdiff(1:length(X), elems_N)
   
-  # if required, check inner NAs
-  if (rm_stocks_with_na) {   
-    inner_NA_pattern <- sapply(X[elems_N], function(x) apply(x, 2, any_inner_NA))
-    columns_to_keep <- rowSums(inner_NA_pattern) == 0
-    if (any(!columns_to_keep)) 
-      warning("Some xts object does not satisfy monotone missing-data pattern.\n", call. = FALSE)
-    #X[elems_N] <- apply(X[elems_N], function(x) x[, columns_to_keep])
-    #N <- ncol(X[[elems_N[1]]])
-  }
+  # # if required, check inner NAs
+  # if (rm_stocks_with_na) {   
+  #   inner_NA_pattern <- sapply(X[elems_N], function(x) apply(x, 2, any_inner_NA))
+  #   columns_to_keep <- rowSums(inner_NA_pattern) == 0
+  #   if (any(!columns_to_keep)) 
+  #     warning("Some xts object does not satisfy monotone missing-data pattern.\n", call. = FALSE)
+  #   #X[elems_N] <- apply(X[elems_N], function(x) x[, columns_to_keep])
+  #   #N <- ncol(X[[elems_N[1]]])
+  # }
   
-  # resampling
+  # resampling blocks (without NAs)
   T <- nrow(X[[1]])
-  if (T < T_sample) stop("\"T_sample\" cannot be greater than the date length of \"X\".")
+  if (T < T_sample) 
+    stop("\"T_sample\" cannot be greater than the date length of \"X\".")
   dataset <- vector("list", num_datasets)
   for (i in 1:num_datasets) {
+    # random time period
     t_start <- sample(T - T_sample + 1, 1)
     t_mask <- t_start:(t_start + T_sample - 1)
-    N_mask <- rep(1:N)[!is.na(X[[1]][t_start, ])]
-    stock_mask <- if (length(N_mask) <= N_sample) N_mask
-                  else sample(N_mask, N_sample)
+    # random stocks
+    idx_cols <- if (rm_stocks_with_na) which(!apply(X[[1]][t_mask, ], 2, anyNA))
+                else 1:N
+    if (length(idx_cols) == 0)
+      stop("Time period without any stock without NAs!")
+    stock_mask <- if (length(idx_cols) <= N_sample) idx_cols
+                  else sample(idx_cols, N_sample)
+    
     dataset[[i]] <- vector("list", length(X))
     names(dataset[[i]]) <- names(X)
     dataset[[i]][elems_N] <- lapply(X[elems_N], function(x) x[t_mask, stock_mask])

@@ -43,14 +43,15 @@
 #'                        see \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#parallel-backtesting}{vignette-paralle-mode} for details.
 #' @param show_progress_bar Logical value indicating whether to show progress bar (default is \code{FALSE}). 
 #' @param benchmarks String vector indicating the benchmark portfolios to be incorporated, currently supports:
-#' \itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks}
-#'          \item{\code{IVP} - the inverse-volatility portfolio, with weights be inversely proportional the standard deviation of returns.}
+#' \itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks;}
+#'          \item{\code{IVP} - the inverse-volatility portfolio, with weights be inversely proportional the standard deviation of returns;}
 #'          \item{\code{index} - the market index, requires an \code{xts} named `index` in the datasets.}}
 #' @param shortselling Logical value indicating whether shortselling is allowed or not 
 #'                     (default is \code{TRUE}, so no control for shorselling in the backtesting).
 #' @param leverage Amount of leverage as in \eqn{||w||_1 <= leverage} 
 #'                 (default is \code{Inf}, so no control for leverage in the backtesting).
-#' @param T_rolling_window Length of the lookback rolling window in periods (default is \code{252}).
+#' @param lookback Length of the lookback rolling window in periods (default is \code{252}).
+#' @param T_rolling_window Deprecated: use \code{lookback} instead.
 #' @param optimize_every How often the portfolio is to be optimized in periods (default is \code{20}).
 #' @param rebalance_every How often the portfolio is to be rebalanced in periods (default is \code{1}).
 #' @param bars_per_year Number of bars/periods per year. By default it will be calculated automatically 
@@ -122,7 +123,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
                               paral_portfolios = 1, paral_datasets = 1,
                               show_progress_bar = FALSE, benchmarks = NULL, 
                               shortselling = TRUE, leverage = Inf,
-                              T_rolling_window = 252, optimize_every = 20, rebalance_every = 1, bars_per_year = NA,
+                              lookback = 252, T_rolling_window = NULL, optimize_every = 20, rebalance_every = 1, bars_per_year = 252,
                               execution = c("same period", "next period"), 
                               cost = list(buy = 0e-4, sell = 0e-4, short = 0e-4, long_leverage = 0e-4),
                               cpu_time_limit = Inf,
@@ -138,6 +139,8 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   if (is.xts(dataset_list[[1]])) stop("Each element of \"dataset_list\" must be a list of xts objects. Try to surround your passed \"dataset_list\" with list().")
   if (!(price_name %in% names(dataset_list[[1]]))) stop("Price data xts element \"", price_name, "\" does not exist in dataset_list.")
   if (!is.xts(dataset_list[[1]][[1]])) stop("prices have to be xts.")
+  if (!is.null(T_rolling_window))
+    stop("Argument ", dQuote("T_rolling_window"), " is deprecated. Use instead ", dQuote("lookback"))
   ##############################
   
   if (is.null(names(dataset_list)))
@@ -153,7 +156,7 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   args <- list(dataset_list = dataset_list, price_name = price_name,
                paral_datasets = paral_datasets,
                shortselling = shortselling, leverage = leverage,
-               T_rolling_window = T_rolling_window, optimize_every = optimize_every, rebalance_every = rebalance_every, 
+               lookback = lookback, optimize_every = optimize_every, rebalance_every = rebalance_every, 
                bars_per_year = bars_per_year, execution = execution, cost = cost,
                cpu_time_limit = cpu_time_limit, return_portfolio = return_portfolio, return_returns = return_returns)
   
@@ -336,7 +339,7 @@ singlePortfolioBacktest <- function(...) {
 #' @import xts
 singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
                                              shortselling, leverage,
-                                             T_rolling_window, optimize_every, rebalance_every, bars_per_year,
+                                             lookback, optimize_every, rebalance_every, bars_per_year,
                                              execution = c("same period", "next period"), 
                                              cost = list(buy = 0*10^(-4), sell = 0*10^(-4), short = 0*10^(-4), long_leverage = 0*10^(-4)),
                                              cpu_time_limit,
@@ -350,7 +353,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
   if (!is.xts(prices)) stop("prices have to be xts.")
   N <- ncol(prices)
   T <- nrow(prices)
-  if (T_rolling_window >= T) stop("T is not large enough for the given sliding window length.")
+  if (lookback >= T) stop("T is not large enough for the given lookback window length.")
   if (optimize_every%%rebalance_every != 0) stop("The reoptimization period has to be a multiple of the rebalancing period.")
   if (anyNA(prices)) stop("prices contain NAs.")
   if (!is.function(portfolio_fun)) stop("portfolio_fun is not a function.")
@@ -365,9 +368,9 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
                   stop("Execution method unknown"))
   
   # indices
-  #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= T_rolling_window)]
-  optimize_indices  <- seq(from = T_rolling_window, to = T - delay, by = optimize_every)
-  rebalance_indices <- seq(from = T_rolling_window, to = T - delay, by = rebalance_every)
+  #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= lookback)]
+  optimize_indices  <- seq(from = lookback, to = T - delay, by = optimize_every)
+  rebalance_indices <- seq(from = lookback, to = T - delay, by = rebalance_every)
   if (any(!(optimize_indices %in% rebalance_indices))) 
     stop("The reoptimization indices have to be a subset of the rebalancing indices.")
   
@@ -384,20 +387,21 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
   
   # initial values
   initial_budget <- 1
-  w_eop[T_rolling_window, ] <- 0  # w_eop but normalized wrt NAV_bop
+  w_eop[lookback, ] <- 0  # w_eop but normalized wrt NAV_bop
   cash_eop <- 1  # all in cash
-  NAV_eop[T_rolling_window, ] <- (sum(w_eop[T_rolling_window, ]) + cash_eop) * initial_budget
+  NAV_eop[lookback, ] <- (sum(w_eop[lookback, ]) + cash_eop) * initial_budget
+  num_rebalances <- 0
   
   # loop over time
-  for(t in T_rolling_window:T) {
+  for(t in lookback:T) {
     # update of w_bop as w_eop
-    if (t > T_rolling_window) {
+    if (t > lookback) {
       NAV_bop <- as.numeric(NAV_eop[t-1])
       if (all(is.na(w_bop[t, ])))
         w_bop[t, ] <- w_eop[t-1, ]
       # include tc in cash
       delta_bop[t, ] <- w_bop[t, ] - as.numeric(w_eop[t-1, ])
-      if (t == T_rolling_window + delay)  # this is to avoid the initial huge turnover
+      if (t == lookback + delay)  # this is to avoid the initial huge turnover
         delta_bop[t, ] <- 0
       if (compute_tc)
         tc <- cost$buy*sum(pos(delta_bop[t, ])) + cost$sell*sum(pos(-delta_bop[t, ])) +       # trading cost
@@ -414,40 +418,42 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
       #cash_eop   <- cash_eop_  / (sum(w_eop_) + cash_eop_)
     }
 
-    # design of w_designed
-    if (t %in% optimize_indices && t + delay <= T) {
-      # design portfolio
-      data_window  <- lapply(data, function(x) x[(t-T_rolling_window+1):t, ])
-      start_time <- proc.time()[3]
-      error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(
-        w_designed[t, ] <- do.call(portfolio_fun, list(data_window, w_current = as.matrix(w_eop[t, ])[1, ])), 
-        environment()),
-        timeout = cpu_time_limit, onTimeout = "silent")
-      cpu_time <- c(cpu_time, as.numeric(proc.time()[3] - start_time))
-      portf <- check_portfolio_errors(error_capture, w_designed[t, ], shortselling, leverage)
-      if (portf$error) 
-        break  # return immediately if error happens
-      last_w_optimized <- w_designed[t, ]
+    # rebalance and possibly design of w_designed
+    if (t %in% rebalance_indices && t + delay <= T) {
+      w_current <- as.matrix(w_eop[t, ])[1, ]
+      if (t %in% optimize_indices) {
+        # design portfolio
+        data_window  <- lapply(data, function(x) x[(t-lookback+1):t, ])
+        start_time <- proc.time()[3]
+        error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(
+          last_w_optimized <- do.call(portfolio_fun, list(data_window, w_current = w_current)), 
+          environment()),
+          timeout = cpu_time_limit, onTimeout = "silent")
+        cpu_time <- c(cpu_time, as.numeric(proc.time()[3] - start_time))
+        portf <- check_portfolio_errors(error_capture, last_w_optimized, shortselling, leverage)
+        if (portf$error) 
+          break  # return immediately if error happens
+      }
+      w_designed[t, ]    <- last_w_optimized
       w_bop[t + delay, ] <- last_w_optimized
-    } else if (t %in% rebalance_indices && t + delay <= T) {
-      w_designed[t, ] <- last_w_optimized  # <--- to be removed later
-      w_bop[t + delay, ] <- last_w_optimized
+      if (!isTRUE(all.equal(last_w_optimized, w_current)))
+        num_rebalances <- num_rebalances + 1
     }
   }
 
   # in case of error return now
   if (portf$error)
-    return(list(performance = portfolioPerformance(rets = NA, ROT_bps = NA, bars_per_year = NA),
+    return(list(performance = portfolioPerformance(rets = NA, bars_per_year = NA),
                 cpu_time = NA, 
                 error = TRUE, 
                 error_message = portf$error_message))
 
   # in case of no error, continue normally
   w_designed <- w_designed[rebalance_indices, ]
-  w_bop <- w_bop[(T_rolling_window + delay):T, ]
-  delta_bop <- delta_bop[(T_rolling_window + delay):T, ]
-  w_eop <- w_eop[(T_rolling_window + delay - 1):T, ]
-  NAV_eop <- NAV_eop[(T_rolling_window + delay - 1):T, ]
+  w_bop <- w_bop[(lookback + delay):T, ]
+  delta_bop <- delta_bop[(lookback + delay):T, ]
+  w_eop <- w_eop[(lookback + delay - 1):T, ]
+  NAV_eop <- NAV_eop[(lookback + delay - 1):T, ]
   returns_eop <- PerformanceAnalytics::CalculateReturns(NAV_eop)[-1]
   colnames(returns_eop) <- "return"
 
@@ -466,7 +472,10 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
   # }
 
   # return
-  res <- list(performance = portfolioPerformance(rets = returns_eop, ROT_bps = ROT_bps, bars_per_year),
+  res <- list(performance = portfolioPerformance(rets = returns_eop, bars_per_year, 
+                                                 rebalances_per_period = num_rebalances/(T - lookback),
+                                                 turnover_per_period   = sum_turnover_norm/(T - lookback),
+                                                 ROT_bps = ROT_bps),
               cpu_time = mean(cpu_time), 
               error = FALSE, 
               error_message = NA)    
@@ -602,7 +611,7 @@ returnPortfolio <- function(R, weights,
 #' @import xts
 singlePortfolioSingleXTSBacktest_old <- function(portfolio_fun, data, price_name,
                                              shortselling, leverage,
-                                             T_rolling_window, optimize_every, rebalance_every, bars_per_year,
+                                             lookback, optimize_every, rebalance_every, bars_per_year,
                                              execution, cost,
                                              cpu_time_limit,
                                              return_portfolio, return_returns) {
@@ -615,7 +624,7 @@ singlePortfolioSingleXTSBacktest_old <- function(portfolio_fun, data, price_name
   if (!is.xts(prices)) stop("prices have to be xts.")
   N <- ncol(prices)
   T <- nrow(prices)
-  if (T_rolling_window >= T) stop("T is not large enough for the given sliding window length.")
+  if (lookback >= T) stop("T is not large enough for the given sliding window length.")
   if (optimize_every%%rebalance_every != 0) stop("The reoptimization period has to be a multiple of the rebalancing period.")
   if (anyNA(prices)) stop("prices contain NAs.")
   if (!is.function(portfolio_fun)) stop("portfolio_fun is not a function.")
@@ -625,9 +634,9 @@ singlePortfolioSingleXTSBacktest_old <- function(portfolio_fun, data, price_name
   #################################
   
   # indices
-  #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= T_rolling_window)]
-  optimize_indices  <- seq(from = T_rolling_window, to = T, by = optimize_every)
-  rebalance_indices <- seq(from = T_rolling_window, to = T, by = rebalance_every)
+  #rebalancing_indices <- endpoints(prices, on = "weeks")[which(endpoints(prices, on = "weeks") >= lookback)]
+  optimize_indices  <- seq(from = lookback, to = T, by = optimize_every)
+  rebalance_indices <- seq(from = lookback, to = T, by = rebalance_every)
   if (any(!(optimize_indices %in% rebalance_indices))) 
     stop("The reoptimization indices have to be a subset of the rebalancing indices.")
   
@@ -641,7 +650,7 @@ singlePortfolioSingleXTSBacktest_old <- function(portfolio_fun, data, price_name
     
     # call porfolio function if necessary
     if (idx_prices %in% optimize_indices) {  # reoptimize
-      data_window  <- lapply(data, function(x) x[(idx_prices-T_rolling_window+1):idx_prices, ])
+      data_window  <- lapply(data, function(x) x[(idx_prices-lookback+1):idx_prices, ])
       start_time <- proc.time()[3] 
       error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(w[i, ] <- do.call(portfolio_fun, list(data_window)), 
                                                                                environment()), 

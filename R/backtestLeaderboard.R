@@ -69,7 +69,7 @@ backtestLeaderboard <- function(bt = NA, weights = list(), summary_fun = median,
   error_message       <- tmp$error_message
   
   performance_names <- colnames(performance_summary)
-  judge <- c(attr(bt[[1]][[1]]$performance, "judge"), -1, -1)  # the last two are for "cpu time" and "failure rate"
+  judge <- c(attr(bt[[1]][[1]]$performance, "desired_direction"), -1, -1)  # the last two are for "cpu time" and "failure rate"
   weights_defname <- colnames(performance_summary)
   weights_default <- as.list(rep(0, length(weights_defname)))
   names(weights_default) <- weights_defname

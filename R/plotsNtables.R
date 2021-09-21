@@ -9,7 +9,7 @@
 #' @param bt_summary Backtest summary as obtained from the function \code{backtestSummary}.
 #' @param measures String vector to select performane measures (default is all) from
 #'                 `Sharpe ratio`, `max drawdown`, `annual return`, `annual volatility`, 
-#'                 `Sterling ratio`, `Omega ratio`, and `ROT bps`.
+#'                 `Sterling ratio`, `Omega ratio`, `ROT bps`, etc.
 #' @param caption Table caption (only works for \code{type = "DT"}).
 #' @param type Type of table. Valid options: \code{"simple", "DT", "grid.table"}. Default is 
 #'             \code{"simple"} and generates a simple matrix (with the other choices the 
@@ -76,10 +76,15 @@ summaryTable <- function(bt_summary, measures = NULL, caption = "Performance tab
                               options = list(pageLength = page_length, scrollX = TRUE, order = list(order_col, order_dir)),
                               caption = caption)
            p <- DT::formatStyle(p, 0, target = "row", fontWeight = DT::styleEqual(c("uniform", "index"), c("bold", "bold")))
+           p <- DT::formatRound(p, colnames(performance), digits = 2)
            if ("annual volatility" %in% colnames(performance))
              p <- DT::formatPercentage(p, "annual volatility", 1)
            if ("max drawdown" %in% colnames(performance))
              p <- DT::formatPercentage(p, "max drawdown", 1)
+           if ("ROT (bps)" %in% colnames(performance))
+             p <- DT::formatRound(p, "ROT (bps)", digits = 0)
+           if ("cpu time" %in% colnames(performance))
+             p <- DT::formatRound(p, "cpu time", digits = 4)
            p
          },
          "grid.table" = {
@@ -112,7 +117,7 @@ summaryTable <- function(bt_summary, measures = NULL, caption = "Performance tab
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
 #' @seealso \code{\link{summaryTable}}, \code{\link{backtestBoxPlot}},
-#'          \code{\link{backtestChartCumReturns}}, \code{\link{backtestChartDrawdown}},
+#'          \code{\link{backtestChartCumReturn}}, \code{\link{backtestChartDrawdown}},
 #'          \code{\link{backtestChartStackedBar}}
 #' 
 #' @examples
@@ -205,7 +210,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
-#' @seealso \code{\link{summaryBarPlot}}, \code{\link{backtestChartCumReturns}}, 
+#' @seealso \code{\link{summaryBarPlot}}, \code{\link{backtestChartCumReturn}}, 
 #'          \code{\link{backtestChartDrawdown}}, \code{\link{backtestChartStackedBar}}
 #'          
 #' @examples
@@ -324,7 +329,7 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
 #'                         benchmark = c("uniform", "index"))
 #' 
 #' # now we can chart
-#' backtestChartCumReturns(bt)
+#' backtestChartCumReturn(bt)
 #' }
 #' 
 #' @importFrom grDevices topo.colors
@@ -333,7 +338,7 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
 #' @importFrom ggplot2 ggplot fortify aes geom_line theme element_blank ggtitle xlab ylab
 #' @importFrom rlang .data
 #' @export
-backtestChartCumReturns <- function(bt, portfolios = names(bt), dataset_num = 1, type = c("ggplot2", "simple"), ...) {
+backtestChartCumReturn <- function(bt, portfolios = names(bt), dataset_num = 1, type = c("ggplot2", "simple"), ...) {
   # extract data
   bt <- bt[portfolios]
   wealth <- do.call(cbind, lapply(bt, function(x) x[[dataset_num]]$wealth))
@@ -367,12 +372,12 @@ backtestChartCumReturns <- function(bt, portfolios = names(bt), dataset_num = 1,
 #' By default the chart is based on the package \code{ggplot2}, but the user can also 
 #' specify a plot based on \code{PerformanceAnalytics}.
 #' 
-#' @inheritParams backtestChartCumReturns
+#' @inheritParams backtestChartCumReturn
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
 #' @seealso \code{\link{summaryBarPlot}}, \code{\link{backtestBoxPlot}}, 
-#'          \code{\link{backtestChartCumReturns}}, \code{\link{backtestChartStackedBar}}
+#'          \code{\link{backtestChartCumReturn}}, \code{\link{backtestChartStackedBar}}
 #' 
 #' @examples
 #' \donttest{
@@ -436,7 +441,7 @@ backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, t
 #' By default the chart is based on the package \code{ggplot2}, but the user can also 
 #' specify a plot based on \code{PerformanceAnalytics}.
 #' 
-#' @inheritParams backtestChartCumReturns
+#' @inheritParams backtestChartCumReturn
 #' @param portfolio String with portfolio name to be charted. 
 #'                  Default charts the first portfolio in the backtest.
 #' @param legend Boolean to choose whether legend is plotted or not. Default is \code{legend = FALSE}.
@@ -444,7 +449,7 @@ backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, t
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
 #' @seealso \code{\link{summaryBarPlot}}, \code{\link{backtestBoxPlot}}, 
-#'          \code{\link{backtestChartCumReturns}}, \code{\link{backtestChartDrawdown}}
+#'          \code{\link{backtestChartCumReturn}}, \code{\link{backtestChartDrawdown}}
 #' 
 #' @examples
 #' \donttest{

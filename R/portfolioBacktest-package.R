@@ -20,7 +20,7 @@
 #' \code{\link{stockDataDownload}}, \code{\link{financialDataResample}},
 #' \code{\link{portfolioBacktest}}, \code{\link{backtestSelector}},
 #' \code{\link{backtestTable}}, \code{\link{backtestBoxPlot}}, \code{\link{backtestLeaderboard}},
-#' \code{\link{backtestChartCumReturns}}, \code{\link{backtestChartDrawdown}}, \code{\link{backtestChartStackedBar}}
+#' \code{\link{backtestChartCumReturn}}, \code{\link{backtestChartDrawdown}}, \code{\link{backtestChartStackedBar}}
 #' \code{\link{backtestSummary}}, \code{\link{summaryTable}}, \code{\link{summaryBarPlot}}
 #'
 #' @section Data:
