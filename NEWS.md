@@ -1,6 +1,12 @@
-## Changes in portfolioBacktest version 0.3.0
+## Changes in portfolioBacktest version 0.3.0 (2021-09-21)
 
-* Now the portfolio function received an additional argument with the current portfolio. This allows for portfolio designs that take into account transaction costs and for smart rebalancing techniques.
+* In the computation of Sharpe ratio and annualized return, uncompounded returns are used (before they were compounded).
+
+* New function to add new performance measures: `add_performance()`
+
+* Function name `backtestChartCumReturns()` changed to `backtestChartCumReturn()` .
+
+* Now the portfolio function receives an additional argument `w_current` with the current portfolio. This allows for portfolio designs that take into account transaction costs and for smart rebalancing techniques.
 
 * Lots of internal code rewritten to make it more robust to future coding bugs. Now use of ellipsis in most places (always with named arguments).
 
