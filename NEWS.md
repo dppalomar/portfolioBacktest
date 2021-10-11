@@ -1,3 +1,10 @@
+## Changes in portfolioBacktest version 0.3.0.9000 (2021-XX-XX)
+
+* TO DO: Make it more clear that the period can be arbitrary. Not only in the function doc but also in the vignette. And give more examples of bars_per_year.
+
+* TO DO: When downloading stocks and saving to local cache file, also use the index to determine whether to download or not.
+
+
 ## Changes in portfolioBacktest version 0.3.0 (2021-09-21)
 
 * In the computation of Sharpe ratio and annualized return, uncompounded returns are used (before they were compounded).
