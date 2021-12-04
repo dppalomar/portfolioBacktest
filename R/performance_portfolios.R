@@ -20,14 +20,15 @@ portfolioPerformance <- function(rets, bars_per_year,
     if (nrow(rets) == 0)
       performance[c("max drawdown", "annual return", "annual volatility", "VaR (0.95)", "CVaR (0.95)")] <- 0
     else {
+      browser()
       performance["Sharpe ratio"]       <- PerformanceAnalytics::SharpeRatio.annualized(rets, scale = bars_per_year, geometric = FALSE) * sqrt(fraction_in)
       #performance["Sharpe ratio"]       <- sqrt(bars_per_year) * PerformanceAnalytics::SharpeRatio(rets, FUN = "StdDev") * sqrt(fraction_in)
       #performance["Prob. Sharpe ratio"] <- sqrt(bars_per_year * PerformanceAnalytics::ProbSharpeRatio(rets, refSR = 0)$sr_prob
       performance["max drawdown"]       <- PerformanceAnalytics::maxDrawdown(rets)
       #performance["annual return"]      <- PerformanceAnalytics::Return.annualized(rets, scale = bars_per_year, geometric = FALSE) * fraction_in
-      performance["annual return"]      <- bars_per_year * mean(rets, na.rm = TRUE) * fraction_in        # prod(1 + rets)^(252/nrow(rets)) - 1 or mean(rets) * 252
+      performance["annual return"]      <- bars_per_year * fraction_in * mean(rets, na.rm = TRUE)        # prod(1 + rets)^(252/nrow(rets)) - 1 or mean(rets) * 252
       #performance["annual volatility"]  <- PerformanceAnalytics::StdDev.annualized(rets, scale = bars_per_year) * sqrt(fraction_in)  # sqrt(252) * sd(rets, na.rm = TRUE)
-      performance["annual volatility"]  <- sqrt(bars_per_year) * sd(rets, na.rm = TRUE)
+      performance["annual volatility"]  <- sqrt(bars_per_year * fraction_in) * sd(rets, na.rm = TRUE)
       performance["Sortino ratio"]      <- sqrt(bars_per_year) * PerformanceAnalytics::SortinoRatio(rets) #, MAR = mean(rets))
       performance["downside deviation"] <- sqrt(bars_per_year) * PerformanceAnalytics::DownsideDeviation(rets) #, MAR = mean(rets))  # same as SemiDeviation()
       performance["Sterling ratio"]     <- performance["annual return"] / performance["max drawdown"]
