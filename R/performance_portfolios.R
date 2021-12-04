@@ -20,7 +20,6 @@ portfolioPerformance <- function(rets, bars_per_year,
     if (nrow(rets) == 0)
       performance[c("max drawdown", "annual return", "annual volatility", "VaR (0.95)", "CVaR (0.95)")] <- 0
     else {
-      browser()
       performance["Sharpe ratio"]       <- PerformanceAnalytics::SharpeRatio.annualized(rets, scale = bars_per_year, geometric = FALSE) * sqrt(fraction_in)
       #performance["Sharpe ratio"]       <- sqrt(bars_per_year) * PerformanceAnalytics::SharpeRatio(rets, FUN = "StdDev") * sqrt(fraction_in)
       #performance["Prob. Sharpe ratio"] <- sqrt(bars_per_year * PerformanceAnalytics::ProbSharpeRatio(rets, refSR = 0)$sr_prob
