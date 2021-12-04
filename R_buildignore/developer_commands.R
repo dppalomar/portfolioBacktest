@@ -46,6 +46,6 @@ rcmdcheck::rcmdcheck()  # build_args = "--run-donttest"
 devtools::build()
 #devtools::check_win_release()  #to check under windows
 #R CMD build .  # this is to generate tarball
-#R CMD check portfolioBacktest_0.3.0.tar.gz --as-cran --run-donttest  # this is before submission to CRAN
-#R CMD install portfolioBacktest_0.3.0.tar.gz
+#R CMD check portfolioBacktest_0.3.1.tar.gz --as-cran --run-donttest  # this is before submission to CRAN
+#R CMD install portfolioBacktest_0.3.1.tar.gz
 #submit the tarball directly via the webform: https://cran.r-project.org/submit.html

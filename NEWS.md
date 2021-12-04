@@ -1,8 +1,7 @@
-## Changes in portfolioBacktest version 0.3.0.9000 (2021-XX-XX)
 
-* TO DO: Make it more clear that the period can be arbitrary. Not only in the function doc but also in the vignette. And give more examples of bars_per_year.
+## Changes in portfolioBacktest version 0.3.1 (2021-10-11)
 
-* TO DO: When downloading stocks and saving to local cache file, also use the index to determine whether to download or not.
+* Just a minor adjustment in the the unit tests to comply with CRAN.
 
 
 ## Changes in portfolioBacktest version 0.3.0 (2021-09-21)
