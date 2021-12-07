@@ -1,7 +1,4 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-
 
 
 
@@ -56,7 +53,7 @@ citation("portfolioBacktest")
 ## Quick Start
 Do the backtest on your own portfolio following few steps:
 
-- **Step 1** - load package & dataset
+- **Step 1** - load package & 10 datasets
 
 ```r
 library(portfolioBacktest)
@@ -76,22 +73,26 @@ my_portfolio <- function(dataset, w_current) {
 ```r
 bt <- portfolioBacktest(my_portfolio, dataset10)
 ```
-- **Step 4** - check your portfolio performance
+- **Step 4** - check your portfolio performance (e.g., median of the 10 individual backtests)
 
 ```r
 backtestSummary(bt)$performance
-#>                           fun1
-#> Sharpe ratio      1.541403e+00
-#> max drawdown      8.937890e-02
-#> annual return     1.641528e-01
-#> annual volatility 1.218623e-01
-#> Sterling ratio    2.213819e+00
-#> Omega ratio       1.295090e+00
-#> ROT (bps)         6.997663e+02
-#> VaR (0.95)        1.101934e-02
-#> CVaR (0.95)       1.789425e-02
-#> cpu time          1.076923e-03
-#> failure rate      0.000000e+00
+#>                            fun1
+#> Sharpe ratio       1.476203e+00
+#> max drawdown       8.937890e-02
+#> annual return      1.594528e-01
+#> annual volatility  1.218623e-01
+#> Sortino ratio      2.057677e+00
+#> downside deviation 8.351402e-02
+#> Sterling ratio     2.122653e+00
+#> Omega ratio        1.295090e+00
+#> VaR (0.95)         1.101934e-02
+#> CVaR (0.95)        1.789425e-02
+#> rebalancing period 1.000000e+00
+#> turnover           8.641594e-03
+#> ROT (bps)          7.334458e+02
+#> cpu time           1.000000e-03
+#> failure rate       0.000000e+00
 ```
 
 For a more detailed explanation on how to use the package with all the features, check the [vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).

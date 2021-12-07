@@ -91,7 +91,7 @@ library(PerformanceAnalytics)
 library(CVXR)
 ```
 
-* **Step 1** - load package & dataset
+* **Step 1** - load package & 10 datasets
 ```{r, results="hide"}
 library(portfolioBacktest)
 data("dataset10")
@@ -108,7 +108,7 @@ my_portfolio <- function(dataset, ...) {
 ```{r, results="hide"}
 bt <- portfolioBacktest(my_portfolio, dataset10)
 ```
-* **Step 4** - check your portfolio performance
+* **Step 4** - check your portfolio performance (e.g., median of the 10 individual backtests)
 ```{r}
 backtestSummary(bt)$performance
 ```
