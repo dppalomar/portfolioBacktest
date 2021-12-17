@@ -307,7 +307,7 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
 #' @seealso \code{\link{summaryBarPlot}}, \code{\link{backtestBoxPlot}}, 
-#'          \code{\link{backtestChartDrawdown}}, \code{\link{backtestChartStackedBar}}
+#'          \code{\link{backtestChartDrawdown}}, \code{\link{backtestChartStackedBar}}, \code{\link{backtestChartSharpeRatio}}
 #' 
 #' @examples
 #' \donttest{
@@ -377,7 +377,7 @@ backtestChartCumReturn <- function(bt, portfolios = names(bt), dataset_num = 1, 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
 #' @seealso \code{\link{summaryBarPlot}}, \code{\link{backtestBoxPlot}}, 
-#'          \code{\link{backtestChartCumReturn}}, \code{\link{backtestChartStackedBar}}
+#'          \code{\link{backtestChartCumReturn}}, \code{\link{backtestChartStackedBar}}, \code{\link{backtestChartSharpeRatio}}
 #' 
 #' @examples
 #' \donttest{
@@ -430,6 +430,103 @@ backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, t
          },
          stop("Unknown plot type."))
 }
+
+
+
+
+#' @title Chart of the rolling Sharpe ratio over time for a single backtest
+#' 
+#' @description Create chart of the rolling Sharpe ratio over time for a single backtest
+#' obtained with the function \code{\link{portfolioBacktest}}.
+#' By default the chart is based on the package \code{ggplot2}, but the user can also 
+#' specify a plot based on \code{PerformanceAnalytics}.
+#' 
+#' @inheritParams backtestChartCumReturn
+#' 
+#' @author Daniel P. Palomar and Rui Zhou
+#' 
+#' @seealso \code{\link{summaryBarPlot}}, \code{\link{backtestBoxPlot}}, 
+#'          \code{\link{backtestChartCumReturn}}, \code{\link{backtestChartStackedBar}}, \code{\link{backtestChartDrawdown}}
+#' 
+#' @examples
+#' \donttest{
+#' library(portfolioBacktest)
+#' data(dataset10)  # load dataset
+#' 
+#' # define your own portfolio function
+#' quintile_portfolio <- function(data, ...) {
+#'   X <- diff(log(data$adjusted))[-1]  
+#'   N <- ncol(X)
+#'   ranking <- sort(colMeans(X), decreasing = TRUE, index.return = TRUE)$ix
+#'   w <- rep(0, N)
+#'   w[ranking[1:round(N/5)]] <- 1/round(N/5)
+#'   return(w)
+#' }
+#' 
+#' # do backtest
+#' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
+#'                         benchmark = c("uniform", "index"))
+#' 
+#' # now we can chart
+#' backtestChartSharpeRatio(bt)
+#' }
+#' 
+#' @importFrom grDevices topo.colors
+#' @importFrom graphics par
+#' @importFrom PerformanceAnalytics SharpeRatio.annualized chart.RollingPerformance
+#' @importFrom ggplot2 ggplot fortify aes geom_line theme element_blank ggtitle xlab ylab
+#' @importFrom rlang .data
+#' @export
+backtestChartSharpeRatio <- function(bt, portfolios = names(bt), dataset_num = 1, lookback = 100, by = 1, bars_per_year = 252, type = c("ggplot2", "simple"), ...) {
+  # extract data
+  bt <- bt[portfolios]
+  return <- do.call(cbind, lapply(bt, function(x) x[[dataset_num]]$return))
+  colnames(return) <- names(bt)
+  
+  # plot
+  params <- list(...)
+  switch(match.arg(type),
+         "simple" = {
+           if (is.null(params$col)) params$col <- topo.colors(length(bt))
+           
+           chart.RollingPerformance(return, 
+                                    FUN = function(X) SharpeRatio.annualized(X, scale = bars_per_year, geometric = FALSE), 
+                                    width = lookback, 
+                                    colorset = params$col, lwd = 2, legend.loc = "topleft", 
+                                    main = "Rolling Sharpe Ratio")
+         },
+         "ggplot2" = {
+           # SR_time <- zoo::rollapplyr(return,
+           #                            width = lookback, 
+           #                            FUN = function(X) SharpeRatio.annualized(X, scale = bars_per_year, geometric = FALSE), by.column = TRUE)
+           SR_time <- my_apply_rolling(return, 
+                                       width = lookback, 
+                                       by = by, 
+                                       FUN = function(X) SharpeRatio.annualized(X, scale = 365*24, geometric = FALSE))
+
+           ggplot(fortify(SR_time, melt = TRUE), aes(x = .data$Index, y = .data$Value, col = .data$Series)) +
+             geom_line() +
+             theme(legend.title = element_blank()) +
+             ggtitle("Rolling Sharpe ratio") + xlab(element_blank()) + ylab("Sharpe ratio")
+         },
+         stop("Unknown plot type."))
+}
+
+my_apply_rolling <- function (R, width = 0, trim = TRUE, gap = width, by = 1, FUN = "mean", ...) {
+  res <- c()
+  endings <- seq(from = nrow(R), to = gap, by = -by)
+  endings <- endings[order(endings)]
+  for (ending in endings) {
+    if (width == 0) r <- R[1:ending, ]  # expanding window
+    else r <- R[(ending - width + 1):ending, ]  # rolling window
+    res <- rbind(res, 
+                 apply(r, MARGIN = 2, FUN = FUN, ... = ...))
+  }
+  result_xts <- xts::xts(rbind(NA, res), order.by = zoo::index(R)[c(1, endings)])
+  return(result_xts)
+}
+
+
 
 
 
