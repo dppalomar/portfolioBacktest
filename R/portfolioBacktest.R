@@ -411,7 +411,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
               cost$long_leverage*max(0, sum(pos(w_bop[t, ])) - 1) + cost$short*sum(pos(-w_bop[t, ]))  # borrowing cost
       cash_eop_ <- 1 - sum(w_bop[t, ]) - tc
       # include period return in w
-      w_eop_ <- (1 + X[t, ])*w_bop[t, ]
+      w_eop_ <- as.numeric(1 + X[t, ])*w_bop[t, ]
       # normalize
       NAV_eop[t] <- (sum(w_eop_) + cash_eop_) * NAV_bop
       if (NAV_eop[t] <= 0) {  # if bankruptcy
