@@ -7,6 +7,7 @@
 backtestBoxPlot(
   bt,
   measure = "Sharpe ratio",
+  ref_portfolio = NULL,
   type = c("ggplot2", "simple"),
   ...
 )
@@ -50,7 +51,7 @@ quintile_portfolio <- function(data, ...) {
 
 # do backtest
 bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
-                        benchmark = c("uniform", "index"))
+                        benchmark = c("1/N", "index"))
 
 # now we can plot
 backtestBoxPlot(bt, "Sharpe ratio")

@@ -42,7 +42,7 @@
 #' 
 #' # do backtest
 #' bt <- portfolioBacktest(quintile_portfolio, dataset10,
-#'                         benchmark = c("uniform", "index"))
+#'                         benchmark = c("1/N", "index"))
 #' 
 #' # see all performance measures available for the ranking
 #' backtestSummary(bt)$performance

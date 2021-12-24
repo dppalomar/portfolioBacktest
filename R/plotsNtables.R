@@ -45,7 +45,7 @@
 #' # do backtest
 #' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), 
 #'                         dataset10,
-#'                         benchmark = c("uniform", "index"))
+#'                         benchmark = c("1/N", "index"))
 #' 
 #' # now we can obtain the table
 #' bt_summary_median <- backtestSummary(bt)
@@ -75,7 +75,7 @@ summaryTable <- function(bt_summary, measures = NULL, caption = "Performance tab
            p <- DT::datatable(performance, 
                               options = list(pageLength = page_length, scrollX = TRUE, order = list(order_col, order_dir)),
                               caption = caption)
-           p <- DT::formatStyle(p, 0, target = "row", fontWeight = DT::styleEqual(c("uniform", "index"), c("bold", "bold")))
+           p <- DT::formatStyle(p, 0, target = "row", fontWeight = DT::styleEqual(c("1/N", "index"), c("bold", "bold")))
            p <- DT::formatRound(p, colnames(performance), digits = 2)
            if ("annual volatility" %in% colnames(performance))
              p <- DT::formatPercentage(p, "annual volatility", 1)
@@ -137,7 +137,7 @@ summaryTable <- function(bt_summary, measures = NULL, caption = "Performance tab
 #' 
 #' # do backtest
 #' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
-#'                         benchmark = c("uniform", "index"))
+#'                         benchmark = c("1/N", "index"))
 #'                         
 #' # now we can obtain the table
 #' bt_summary_median <- backtestSummary(bt)
@@ -201,6 +201,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #'                 \code{"Sharpe ratio"}, \code{"max drawdown"}, \code{"annual return"}, \code{"annual volatility"}, 
 #'                 \code{"Sterling ratio"}, \code{"Omega ratio"}, and \code{"ROT bps"}.
 #'                  Default is \code{"Sharpe ratio"}.
+#' @param ref_portfolio Reference portfolio (whose measure will be subtracted). Default is \code{NULL}.
 #' @param type Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
 #'             \code{"ggplot2"}.
 #' @param ... Additional parameters. For example: 
@@ -230,7 +231,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' 
 #' # do backtest
 #' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
-#'                         benchmark = c("uniform", "index"))
+#'                         benchmark = c("1/N", "index"))
 #' 
 #' # now we can plot
 #' backtestBoxPlot(bt, "Sharpe ratio")
@@ -243,13 +244,21 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' @importFrom ggplot2 ggplot aes aes_string geom_boxplot geom_point scale_x_discrete coord_flip labs
 #' @importFrom rlang .data
 #' @export
-backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "simple"), ...) {
+backtestBoxPlot <- function(bt, measure = "Sharpe ratio", ref_portfolio = NULL, type = c("ggplot2", "simple"), ...) {
   # extract correct performance measure
   res_list_table <- backtestTable(bt)
   # idx <- grep(measure, names(res_list_table), ignore.case = TRUE)  # it does not work when "measure" contains brackets
   idx <- which(measure == names(res_list_table))
   if (length(idx)!=1) stop(measure, " does not match a single performance measure")
   res_table <- res_list_table[[idx]]
+  
+  if (!is.null(ref_portfolio)) {
+    if (!ref_portfolio %in% colnames(res_table))
+      stop("Reference portfolio does not exist.")
+    res_table <- res_table - res_table[, ref_portfolio]
+    res_table <- res_table[, !colnames(res_table) %in% ref_portfolio]
+    measure <- paste0(measure, " (w.r.t. ", ref_portfolio, ")")
+  }
   
   # plot boxplot
   params <- list(res_table[, ncol(res_table):1], ...)
@@ -326,7 +335,7 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", type = c("ggplot2", "s
 #' 
 #' # do backtest
 #' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
-#'                         benchmark = c("uniform", "index"))
+#'                         benchmark = c("1/N", "index"))
 #' 
 #' # now we can chart
 #' backtestChartCumReturn(bt)
@@ -396,7 +405,7 @@ backtestChartCumReturn <- function(bt, portfolios = names(bt), dataset_num = 1, 
 #' 
 #' # do backtest
 #' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
-#'                         benchmark = c("uniform", "index"))
+#'                         benchmark = c("1/N", "index"))
 #' 
 #' # now we can chart
 #' backtestChartDrawdown(bt)
@@ -465,7 +474,7 @@ backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, t
 #' 
 #' # do backtest
 #' bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
-#'                         benchmark = c("uniform", "index"))
+#'                         benchmark = c("1/N", "index"))
 #' 
 #' # now we can chart
 #' backtestChartSharpeRatio(bt)
@@ -477,11 +486,13 @@ backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, t
 #' @importFrom ggplot2 ggplot fortify aes geom_line theme element_blank ggtitle xlab ylab
 #' @importFrom rlang .data
 #' @export
-backtestChartSharpeRatio <- function(bt, portfolios = names(bt), dataset_num = 1, lookback = 100, by = 1, bars_per_year = 252, type = c("ggplot2", "simple"), ...) {
+backtestChartSharpeRatio <- function(bt, portfolios = names(bt), dataset_num = 1, lookback = 100, by = 1, gap = lookback, bars_per_year = 252, type = c("ggplot2", "simple"), ...) {
   # extract data
   bt <- bt[portfolios]
   return <- do.call(cbind, lapply(bt, function(x) x[[dataset_num]]$return))
   colnames(return) <- names(bt)
+  if (lookback > nrow(return))
+    stop("lookback longer than the time series length!")
   
   # plot
   params <- list(...)
@@ -501,7 +512,8 @@ backtestChartSharpeRatio <- function(bt, portfolios = names(bt), dataset_num = 1
            #                            FUN = function(X) SharpeRatio.annualized(X, scale = bars_per_year, geometric = FALSE), by.column = TRUE)
            SR_time <- my_apply_rolling(return, 
                                        width = lookback, 
-                                       by = by, 
+                                       by = by,
+                                       gap = gap,
                                        FUN = function(X) SharpeRatio.annualized(X, scale = 365*24, geometric = FALSE))
 
            ggplot(fortify(SR_time, melt = TRUE), aes(x = .data$Index, y = .data$Value, col = .data$Series)) +
@@ -512,15 +524,17 @@ backtestChartSharpeRatio <- function(bt, portfolios = names(bt), dataset_num = 1
          stop("Unknown plot type."))
 }
 
-my_apply_rolling <- function (R, width = 0, trim = TRUE, gap = width, by = 1, FUN = "mean", ...) {
+my_apply_rolling <- function(R, width = Inf, gap = width, by = 1, FUN = "mean", trim = TRUE, ...) {
+  if (gap == Inf)  # width = Inf is for expanding window
+    gap <- 1
   res <- c()
   endings <- seq(from = nrow(R), to = gap, by = -by)
   endings <- endings[order(endings)]
   for (ending in endings) {
-    if (width == 0) r <- R[1:ending, ]  # expanding window
-    else r <- R[(ending - width + 1):ending, ]  # rolling window
+    i_start <- max(ending - width, 1)
+    i_end   <- ending
     res <- rbind(res, 
-                 apply(r, MARGIN = 2, FUN = FUN, ... = ...))
+                 apply(R[i_start:i_end, ], MARGIN = 2, FUN = FUN, ... = ...))
   }
   result_xts <- xts::xts(rbind(NA, res), order.by = zoo::index(R)[c(1, endings)])
   return(result_xts)
@@ -542,6 +556,7 @@ my_apply_rolling <- function (R, width = 0, trim = TRUE, gap = width, by = 1, FU
 #' @param portfolio String with portfolio name to be charted. 
 #'                  Default charts the first portfolio in the backtest.
 #' @param legend Boolean to choose whether legend is plotted or not. Default is \code{legend = FALSE}.
+#' @param num_bars Number of bars shown over time (basically a downsample of the possibly long sequence).
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
@@ -581,10 +596,13 @@ my_apply_rolling <- function (R, width = 0, trim = TRUE, gap = width, by = 1, FU
 #' @importFrom rlang .data
 #' 
 #' @export
-backtestChartStackedBar <- function(bt, portfolio = names(bt[1]), dataset_num = 1, type = c("ggplot2", "simple"), legend = FALSE) {
-  # extract data
-  w <- bt[[portfolio]][[dataset_num]]$w_designed
+backtestChartStackedBar <- function(bt, portfolio = names(bt[1]), dataset_num = 1, num_bars = 100, type = c("ggplot2", "simple"), legend = FALSE) {
   title <- sprintf("Weight allocation over time for %s", portfolio)
+  # extract data and downsample
+  w <- bt[[portfolio]][[dataset_num]]$w_designed
+  w <- w[seq(1, nrow(w), length.out = num_bars), ]
+  w <- w[, colSums(abs(w) > 1e-3) > 0]
+  w_width <- as.numeric(index(w)[2]) - as.numeric(index(w)[1])
   
   # plot
   #params <- list(...)
@@ -597,7 +615,7 @@ backtestChartStackedBar <- function(bt, portfolio = names(bt[1]), dataset_num = 
          },
          "ggplot2" = {
            p <- ggplot(fortify(w, melt = TRUE), aes(x = .data$Index, y = .data$Value, fill = .data$Series)) +
-             geom_bar(stat = "identity", color = "black") +
+             geom_bar(stat = "identity", width = 1.1*w_width) +
              ggtitle(title) + xlab(element_blank()) + ylab("weight")
            if (legend)
              p <- p + labs(fill = "Assets") #theme(legend.title = element_blank())
@@ -607,4 +625,5 @@ backtestChartStackedBar <- function(bt, portfolio = names(bt[1]), dataset_num = 
          },
          stop("Unknown plot type."))
 }
+
 

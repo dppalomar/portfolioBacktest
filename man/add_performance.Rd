@@ -29,13 +29,13 @@ library(portfolioBacktest)
 data(dataset10)  # load dataset
 
 # define your own portfolio function
-uniform_portfolio <- function(dataset, ...) {
+EWP_portfolio <- function(dataset, ...) {
   N <- ncol(dataset$adjusted)
   return(rep(1/N, N))
 }
 
 # do backtest
-bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
+bt <- portfolioBacktest(list("EWP" = EWP_portfolio), dataset10)
 
 # add a new performance measure
 bt <- add_performance(bt, name = "SR arithmetic", 

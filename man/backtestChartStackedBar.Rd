@@ -8,6 +8,7 @@ backtestChartStackedBar(
   bt,
   portfolio = names(bt[1]),
   dataset_num = 1,
+  num_bars = 100,
   type = c("ggplot2", "simple"),
   legend = FALSE
 )
@@ -19,6 +20,8 @@ backtestChartStackedBar(
 Default charts the first portfolio in the backtest.}
 
 \item{dataset_num}{Dataset index to be charted. Default is \code{dataset_num = 1}.}
+
+\item{num_bars}{Number of bars shown over time (basically a downsample of the possibly long sequence).}
 
 \item{type}{Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
 \code{"ggplot2"}.}

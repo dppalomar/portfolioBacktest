@@ -1,6 +1,8 @@
 ## Changes in portfolioBacktest version 0.3.1.9000 (2021-XX-XX)
 
-* Added function backtestChartSharpeRatio()
+* Added function backtestChartSharpeRatio().
+
+* Function backtestBoxPlot() now accepts a reference portfolio.
 
 
 ## Changes in portfolioBacktest version 0.3.1 (2021-10-11)

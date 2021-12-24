@@ -1,7 +1,7 @@
 # This file is only to store some benchmark portfolios
 
-# uniform portfolio function
-uniform_portfolio_fun <- function(data, ...) {
+# 1/N portfolio function
+EWP_portfolio_fun <- function(data, ...) {
   N <- ncol(data[[1]])
   return(rep(1/N, N))
 }
@@ -77,7 +77,7 @@ MDP <- function(data, ...) {
 
 # benchmark library
 benchmark_library <- list(
-  "uniform"          = uniform_portfolio_fun,
+  "1/N"              = EWP_portfolio_fun,
   "IVP"              = IVP_portfolio_fun,
   "GMVP"             = function(data, ...) GMVP(data, shrinkage = FALSE, ...),
   "MSRP"             = MSRP,

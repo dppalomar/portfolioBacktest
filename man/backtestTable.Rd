@@ -20,8 +20,8 @@ e.g., \code{c(1, 2)} means to summarize the performance of the first and
 second portfolios recorded in \code{bt}.}
 
 \item{portfolio_names}{String vector of portfolio names whose performance will be summarized, 
-e.g., \code{c("Uniform", "GMVP")} means to summarize the performance of portfolios
-with names \code{"Uniform"} and \code{"GMVP"} in \code{bt} (default is 
+e.g., \code{c("EWP", "GMVP")} means to summarize the performance of portfolios
+with names \code{"EWP"} and \code{"GMVP"} in \code{bt} (default is 
 \code{names(bt)} except the benchmark names). Only considered when 
 \code{portfolio_indexes} is not passed.}
 
@@ -50,13 +50,13 @@ library(portfolioBacktest)
 data(dataset10)  # load dataset
 
 # define your own portfolio function
-uniform_portfolio <- function(dataset, ...) {
+EWP_portfolio <- function(dataset, ...) {
   N <- ncol(dataset$adjusted)
   return(rep(1/N, N))
 }
 
 # do backtest
-bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
+bt <- portfolioBacktest(list("EWP" = EWP_portfolio), dataset10)
 
 # show the backtest results in table
 bt_tab <- backtestTable(bt)

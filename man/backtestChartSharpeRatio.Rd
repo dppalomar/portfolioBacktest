@@ -10,6 +10,7 @@ backtestChartSharpeRatio(
   dataset_num = 1,
   lookback = 100,
   by = 1,
+  gap = lookback,
   bars_per_year = 252,
   type = c("ggplot2", "simple"),
   ...
@@ -51,7 +52,7 @@ quintile_portfolio <- function(data, ...) {
 
 # do backtest
 bt <- portfolioBacktest(list("Quintile" = quintile_portfolio), dataset10,
-                        benchmark = c("uniform", "index"))
+                        benchmark = c("1/N", "index"))
 
 # now we can chart
 backtestChartSharpeRatio(bt)

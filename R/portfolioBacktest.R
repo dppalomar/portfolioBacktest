@@ -43,7 +43,7 @@
 #'                        see \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#parallel-backtesting}{vignette-paralle-mode} for details.
 #' @param show_progress_bar Logical value indicating whether to show progress bar (default is \code{FALSE}). 
 #' @param benchmarks String vector indicating the benchmark portfolios to be incorporated, currently supports:
-#' \itemize{\item{\code{uniform} - the uniform portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks;}
+#' \itemize{\item{\code{1/N} - the 1/N portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks;}
 #'          \item{\code{IVP} - the inverse-volatility portfolio, with weights be inversely proportional the standard deviation of returns;}
 #'          \item{\code{index} - the market index, requires an \code{xts} named `index` in the datasets.}}
 #' @param shortselling Logical value indicating whether shortselling is allowed or not 
@@ -97,17 +97,17 @@
 #' data(dataset10)  # load dataset
 #' 
 #' # define your own portfolio function
-#' uniform_portfolio <- function(dataset, ...) {
+#' ewp_portfolio <- function(dataset, ...) {
 #'   N <- ncol(dataset$adjusted)
 #'   return(rep(1/N, N))
 #' }
 #' 
 #' # do backtest
-#' bt <- portfolioBacktest(list("Uniform" = uniform_portfolio), dataset10)
+#' bt <- portfolioBacktest(list("EWP" = ewp_portfolio), dataset10)
 #' 
 #' # check your result
 #' names(bt)
-#' backtestSelector(bt, portfolio_name = "Uniform", measures = c("Sharpe ratio", "max drawdown"))
+#' backtestSelector(bt, portfolio_name = "EWP", measures = c("Sharpe ratio", "max drawdown"))
 #' backtestTable(bt, measures = c("Sharpe ratio", "max drawdown"))
 #' bt_summary <- backtestSummary(bt)
 #' summaryTable(bt_summary)
@@ -507,7 +507,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
 # head(returns_eop)
 # head(res_check$returns)  
 
-# bt <- portfolioBacktest(portfolioBacktest:::uniform_portfolio_fun, dataset10[1], 
+# bt <- portfolioBacktest(portfolioBacktest:::EWP_portfolio_fun, dataset10[1], 
 #                         benchmarks = c("index"))
 
 
