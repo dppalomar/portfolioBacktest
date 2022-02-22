@@ -2,8 +2,8 @@ context("Checking whether additional packages are installed or not")
 
 
 # first generate backtest result
-bt <- portfolioBacktest(list("Uniform" = portfolioBacktest:::uniform_portfolio_fun), dataset10,
-                        benchmark = c("uniform", "index"))
+bt <- portfolioBacktest(list("Uniform" = portfolioBacktest:::EWP_portfolio_fun), dataset10,
+                        benchmark = c("1/N", "index"))
 bt_summary_median <- backtestSummary(bt)
 
 
