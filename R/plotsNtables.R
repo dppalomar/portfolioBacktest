@@ -256,8 +256,8 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", ref_portfolio = NULL, 
     if (!ref_portfolio %in% colnames(res_table))
       stop("Reference portfolio does not exist.")
     res_table <- res_table - res_table[, ref_portfolio]
-    res_table <- res_table[, !colnames(res_table) %in% ref_portfolio]
-    measure <- paste0(measure, " (w.r.t. ", ref_portfolio, ")")
+    #res_table <- res_table[, !colnames(res_table) %in% ref_portfolio, drop = FALSE]
+    measure <- paste0("Excess ", measure, " (w.r.t. reference portfolio ", ref_portfolio, ")")
   }
   
   # plot boxplot
