@@ -16,7 +16,7 @@ GMVP_portfolio_fun <- function(data, ...) {
   return(w)
 }
 
-portfolios <- list("Uniform"   = portfolioBacktest:::uniform_portfolio_fun,
+portfolios <- list("Uniform"   = portfolioBacktest:::EWP_portfolio_fun,
                    "GMVP"      = GMVP_portfolio_fun)
 
 
@@ -118,7 +118,7 @@ test_that("backtest results and performance measures coincide with the precomput
   bt <- portfolioBacktest(portfolios, dataset_list = dataset10,
                           shortselling = TRUE, leverage = Inf, 
                           return_portfolio = TRUE, return_returns = TRUE, 
-                          benchmarks = c("uniform", "index"),
+                          benchmarks = c("1/N", "index"),
                           lookback = 252, optimize_every = 20, rebalance_every = 5)
   # bt_check <- bt$GMVP$`dataset 1`[-2]
   # save(bt_check, file = "bt_check.RData", version = 2)
@@ -157,7 +157,7 @@ test_that("backtest results with bankruptcy work fine", {
   bt <- portfolioBacktest(stock1_portfolio_fun, dataset_list = dataset10_bankruptcy,
                           shortselling = TRUE, leverage = Inf, 
                           return_portfolio = TRUE, return_returns = TRUE, 
-                          benchmark = c("uniform", "index"),
+                          benchmark = c("1/N", "index"),
                           lookback = 252, optimize_every = 20, rebalance_every = 5)
   first_date_trading <- index(bt$fun1$`dataset 1`$wealth)[1]
   stock_price_normalized <- dataset10_bankruptcy$`dataset 1`$adjusted[paste0(first_date_trading, "::"), 1]/as.numeric(dataset10_bankruptcy$`dataset 1`$adjusted[first_date_trading, 1])
@@ -222,7 +222,7 @@ test_that("cash is properly accounted in backtest results", {
   bt <- portfolioBacktest(stock1_portfolio_fun, dataset_list = dataset10_bankruptcy,
                           shortselling = TRUE, leverage = Inf, 
                           return_portfolio = TRUE, return_returns = TRUE, 
-                          benchmark = c("uniform", "index"),
+                          benchmark = c("1/N", "index"),
                           lookback = 252, optimize_every = 20, rebalance_every = 5)
   first_date_trading <- index(bt$fun1$`dataset 1`$wealth)[1]
   stock_price_normalized <- dataset10_bankruptcy$`dataset 1`$adjusted[paste0(first_date_trading, "::"), 1]/as.numeric(dataset10_bankruptcy$`dataset 1`$adjusted[first_date_trading, 1])
@@ -237,7 +237,7 @@ test_that("cash is properly accounted in backtest results", {
   bt <- suppressWarnings(expr = portfolioBacktest(stock1_portfolio_fun, dataset_list = dataset10_bankruptcy,
                                                   shortselling = TRUE, leverage = Inf, 
                                                   return_portfolio = TRUE, return_returns = TRUE, 
-                                                  benchmark = c("uniform", "index"),
+                                                  benchmark = c("1/N", "index"),
                                                   lookback = 252, optimize_every = 20, rebalance_every = 5))
   #plot(cbind(stock_price_normalized, bt$fun1$`dataset 1`$wealth), lwd = c(2, 4))
   expect_equivalent(sum(abs(bt$fun1$`dataset 1`$wealth - 1)), 0)
