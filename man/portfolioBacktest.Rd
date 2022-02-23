@@ -98,16 +98,21 @@ If some elements are not specified then they will be automatically set to zero.}
 (default is \code{Inf}, so no time limit).}
 
 \item{return_portfolio}{Logical value indicating whether to return the portfolios (default is \code{TRUE}).
-Two portfolios are returned: \code{w_designed} is the designed portfolio at each
-given rebalancing period (using all the information up to and including that period,
-which can be executed either on the same period or the following period)
+Three portfolio series are returned: 
+\code{w_optimized} is the optimized portfolio at each given optimization period 
+(using all the information up to and including that period, which can be executed 
+either on the same period or the following period), 
+\code{w_rebalanced} is the rebalanced portfolio at each given rebalancing period,
 and \code{w_bop} is the "beginning-of-period" portfolio (i.e., at each period it contains 
 the weights held in the market in the previous period so that the portfolio return at 
 that period is just the product of the asset returns and \code{w_bop} at that period.)}
 
 \item{return_returns}{Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).
-Two series are returned: \code{return} with the portfolio returns and \code{wealth}
-with the portfolio wealth (aka cumulative P&L).}
+Three series are returned: 
+\code{return} with the portfolio returns, 
+\code{wealth} with the portfolio wealth (aka cumulative P&L), and
+\code{X_lin} with the returns of the assets in the universe (note that the portfolio returns
+can also be obtained as \code{rowSums(X_lin * w_bop)}).}
 }
 \value{
 List with the portfolio backtest results, see 

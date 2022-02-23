@@ -20,6 +20,8 @@ backtestBoxPlot(
 \code{"Sterling ratio"}, \code{"Omega ratio"}, and \code{"ROT bps"}.
  Default is \code{"Sharpe ratio"}.}
 
+\item{ref_portfolio}{Reference portfolio (whose measure will be subtracted). Default is \code{NULL}.}
+
 \item{type}{Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
 \code{"ggplot2"}.}
 
