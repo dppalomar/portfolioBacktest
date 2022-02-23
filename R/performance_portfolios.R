@@ -141,6 +141,14 @@ listPortfoliosWithFailures <- function(bt) {
   
   if (any(summary_bt_failures > 0)) {
     cat("ATTENTION: The following portfolios have failures: \n")
-    cat(rownames(summary_bt_failures)[summary_bt_failures > 0], sep = ", ")
+    cat(dQuote(rownames(summary_bt_failures)[summary_bt_failures > 0]), sep = ", ")
+    cat("\n\nIn particular, in the following backtests: \n")
+    for (i in which(summary_bt_failures > 0)) {
+      cat(paste0(dQuote(names(bt)[i]), ": "))
+      cat(which(sapply(bt[[i]], function(x) x$error)), sep = ", ")
+      cat("\n")
+    }
   }
 }
+
+
