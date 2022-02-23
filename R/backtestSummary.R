@@ -246,14 +246,14 @@ backtestSelector <- function(bt, portfolio_index = NULL, portfolio_name = NULL, 
   if (!is.null(portfolio_index)) portfolio_name <- names(bt)[portfolio_index]
   if (!is.null(bt[[portfolio_name]]$source_error_message)) return(bt[[portfolio_name]])
   performance_names <- names(bt[[portfolio_name]][[1]]$performance)
-  measures_range <- c(performance_names, 'error', 'error_message', 'cpu time', 'return', 'w_designed')
+  measures_range <- c(performance_names, 'error', 'error_message', 'cpu time', 'return', 'w_optimized', "w_rebalanced")
   if (is.null(measures)) measures <- measures_range
   if (any(!(measures %in% measures_range))) stop("\"measures\" contains invalid element.")
   if (length(measures) == 0) stop("\"measures\" must have length > 1.")
   
   
   result <- list()
-  mask_performance <- setdiff(measures, c('error', 'error_message', 'cpu time', 'return', 'w_designed'))
+  mask_performance <- setdiff(measures, c('error', 'error_message', 'cpu time', 'return', 'w_optimized', "w_rebalanced"))
   if (length(mask_performance) > 0)
     result$performance <- do.call(rbind, lapply(bt[[portfolio_name]], function(x) x$performance[mask_performance]))
   if ('error' %in% measures) 
@@ -262,8 +262,10 @@ backtestSelector <- function(bt, portfolio_index = NULL, portfolio_name = NULL, 
     result$error_message <- lapply(bt[[portfolio_name]], function(x) x$error_message)
   if ('cpu time' %in% measures)
     result$`cpu time` <- sapply(bt[[portfolio_name]], function(x) x$`cpu_time`)
-  if ('w_designed' %in% measures)
-    result$portfolio <- lapply(bt[[portfolio_name]], function(x) x$w_designed)
+  if ('w_optimized' %in% measures)
+    result$portfolio <- lapply(bt[[portfolio_name]], function(x) x$w_optimized)
+  if ('w_rebalanced' %in% measures)
+    result$portfolio <- lapply(bt[[portfolio_name]], function(x) x$w_rebalanced)
   if ('return' %in% measures) {
     result$return <- lapply(bt[[portfolio_name]], function(x) x$return)
     result$wealth <- lapply(bt[[portfolio_name]], function(x) x$wealth)

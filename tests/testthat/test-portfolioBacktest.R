@@ -65,13 +65,13 @@ test_that("backtest results coincide with PerformanceAnalytics and base R", {
                           return_portfolio = TRUE, 
                           return_returns = TRUE)
   ret_portfolioBacktest <- bt$Uniform$`dataset 1`$return
-  #head(bt$Uniform$`dataset 1`$w_designed)
+  #head(bt$Uniform$`dataset 1`$w_rebalanced)
   #head(bt$Uniform$`dataset 1`$w_bop)
   
   # compare with PerformanceAnalytics
-  PerfAnal <- PerformanceAnalytics::Return.portfolio(X_lin, weights = bt$Uniform$`dataset 1`$w_designed, verbose = TRUE)
+  PerfAnal <- PerformanceAnalytics::Return.portfolio(X_lin, weights = bt$Uniform$`dataset 1`$w_rebalanced, verbose = TRUE)
   expect_equivalent(ret_portfolioBacktest, PerfAnal$returns)
-  expect_equivalent(bt$Uniform$`dataset 1`$w_bop, PerfAnal$BOP.Weight)  
+  expect_equivalent(bt$Uniform$`dataset 1`$w_bop, PerfAnal$BOP.Weight)
   
 
   #
@@ -80,7 +80,7 @@ test_that("backtest results coincide with PerformanceAnalytics and base R", {
   ret_portfolioBacktest <- bt$GMVP$`dataset 1`$return
   
   # compare with PerformanceAnalytics
-  expect_warning(PerfAnal <- PerformanceAnalytics::Return.portfolio(X_lin, weights = bt$GMVP$`dataset 1`$w_designed, verbose = TRUE), 
+  expect_warning(PerfAnal <- PerformanceAnalytics::Return.portfolio(X_lin, weights = bt$GMVP$`dataset 1`$w_rebalanced, verbose = TRUE), 
                  "The weights for one or more periods do not sum up to 1: assuming a return of 0 for the residual weights")
   expect_equivalent(ret_portfolioBacktest, PerfAnal$returns)
   expect_equivalent(bt$GMVP$`dataset 1`$w_bop, PerfAnal$BOP.Weight[, 1:2])
@@ -99,10 +99,10 @@ test_that("backtest results coincide with PerformanceAnalytics and base R", {
                           execution = "next period",
                           return_portfolio = TRUE, 
                           return_returns = TRUE)
-  expect_equivalent(bt$Uniform$`dataset 1`$w_designed, bt_next_period$Uniform$`dataset 1`$w_designed)
+  expect_equivalent(bt$Uniform$`dataset 1`$w_rebalanced, bt_next_period$Uniform$`dataset 1`$w_rebalanced)
   w_designed_lagged <- prices
   w_designed_lagged[] <- NA
-  w_designed_lagged[index(bt$Uniform$`dataset 1`$w_designed), ] <- bt$Uniform$`dataset 1`$w_designed
+  w_designed_lagged[index(bt$Uniform$`dataset 1`$w_rebalanced), ] <- bt$Uniform$`dataset 1`$w_rebalanced
   w_designed_lagged <- lag.xts(w_designed_lagged)
   w_designed_lagged <- w_designed_lagged[!is.na(w_designed_lagged[, 1])]
   
@@ -194,8 +194,8 @@ test_that("transaction cost works properly", {
                            return_portfolio = TRUE, return_returns = TRUE,
                            lookback = 252, optimize_every = 20, rebalance_every = 5)
   
-  expect_equivalent(bt$Uniform$`dataset 1`[c("error", "error_message", "w_designed")], 
-                    bt_tc$Uniform$`dataset 1`[c("error", "error_message", "w_designed")])
+  expect_equivalent(bt$Uniform$`dataset 1`[c("error", "error_message", "w_rebalanced")], 
+                    bt_tc$Uniform$`dataset 1`[c("error", "error_message", "w_rebalanced")])
   expect_equivalent(bt$Uniform$`dataset 1`$w_bop,
                     bt_tc$Uniform$`dataset 1`$w_bop, tolerance = 1e-5)
   expect_equivalent(bt$Uniform$`dataset 1`$return,

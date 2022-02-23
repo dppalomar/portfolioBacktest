@@ -599,7 +599,7 @@ my_apply_rolling <- function(R, width = Inf, gap = width, by = 1, FUN = "mean", 
 backtestChartStackedBar <- function(bt, portfolio = names(bt[1]), dataset_num = 1, num_bars = 100, type = c("ggplot2", "simple"), legend = FALSE) {
   title <- sprintf("Weight allocation over time for %s", portfolio)
   # extract data and downsample
-  w <- bt[[portfolio]][[dataset_num]]$w_designed
+  w <- bt[[portfolio]][[dataset_num]]$w_rebalanced
   w <- w[seq(1, nrow(w), length.out = num_bars), ]
   w <- w[, colSums(abs(w) > 1e-3) > 0]
   w_width <- as.numeric(index(w)[2]) - as.numeric(index(w)[1])
