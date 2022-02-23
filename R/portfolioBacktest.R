@@ -67,15 +67,20 @@
 #' @param cpu_time_limit Time limit for executing each portfolio function over a single data set 
 #'                       (default is \code{Inf}, so no time limit).
 #' @param return_portfolio Logical value indicating whether to return the portfolios (default is \code{TRUE}).
-#'                         Two portfolios are returned: \code{w_designed} is the designed portfolio at each
-#'                         given rebalancing period (using all the information up to and including that period,
-#'                         which can be executed either on the same period or the following period)
+#'                         Three portfolio series are returned: 
+#'                         \code{w_optimized} is the optimized portfolio at each given optimization period 
+#'                         (using all the information up to and including that period, which can be executed 
+#'                         either on the same period or the following period), 
+#'                         \code{w_rebalanced} is the rebalanced portfolio at each given rebalancing period,
 #'                         and \code{w_bop} is the "beginning-of-period" portfolio (i.e., at each period it contains 
 #'                         the weights held in the market in the previous period so that the portfolio return at 
 #'                         that period is just the product of the asset returns and \code{w_bop} at that period.)
 #' @param return_returns Logical value indicating whether to return the portfolio returns (default is \code{TRUE}).
-#'                       Two series are returned: \code{return} with the portfolio returns and \code{wealth}
-#'                       with the portfolio wealth (aka cumulative P&L).
+#'                       Three series are returned: 
+#'                       \code{return} with the portfolio returns, 
+#'                       \code{wealth} with the portfolio wealth (aka cumulative P&L), and
+#'                       \code{X_lin} with the returns of the assets in the universe (note that the portfolio returns
+#'                       can also be obtained as \code{rowSums(X_lin * w_bop)} in the absence of transaction costs).
 #' 
 #' @return List with the portfolio backtest results, see 
 #'         \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#result-format}{vignette-result-format}
@@ -428,10 +433,13 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
         # design portfolio
         data_window  <- lapply(data, function(x) x[(t-lookback+1):t, ])
         start_time <- proc.time()[3]
-        error_capture <- R.utils::withTimeout(expr = evaluate::try_capture_stack(
-          last_w_optimized <- do.call(portfolio_fun, list(data_window, w_current = w_current)), 
-          environment()),
-          timeout = cpu_time_limit, onTimeout = "silent")
+        error_capture <- R.utils::withTimeout(
+          expr = evaluate::try_capture_stack(
+            last_w_optimized <- do.call(portfolio_fun, list(data_window, w_current = w_current)), 
+            env = environment()
+            ),
+          timeout = cpu_time_limit, onTimeout = "silent"
+          )
         cpu_time <- c(cpu_time, as.numeric(proc.time()[3] - start_time))
         portf <- check_portfolio_errors(error_capture, last_w_optimized, shortselling, leverage)
         if (portf$error) 
@@ -452,7 +460,8 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
                 error_message = portf$error_message))
 
   # in case of no error, continue normally
-  w_designed <- w_designed[rebalance_indices, ]
+  w_optimized  <- w_designed[optimize_indices, ]
+  w_rebalanced <- w_designed[rebalance_indices, ]
   w_bop <- w_bop[(lookback + delay):T, ]
   delta_bop <- delta_bop[(lookback + delay):T, ]
   w_eop <- w_eop[(lookback + delay - 1):T, ]
@@ -465,9 +474,9 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
   sum_PnL_norm <- sum(returns_eop[min(1+rebalance_every, nrow(returns_eop)):nrow(returns_eop)])  # this subsetting is because the initial huge turnover was removed
   #sum_PnL_norm <- sum(returns_eop[1:(nrow(returns_eop) - rebalance_every)])
   ROT_bps <- ifelse(sum_turnover_norm != 0, 1e4*sum_PnL_norm/sum_turnover_norm, NA)
-
+  
   # # sanity check
-  # portf <- returnPortfolio(R = X, weights = w_designed, execution = execution, cost = cost)
+  # portf <- returnPortfolio(R = X, weights = w_rebalanced, execution = execution, cost = cost)
   # if (!all.equal(portf$rets, returns_eop, check.attributes = FALSE) ||
   #     !all.equal(portf$w_bop, na.omit(w_bop), check.attributes = FALSE) ||
   #     !all.equal(portf$wealth, NAV_eop, check.attributes = FALSE)) {
@@ -483,12 +492,14 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
               error = FALSE, 
               error_message = NA)    
   if (return_portfolio) {
-    res$w_designed <- w_designed
-    res$w_bop      <- w_bop
+    res$w_optimized  <- w_optimized
+    res$w_rebalanced <- w_rebalanced
+    res$w_bop        <- w_bop
   }
   if (return_returns) {
     res$return <- returns_eop
     res$wealth <- NAV_eop
+    res$X_lin <- X
   }
   return(res)
 }
