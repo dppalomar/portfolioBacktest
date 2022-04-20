@@ -53,6 +53,7 @@ in a fully automated and convenient manner. The results can be nicely formatted 
 Backtesting is a dangerous task fraught with many potential pitfalls [@Luo_etal2014_sevensins]. By performing a large number of randomized backtests, instead of visually inspecting a single backtest, one can obtain more realistic results.
 
 This package backtests a list of portfolios over multiple datasets on a rolling-window basis (aka walk forward), producing final results as in the following.
+
 ```{r, echo=FALSE, message=FALSE}
 library(portfolioBacktest)
 load("figures/bt.RData")
@@ -63,7 +64,14 @@ load("figures/bt.RData")
 
 ```{r, echo=FALSE}
 res_sum <- backtestSummary(bt)
-summaryTable(res_sum, type = "DT", order_col = "Sharpe ratio", order_dir = "desc")
+(dtable <- summaryTable(res_sum, type = "DT", order_col = "Sharpe ratio", order_dir = "desc"))
+
+# # to save table to png file
+# library(htmlwidgets)
+# library(webshot)
+# html_file <- "figures/dtable.html"
+# saveWidget(dtable, html_file)
+# webshot(html_file, "figures/dtableSnapshot.png") # you can also export to pdf
 ```
 
 <br>
@@ -105,7 +113,7 @@ my_portfolio <- function(dataset, ...) {
 }
 ```
 * **Step 3** - do backtest
-```{r, results="hide"}
+```{r quick-start, results="hide"}
 bt <- portfolioBacktest(my_portfolio, dataset10)
 ```
 * **Step 4** - check your portfolio performance (e.g., median of the 10 individual backtests)
@@ -161,7 +169,7 @@ Since the function `stockDataDownload()` may take a long time to download the da
 
 ## Expanding the datasets
 Additional data can be helpful in designing portfolios. One can add as many other `xts` objects in each dataset as desired. For example, if the Moving Average Convergence Divergence (MACD) information is needed by the portfolio functions, one can manually add it to the dataset as follows:
-```{r, eval=FALSE}
+```{r adding-macd, eval=FALSE}
 for (i in 1:length(dataset10))
   dataset10[[i]]$MACD <- apply(dataset10[[i]]$adjusted, 2, 
                                function(x) { TTR::MACD(x)[ , "macd"] })
@@ -236,12 +244,34 @@ Markowitz_portfolio_tc_fun <- function(dataset, w_current) {
 # Backtesting and Plotting
 ## Backtesting your portfolios
 With the datasets and portfolios ready, we can now do the backtest easily. For example, to obtain the three portfolios' performance over the datasets, we just need combine them in a list and run the backtest in one line:
-```{r, results="hide"}
+```{r backtesting-portfolios, results="hide"}
 portfolios <- list("Quintile"  = quintile_portfolio_fun,
                    "GMVP"      = GMVP_portfolio_fun,
                    "Markowitz" = Markowitz_portfolio_fun)
-bt <- portfolioBacktest(portfolios, dataset10, benchmark = c("uniform", "index"))
+bt <- portfolioBacktest(portfolios, dataset10, benchmark = c("1/N", "index"))
 ```
+
+```{r, eval=FALSE, echo=FALSE}
+library(portfolioBacktest)
+data(SP500_symbols)
+
+SP500 <- stockDataDownload(stock_symbols = SP500_symbols, 
+                           from = "2008-12-01", to = "2018-12-01",
+                           local_file_path = file.path(getwd(), "figures"))
+
+my_dataset_list <- financialDataResample(SP500, 
+                                         N_sample = 50, T_sample = 252*2, 
+                                         num_datasets = 100)
+
+bt <- portfolioBacktest(portfolios, 
+                        my_dataset_list, 
+                        benchmark = c("1/N", "index"),
+                        paral_datasets = 6,
+                        return_portfolio = FALSE, return_returns = FALSE)
+
+save(bt, file = "figures/bt.RData")
+```
+
 
 
 ## Result format
@@ -255,7 +285,7 @@ Each element of `bt` is also a list storing more information for each of the dat
 library(data.tree)
 tmp <- bt
 for (i in 1:length(tmp))
-  tmp[[i]] <- lapply(tmp[[i]], function(x){lapply(x, as.list)})
+  tmp[[i]] <- lapply(tmp[[i]], function(x) lapply(x, as.list))
 dt <- FromListSimple(tmp)
 dt$name <- "bt"
 print(dt, limit = 20)
@@ -269,7 +299,7 @@ The package also contains several convenient functions to extract information fr
 
 * Select several performance measures of one specific portfolio:
 ```{r}
-# select sharpe ratio and max drawdown performance of uniform portfolio
+# select sharpe ratio and max drawdown performance of Quintile portfolio
 backtestSelector(bt, portfolio_name = "Quintile", 
                  measures = c("Sharpe ratio", "max drawdown"))
 ```
@@ -324,7 +354,7 @@ backtestChartDrawdown(bt, c("Quintile", "GMVP", "index"))
 
 
 * Portfolio allocation evolution of a particular portfolio over a particular backtest:
-```{r, fig.width=7, fig.height=3}
+```{r stacked-bar, warning=FALSE, fig.width=7, fig.height=3}
 # for better illustration, let's use only the first 5 stocks
 dataset10_5stocks <- lapply(dataset10, 
                             function(x) {x$adjusted <- x$adjusted[, 1:5]; return(x)})
@@ -342,7 +372,7 @@ backtestChartStackedBar(bt, "GMVP", legend = TRUE)
 # Advanced Usage
 ## Transaction costs
 By default, transaction costs are not included in the backtesting, but the user can easily specify the cost to be used for a more realistic backtesting:
-```{r, message=FALSE}
+```{r transaction-cost, message=FALSE}
 library(ggfortify)
 
 # backtest without transaction costs
@@ -364,9 +394,9 @@ autoplot(wealth, facets = FALSE, main = "Wealth") +
 
 
 ## Incorporating benchmarks
-When performing the backtest of the designed portfolio functions, one may want to incorporate some benchmarks. The package currently suppports two benchmarks: `uniform portfolio` and `index` of the market. (Note that to incorporate the `index` benchmark each dataset needs to contain one `xts` object named `index`.) Once can easily choose the benchmarks by passing the corresponding value to argument `benchmark`:
+When performing the backtest of the designed portfolio functions, one may want to incorporate some benchmarks. The package currently suppports two benchmarks: `1/N` portfolio and `index` of the market. (Note that to incorporate the `index` benchmark each dataset needs to contain one `xts` object named `index`.) Once can easily choose the benchmarks by passing the corresponding value to argument `benchmark`:
 ```{r, cache=TRUE}
-bt <- portfolioBacktest(portfolios, dataset10, benchmark = c("uniform", "index"))
+bt <- portfolioBacktest(portfolios, dataset10, benchmark = c("1/N", "index"))
 names(bt)
 ```
 
@@ -401,7 +431,7 @@ portfolio_list[[1]]
 ```
 
 Now we can proceed with the backtesting:
-```{r, cache=TRUE}
+```{r parameter-tuning, cache=TRUE}
 bt <- portfolioBacktest(portfolio_list, dataset10)
 ```
 
@@ -415,32 +445,32 @@ In this case, we can conclude that the best combination is to use the median of 
 
 ## Progress bar
 In order to monitor the backtest progress, one can choose to turn on a progress bar by setting the argument `show_progress_bar`:
-```{r, eval=FALSE}
+```{r progress-bar, eval=FALSE}
 bt <- portfolioBacktest(portfolios, dataset10, show_progress_bar = TRUE)
 ```
 
 
 ## Parallel backtesting
 The backtesting typically incurs in a very heavy computational load when the number of portfolios or datasets is large (also depending on the computational cost of each portfolio function). The package contains support for parallel computational mode. Users can choose to evaluate different portfolio functions in parallel or, in a more fine-grained way, to evaluate multiple datasets in parallel for each function:
-```{r, cache=TRUE}
+```{r parallel-backtesting, cache=TRUE}
 portfun <- Markowitz_portfolio_fun
 
 # parallel = 2 for functions
 system.time(
-  bt_nopar <- portfolioBacktest(list(portfun, portfun), dataset10)
+  bt_noparallel <- portfolioBacktest(list(portfun, portfun), dataset10)
   )
 system.time(
-  bt_parfuns <- portfolioBacktest(list(portfun, portfun), dataset10, 
-                                  paral_portfolios = 2)
+  bt_parallel_funs <- portfolioBacktest(list(portfun, portfun), dataset10, 
+                                        paral_portfolios = 2)
   )
 
 # parallel = 5 for datasets
 system.time(
-  bt_nopar <- portfolioBacktest(portfun, dataset10)
+  bt_noparallel <- portfolioBacktest(portfun, dataset10)
   )
 system.time(
-  bt_pardata <- portfolioBacktest(portfun, dataset10, 
-                                  paral_datasets = 5)
+  bt_parallel_datasets <- portfolioBacktest(portfun, dataset10, 
+                                            paral_datasets = 5)
   )
 ```
 It is obvious that the evaluation time for backtesting has been significantly reduced. Note that the parallel evaluation elapsed time will not be exactly equal to the original time divided by parallel cores because starting new R sessions also takes extra time. Besides, the two parallel modes can be simultaneous used.
@@ -455,6 +485,37 @@ If `"parallel"` is returned, one can set the option `setup_strategy` to `"sequen
 parallel:::setDefaultClusterOptions(setup_strategy = "sequential")
 ```
 The problem may be fixed. However, the "sequential" strategy might be less efficient than the "parallel" strategy.
+
+
+
+## Initialization for each backtest
+In some cases, one may want to do initialize some variable at the beginning of each backtest and be able to access those variables during the rolling-window process. At the moment, the package does not support this initialization. However, there is a hack that can be used for the time being (via the use of non-recommended global variables):
+```{r initialization}
+allocation <- 0  # initialize global variable to 0
+
+test_portfolio <- function(dataset, ...) {
+  N <- ncol(dataset$adjusted)
+  
+  w <- rep(allocation, N)
+  allocation <<- 1/N  # after first time it becomes 1/N
+
+  return(w)
+}
+
+
+bt <- portfolioBacktest(list("test" = test_portfolio), 
+                        dataset_list = dataset10[1:2],
+                        lookback = 100, optimize_every = 200,
+                        paral_datasets = 2)  # <--- this argument is necessary (has to be > 1)
+
+# sanity check
+bt$test$`dataset 1`$w_optimized[, 1:2]
+bt$test$`dataset 2`$w_optimized[, 1:2]
+```
+
+Note that for this hack to work, one needs `paral_datasets > 1`.
+
+
 
 
 ## Tracing where execution errors happen
@@ -478,7 +539,7 @@ wrong_portfolio_fun <- function(data, ...) {
 ```
 
 Now, let's pass the above portfolio function to `portfolioBacktest()` and see how to check the error trace:
-```{r}
+```{r tracing-errors}
 bt <- portfolioBacktest(wrong_portfolio_fun, dataset10)
 res <- backtestSelector(bt, portfolio_index = 1)
 
@@ -498,7 +559,7 @@ cat(attr(error1, "error_stack")$stack)
 In some situations, one may have to backtest portfolios from different sources stored in different files, e.g., students in a porftolio design course (in fact, this package was originally developed to assess students in the course "Portfolio Optimization with R" from the [MSc in Financial Mathematics (MAFM)](https://mafm.ust.hk)). In such cases, the different portfolios may have conflicting dependencies and loading all of them into the environment may not be a reasonable approach. The package adds support for backtesting portfolios given in individual files in a folder in a way that each is executed in a clean environment without affecting each other. It suffices to write each portfolio function into an R script (with unique filename) containing the portfolio function named exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). All theses files should be put into a file folder, whose path will be passed to the function `portfolioBacktest()` with the argument `folder_path`.
 
 If an instructor wants to evaluate students of a course in their portfolio design, this can be easily done by asking each student to submit an R script with a unique filename like `STUDENTNUMBER.R`. For example, suppose we have three files in the folder `portfolio_files` named `0001.R`, `0002.R`, and `0003.R`. Then:
-```{r, cache=TRUE}
+```{r grading-students, cache=TRUE}
 bt_all_students <- portfolioBacktest(folder_path = "portfolio_files", 
                                      source_to_local = FALSE,
                                      dataset_list = dataset10)
