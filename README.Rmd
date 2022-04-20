@@ -59,14 +59,14 @@ devtools::install_github("dppalomar/portfolioBacktest")
 ```
 
 To get help:
-```{r, eval = FALSE}
+```{r, eval=FALSE}
 library(portfolioBacktest)
 help(package = "portfolioBacktest")
 ?portfolioBacktest
 ```
 
 To cite `portfolioBacktest` in publications:
-```{r, eval = FALSE}
+```{r, eval=FALSE}
 citation("portfolioBacktest")
 ```
 
@@ -105,7 +105,7 @@ This package backtests a list of portfolios over multiple datasets on a rolling-
 
 - Performance table:
 
-```{r README-table, echo=FALSE, message=FALSE, out.width="85%"}
+```{r README-table, echo=FALSE, message=FALSE, out.width="95%"}
 #library(portfolioBacktest)
 #load("man/figures/bt.RData")
 #res_sum <- backtestSummary(bt)
@@ -124,7 +124,7 @@ knitr::include_graphics("man/figures/README-barplot.png")
 
 - Boxplot:
 
-```{r README-boxplot, echo=FALSE, out.width="65%"}
+```{r README-boxplot, echo=FALSE, out.width="70%"}
 #backtestBoxPlot(bt, measure = "Sharpe ratio")
 knitr::include_graphics("man/figures/README-boxplot.png")
 ```
@@ -139,10 +139,6 @@ Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest) and [GitHu
 
 README file: [GitHub-readme](https://github.com/dppalomar/portfolioBacktest/blob/master/README.md).
 
-Vignette: [CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
-<!---
-and [GitHub-vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/portfolioBacktest/blob/master/vignettes/PortfolioBacktest.html).
---->
-
+Vignette: [CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html) and [GitHub-vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/portfolioBacktest/blob/master/vignettes/PortfolioBacktest.html).
 
 

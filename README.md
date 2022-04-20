@@ -1,4 +1,7 @@
 
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+
 
 
 
@@ -91,7 +94,7 @@ backtestSummary(bt)$performance
 #> rebalancing period 1.000000e+00
 #> turnover           8.641594e-03
 #> ROT (bps)          7.334458e+02
-#> cpu time           1.000000e-03
+#> cpu time           1.230769e-03
 #> failure rate       0.000000e+00
 ```
 
@@ -104,7 +107,7 @@ This package backtests a list of portfolios over multiple datasets on a rolling-
 
 - Performance table:
 
-<img src="man/figures/README-table.png" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README-table.png" width="95%" style="display: block; margin: auto;" />
 
 
 - Barplot:
@@ -114,7 +117,7 @@ This package backtests a list of portfolios over multiple datasets on a rolling-
 
 - Boxplot:
 
-<img src="man/figures/README-boxplot.png" width="65%" style="display: block; margin: auto;" />
+<img src="man/figures/README-boxplot.png" width="70%" style="display: block; margin: auto;" />
 
 ## Documentation
 For more detailed information, please check the
@@ -126,10 +129,6 @@ Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest) and [GitHu
 
 README file: [GitHub-readme](https://github.com/dppalomar/portfolioBacktest/blob/master/README.md).
 
-Vignette: [CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
-<!---
-and [GitHub-vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/portfolioBacktest/blob/master/vignettes/PortfolioBacktest.html).
---->
-
+Vignette: [CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html) and [GitHub-vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/portfolioBacktest/blob/master/vignettes/PortfolioBacktest.html).
 
 
