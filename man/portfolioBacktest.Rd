@@ -9,7 +9,7 @@ portfolioBacktest(
   dataset_list,
   folder_path = NULL,
   source_to_local = TRUE,
-  price_name = "adjusted",
+  price_name = NULL,
   paral_portfolios = 1,
   paral_datasets = 1,
   show_progress_bar = FALSE,
@@ -51,8 +51,8 @@ We suggest only to allow \code{FALSE} when the code in the source files does not
 sourced, e.g., with some versions of package \code{CVXR}. In that case, we further recommend to set 
 \code{paral_portfolios > 1} to avoid changing the global environment.}
 
-\item{price_name}{Name of the \code{xts} column in each dataset that contains the prices to be used in the portfolio return 
-computation (default is \code{"adjusted"}).}
+\item{price_name}{Name of the \code{xts} object in each dataset that contains the prices to be used in the portfolio return 
+computation (default is the name of the first \code{xts} object).}
 
 \item{paral_portfolios}{Interger indicating number of portfolios to be evaluated in parallel (default is \code{1}),
 see \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#parallel-backtesting}{vignette-paralle-mode} for details.}
@@ -112,7 +112,7 @@ Three series are returned:
 \code{return} with the portfolio returns, 
 \code{wealth} with the portfolio wealth (aka cumulative P&L), and
 \code{X_lin} with the returns of the assets in the universe (note that the portfolio returns
-can also be obtained as \code{rowSums(X_lin * w_bop)}).}
+can also be obtained as \code{rowSums(X_lin * w_bop)} in the absence of transaction costs).}
 }
 \value{
 List with the portfolio backtest results, see 

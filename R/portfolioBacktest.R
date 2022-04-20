@@ -35,8 +35,8 @@
 #'                        We suggest only to allow \code{FALSE} when the code in the source files does not work when locally 
 #'                        sourced, e.g., with some versions of package \code{CVXR}. In that case, we further recommend to set 
 #'                        \code{paral_portfolios > 1} to avoid changing the global environment.
-#' @param price_name Name of the \code{xts} column in each dataset that contains the prices to be used in the portfolio return 
-#'                   computation (default is \code{"adjusted"}).
+#' @param price_name Name of the \code{xts} object in each dataset that contains the prices to be used in the portfolio return 
+#'                   computation (default is the name of the first \code{xts} object).
 #' @param paral_portfolios Interger indicating number of portfolios to be evaluated in parallel (default is \code{1}),
 #'                         see \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#parallel-backtesting}{vignette-paralle-mode} for details.
 #' @param paral_datasets Interger indicating number of datasets to be evaluated in parallel (default is \code{1}),
@@ -124,7 +124,7 @@
 #' @importFrom parallel makeCluster stopCluster clusterExport clusterEvalQ
 #' @importFrom utils object.size
 #' @export
-portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path = NULL, source_to_local = TRUE, price_name = "adjusted",
+portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path = NULL, source_to_local = TRUE, price_name = NULL,
                               paral_portfolios = 1, paral_datasets = 1,
                               show_progress_bar = FALSE, benchmarks = NULL, 
                               shortselling = TRUE, leverage = Inf,
@@ -142,6 +142,10 @@ portfolioBacktest <- function(portfolio_funs = NULL, dataset_list, folder_path =
   cost <- modifyList(list(buy = 0, sell = 0, short = 0, long_leverage = 0), cost)
   if (length(cost) != 4) stop("Problem in specifying the cost: the elements can only be buy, sell, short, and long_leverage.")
   if (is.xts(dataset_list[[1]])) stop("Each element of \"dataset_list\" must be a list of xts objects. Try to surround your passed \"dataset_list\" with list().")
+  if (is.null(price_name))
+    price_name <- names(dataset_list[[1]])[1]
+  if (is.null(price_name))
+    stop("price_name incorrectly specified (or first xts object in each dataset does not have a name).")
   if (!(price_name %in% names(dataset_list[[1]]))) stop("Price data xts element \"", price_name, "\" does not exist in dataset_list.")
   if (!is.xts(dataset_list[[1]][[1]])) stop("prices have to be xts.")
   if (!is.null(T_rolling_window))
@@ -381,7 +385,7 @@ singlePortfolioSingleXTSBacktest <- function(portfolio_fun, data, price_name,
   rebalance_indices <- seq(from = lookback, to = T - delay, by = rebalance_every)
   if (any(!(optimize_indices %in% rebalance_indices))) 
     stop("The reoptimization indices have to be a subset of the rebalancing indices.")
-  
+
 
   # create variables (w and cash are always normalized wrt NAV_bop)
   compute_tc <- any(cost != 0); tc <- 0

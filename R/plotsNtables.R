@@ -531,7 +531,7 @@ my_apply_rolling <- function(R, width = Inf, gap = width, by = 1, FUN = "mean", 
   endings <- seq(from = nrow(R), to = gap, by = -by)
   endings <- endings[order(endings)]
   for (ending in endings) {
-    i_start <- max(ending - width, 1)
+    i_start <- max((ending - width + 1), 1)
     i_end   <- ending
     res <- rbind(res, 
                  apply(R[i_start:i_end, ], MARGIN = 2, FUN = FUN, ... = ...))
@@ -600,10 +600,11 @@ backtestChartStackedBar <- function(bt, portfolio = names(bt[1]), dataset_num = 
   title <- sprintf("Weight allocation over time for %s", portfolio)
   # extract data and downsample
   w <- bt[[portfolio]][[dataset_num]]$w_rebalanced
-  w <- w[seq(1, nrow(w), length.out = num_bars), ]
+  w <- w[unique(round(seq(1, nrow(w), length.out = num_bars))), ]
   w <- w[, colSums(abs(w) > 1e-3) > 0]
-  w_width <- as.numeric(index(w)[2]) - as.numeric(index(w)[1])
-  
+  #w_width <- 1.5 * (as.numeric(last(index(w))) - as.numeric(first(index(w))))/nrow(w)
+  w_width <- max(as.numeric(index(w)[-1] - index(w)[-nrow(w)]))
+
   # plot
   #params <- list(...)
   switch(match.arg(type),
@@ -615,7 +616,7 @@ backtestChartStackedBar <- function(bt, portfolio = names(bt[1]), dataset_num = 
          },
          "ggplot2" = {
            p <- ggplot(fortify(w, melt = TRUE), aes(x = .data$Index, y = .data$Value, fill = .data$Series)) +
-             geom_bar(stat = "identity", width = 1.1*w_width) +
+             geom_bar(stat = "identity", width = w_width) +
              ggtitle(title) + xlab(element_blank()) + ylab("weight")
            if (legend)
              p <- p + labs(fill = "Assets") #theme(legend.title = element_blank())
