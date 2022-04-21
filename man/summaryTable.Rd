@@ -8,7 +8,8 @@ summaryTable(
   bt_summary,
   measures = NULL,
   caption = "Performance table",
-  type = c("simple", "DT", "grid.table"),
+  type = c("simple", "DT", "kable", "grid.table"),
+  digits = 2,
   order_col = NULL,
   order_dir = c("asc", "desc"),
   page_length = 10
@@ -23,9 +24,11 @@ summaryTable(
 
 \item{caption}{Table caption (only works for \code{type = "DT"}).}
 
-\item{type}{Type of table. Valid options: \code{"simple", "DT", "grid.table"}. Default is 
+\item{type}{Type of table. Valid options: \code{"simple", "DT", "kable", "grid.table"}. Default is 
 \code{"simple"} and generates a simple matrix (with the other choices the 
 corresponding package must be installed).}
+
+\item{digits}{Integer indicating the number of decimal places when rounding (default is 2).}
 
 \item{order_col}{Column number or column name of the performance measure to be used to 
 sort the rows (only used for table \code{type = "DT"}). By default the 
@@ -69,6 +72,7 @@ bt <- portfolioBacktest(list("Quintile" = quintile_portfolio),
 bt_summary_median <- backtestSummary(bt)
 summaryTable(bt_summary_median, measures = c("max drawdown", "annual volatility"))
 summaryTable(bt_summary_median, measures = c("max drawdown", "annual volatility"), type = "DT")
+summaryTable(bt_summary_median, type = "kable") |> kableExtra::kable_styling() 
 }
 
 }

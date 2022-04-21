@@ -11,9 +11,10 @@
 #'                 `Sharpe ratio`, `max drawdown`, `annual return`, `annual volatility`, 
 #'                 `Sterling ratio`, `Omega ratio`, `ROT bps`, etc.
 #' @param caption Table caption (only works for \code{type = "DT"}).
-#' @param type Type of table. Valid options: \code{"simple", "DT", "grid.table"}. Default is 
+#' @param type Type of table. Valid options: \code{"simple", "DT", "kable", "grid.table"}. Default is 
 #'             \code{"simple"} and generates a simple matrix (with the other choices the 
 #'             corresponding package must be installed).
+#' @param digits Integer indicating the number of decimal places when rounding (default is 2).
 #' @param order_col Column number or column name of the performance measure to be used to 
 #'                  sort the rows (only used for table \code{type = "DT"}). By default the 
 #'                  last column will be used.
@@ -51,17 +52,23 @@
 #' bt_summary_median <- backtestSummary(bt)
 #' summaryTable(bt_summary_median, measures = c("max drawdown", "annual volatility"))
 #' summaryTable(bt_summary_median, measures = c("max drawdown", "annual volatility"), type = "DT")
+#' summaryTable(bt_summary_median, type = "kable") |> kableExtra::kable_styling() 
 #' }
 #' 
 #' @export
 summaryTable <- function(bt_summary, measures = NULL, caption = "Performance table",
-                         type = c("simple", "DT", "grid.table"), 
+                         type = c("simple", "DT", "kable", "grid.table"), 
+                         digits = 2,
                          order_col = NULL, order_dir = c("asc", "desc"), page_length = 10) {
   if (is.null(measures)) measures <- rownames(bt_summary$performance_summary)  # by default use all
   # extract performance measures
   real_measures <- intersect(measures, rownames(bt_summary$performance_summary))
   performance <- bt_summary$performance_summary[real_measures, , drop = FALSE]
-  performance <- t(round(performance, 4))
+  performance <- t(round(performance, digits))
+  
+  # percentage columns for formatting in DT and kable
+  cols_percentage <- intersect(c("annual return", "annual volatility", "max drawdown", "VaR (0.95)", "CVaR (0.95)"),
+                               colnames(performance))
   
   # show table
   switch(match.arg(type),
@@ -72,21 +79,36 @@ summaryTable <- function(bt_summary, measures = NULL, caption = "Performance tab
            if (is.character(order_col)) order_col <- which(colnames(performance) == order_col)
            if (is.null(order_col) || length(order_col) == 0) order_col <- ncol(performance)
            order_dir <- match.arg(order_dir)
-           p <- DT::datatable(performance, 
+           p <- DT::datatable(performance,
                               options = list(pageLength = page_length, scrollX = TRUE, order = list(order_col, order_dir)),
                               caption = caption)
            p <- DT::formatStyle(p, 0, target = "row", fontWeight = DT::styleEqual(c("1/N", "index"), c("bold", "bold")))
-           p <- DT::formatRound(p, colnames(performance), digits = 2)
-           if ("annual volatility" %in% colnames(performance))
-             p <- DT::formatPercentage(p, "annual volatility", 1)
-           if ("max drawdown" %in% colnames(performance))
-             p <- DT::formatPercentage(p, "max drawdown", 1)
+           # rounding
+           p <- DT::formatRound(p, colnames(performance), digits = digits)
            if ("ROT (bps)" %in% colnames(performance))
              p <- DT::formatRound(p, "ROT (bps)", digits = 0)
            if ("cpu time" %in% colnames(performance))
              p <- DT::formatRound(p, "cpu time", digits = 4)
+           if (length(cols_percentage) > 0)
+             p <- DT::formatPercentage(p, cols_percentage, digits = 1)
            p
          },
+         "kable" = {
+           if (!requireNamespace("knitr", quietly = TRUE)) 
+             stop("Please install package \"knitr\" or choose another table type", call. = FALSE)
+           if (!requireNamespace("scales", quietly = TRUE)) 
+             stop("Please install package \"scales\" or choose another table type", call. = FALSE)
+           # data.frame with percentages
+           df <- data.frame("Portfolio" = rownames(performance), 
+                            performance,
+                            check.names = FALSE)
+           df[cols_percentage] <- lapply(df[cols_percentage], 
+                                         FUN = scales::percent, accuracy = 1)
+           # kable
+           knitr::kable(df, digits = digits, booktabs = TRUE, linesep = "", row.names = FALSE, 
+                        align = c('l', rep('r', ncol(df) - 1)), 
+                        caption = caption)
+         },         
          "grid.table" = {
            if (!requireNamespace("gridExtra", quietly = TRUE)) 
              stop("Please install package \"gridExtra\" or choose another table type", call. = FALSE)
@@ -94,6 +116,8 @@ summaryTable <- function(bt_summary, measures = NULL, caption = "Performance tab
            },
          stop("Table type unknown."))
 }
+
+
 
 
 
