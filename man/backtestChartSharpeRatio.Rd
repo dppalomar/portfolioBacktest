@@ -24,6 +24,14 @@ Default charts all portfolios in the backtest.}
 
 \item{dataset_num}{Dataset index to be charted. Default is \code{dataset_num = 1}.}
 
+\item{lookback}{Length of the lookback rolling window in periods (default is \code{100}).}
+
+\item{by}{Intervals at which the Sharpe ratio is to be calculated (default is equal to \code{1}).}
+
+\item{gap}{Initial number of periods to skip (default is equal to \code{lookback}).}
+
+\item{bars_per_year}{Number of bars/periods per year (default is \code{252}).}
+
 \item{type}{Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
 \code{"ggplot2"}.}
 

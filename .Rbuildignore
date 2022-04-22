@@ -9,6 +9,7 @@
 ^R_buildignore$
 ^data-raw$
 ^resources$
+^.github$
 ^TODO.txt$
 ^vignettes/PortfolioBacktest_cache$
 ^vignettes/PortfolioBacktest_files$
@@ -17,4 +18,4 @@
 ^vignettes/ieee\.csl$
 ^vignettes/financial-markets-and-portfolio-management\.csl$
 ^vignettes/journal-of-machine-learning-for-modeling-and-computing\.csl$
-^stockdata_from_*\.RData$
+^vignettes/figures$

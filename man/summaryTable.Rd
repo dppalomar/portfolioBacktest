@@ -72,7 +72,8 @@ bt <- portfolioBacktest(list("Quintile" = quintile_portfolio),
 bt_summary_median <- backtestSummary(bt)
 summaryTable(bt_summary_median, measures = c("max drawdown", "annual volatility"))
 summaryTable(bt_summary_median, measures = c("max drawdown", "annual volatility"), type = "DT")
-summaryTable(bt_summary_median, type = "kable") |> kableExtra::kable_styling() 
+summaryTable(bt_summary_median, type = "kable") 
+# this returned kable object can be combined with: " |> kableExtra::kable_styling()"
 }
 
 }

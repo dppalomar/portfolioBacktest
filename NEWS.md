@@ -1,6 +1,6 @@
-## Changes in portfolioBacktest version 0.3.1.9000 (2021-XX-XX)
+## Changes in portfolioBacktest version 0.4.1 (2022-04-22)
 
-* Function `summaryTable()` now allows the kable type of table.
+* Function `summaryTable()` now allows the `kable` type of table.
 
 * Vignette now explains a temporary hack to initialize backtests (via non-recommended global variables).
 

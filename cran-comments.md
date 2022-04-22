@@ -1,14 +1,16 @@
-Sixth release in CRAN, version 0.3.1 (2021-10-11), (package also available in GitHub).
+This is version 0.4.1 (0.4.1) in CRAN (package also available in GitHub).
 
 ---
 
 ## Test environments
-* OS X, R version 4.1.0 (2021-05-18)
+* OS X, R 4.1.2
 * Windows at https://win-builder.r-project.org/
+
 
 ## R CMD check results
 
 There were no ERRORs or WARNINGs.
+
 
 ## Reverse dependencies
 

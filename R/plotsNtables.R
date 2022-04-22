@@ -52,7 +52,8 @@
 #' bt_summary_median <- backtestSummary(bt)
 #' summaryTable(bt_summary_median, measures = c("max drawdown", "annual volatility"))
 #' summaryTable(bt_summary_median, measures = c("max drawdown", "annual volatility"), type = "DT")
-#' summaryTable(bt_summary_median, type = "kable") |> kableExtra::kable_styling() 
+#' summaryTable(bt_summary_median, type = "kable") 
+#' # this returned kable object can be combined with: " |> kableExtra::kable_styling()"
 #' }
 #' 
 #' @export
@@ -475,6 +476,10 @@ backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, t
 #' specify a plot based on \code{PerformanceAnalytics}.
 #' 
 #' @inheritParams backtestChartCumReturn
+#' @param lookback Length of the lookback rolling window in periods (default is \code{100}).
+#' @param by Intervals at which the Sharpe ratio is to be calculated (default is equal to \code{1}).
+#' @param gap Initial number of periods to skip (default is equal to \code{lookback}).
+#' @param bars_per_year Number of bars/periods per year (default is \code{252}).
 #' 
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
