@@ -12,7 +12,8 @@ summaryTable(
   digits = 2,
   order_col = NULL,
   order_dir = c("asc", "desc"),
-  page_length = 10
+  page_length = 10,
+  ...
 )
 }
 \arguments{
@@ -38,8 +39,10 @@ last column will be used.}
 \code{type = "DT"}). Valid options: \code{"asc", "desc"}. 
 Default is \code{"asc"}.}
 
-\item{page_length}{Page length for the table (only used for table \code{type = "DT"}). 
+\item{page_length}{Page length for the table (only used for table \code{type = "DT"}).
 Default is \code{10}.}
+
+\item{...}{Additional arguments (currently unused).}
 }
 \description{
 After performing a backtest with \code{\link{portfolioBacktest}} 

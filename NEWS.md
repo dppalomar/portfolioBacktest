@@ -1,3 +1,8 @@
+## Changes in portfolioBacktest version 0.4.2 (2026-05-18)
+
+* Fixed unit tests to accommodate a breaking change in `PerformanceAnalytics::Return.portfolio()`, which now returns results for the full length of the input return series rather than only from the first specified weight date onward.
+
+
 ## Changes in portfolioBacktest version 0.4.1 (2022-04-22)
 
 * Function `summaryTable()` now allows the `kable` type of table.

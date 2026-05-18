@@ -11,6 +11,7 @@
 ^resources$
 ^.github$
 ^TODO.txt$
+^\.claude$
 ^vignettes/PortfolioBacktest_cache$
 ^vignettes/PortfolioBacktest_files$
 ^vignettes/PortfolioBacktest\.Rmd$

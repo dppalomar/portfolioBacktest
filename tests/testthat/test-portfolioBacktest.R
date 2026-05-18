@@ -70,22 +70,24 @@ test_that("backtest results coincide with PerformanceAnalytics and base R", {
   
   # compare with PerformanceAnalytics
   PerfAnal <- PerformanceAnalytics::Return.portfolio(X_lin, weights = bt$Uniform$`dataset 1`$w_rebalanced, verbose = TRUE)
-  expect_equivalent(ret_portfolioBacktest, PerfAnal$returns)
-  expect_equivalent(bt$Uniform$`dataset 1`$w_bop, PerfAnal$BOP.Weight)
-  
+  idx <- index(ret_portfolioBacktest)
+  expect_equivalent(ret_portfolioBacktest, PerfAnal$returns[idx])
+  expect_equivalent(bt$Uniform$`dataset 1`$w_bop, PerfAnal$BOP.Weight[idx])
+
 
   #
   # GMVP rebalanced every 20 days
-  #   
+  #
   ret_portfolioBacktest <- bt$GMVP$`dataset 1`$return
-  
+
   # compare with PerformanceAnalytics
-  expect_warning(PerfAnal <- PerformanceAnalytics::Return.portfolio(X_lin, weights = bt$GMVP$`dataset 1`$w_rebalanced, verbose = TRUE), 
+  expect_warning(PerfAnal <- PerformanceAnalytics::Return.portfolio(X_lin, weights = bt$GMVP$`dataset 1`$w_rebalanced, verbose = TRUE),
                  "The weights for one or more periods do not sum up to 1: assuming a return of 0 for the residual weights")
-  expect_equivalent(ret_portfolioBacktest, PerfAnal$returns)
-  expect_equivalent(bt$GMVP$`dataset 1`$w_bop, PerfAnal$BOP.Weight[, 1:2])
+  idx <- index(ret_portfolioBacktest)
+  expect_equivalent(ret_portfolioBacktest, PerfAnal$returns[idx])
+  expect_equivalent(bt$GMVP$`dataset 1`$w_bop, PerfAnal$BOP.Weight[idx, 1:2])
   cash <- 1 - rowSums(bt$GMVP$`dataset 1`$w_bop)
-  expect_equivalent(cash, as.vector(PerfAnal$BOP.Weight[, 3]))
+  expect_equivalent(cash, as.vector(PerfAnal$BOP.Weight[idx, 3]))
   
   
   #
@@ -108,8 +110,9 @@ test_that("backtest results coincide with PerformanceAnalytics and base R", {
   
   # compare with PerformanceAnalytics
   PerfAnal_next_day <- PerformanceAnalytics::Return.portfolio(X_lin, weights = w_designed_lagged, verbose = TRUE)
-  expect_equivalent(bt_next_period$Uniform$`dataset 1`$return, PerfAnal_next_day$returns)
-  expect_equivalent(bt_next_period$Uniform$`dataset 1`$w_bop, PerfAnal_next_day$BOP.Weight)
+  idx_next <- index(bt_next_period$Uniform$`dataset 1`$return)
+  expect_equivalent(bt_next_period$Uniform$`dataset 1`$return, PerfAnal_next_day$returns[idx_next])
+  expect_equivalent(bt_next_period$Uniform$`dataset 1`$w_bop, PerfAnal_next_day$BOP.Weight[idx_next])
 })
   
 

@@ -21,9 +21,10 @@
 #' @param order_dir Direction to be used to sort the rows (only used for table 
 #'                  \code{type = "DT"}). Valid options: \code{"asc", "desc"}. 
 #'                  Default is \code{"asc"}.
-#' @param page_length Page length for the table (only used for table \code{type = "DT"}). 
+#' @param page_length Page length for the table (only used for table \code{type = "DT"}).
 #'                    Default is \code{10}.
-#' 
+#' @param ... Additional arguments (currently unused).
+#'
 #' @author Daniel P. Palomar and Rui Zhou
 #' 
 #' @seealso \code{\link{summaryBarPlot}}
@@ -60,7 +61,7 @@
 summaryTable <- function(bt_summary, measures = NULL, caption = "Performance table",
                          type = c("simple", "DT", "kable", "grid.table"), 
                          digits = 2,
-                         order_col = NULL, order_dir = c("asc", "desc"), page_length = 10) {
+                         order_col = NULL, order_dir = c("asc", "desc"), page_length = 10, ...) {
   if (is.null(measures)) measures <- rownames(bt_summary$performance_summary)  # by default use all
   # extract performance measures
   real_measures <- intersect(measures, rownames(bt_summary$performance_summary))
@@ -106,9 +107,10 @@ summaryTable <- function(bt_summary, measures = NULL, caption = "Performance tab
            df[cols_percentage] <- lapply(df[cols_percentage], 
                                          FUN = scales::percent, accuracy = 1)
            # kable
-           knitr::kable(df, digits = digits, booktabs = TRUE, linesep = "", row.names = FALSE, 
+           knitr::kable(df, digits = digits, format.args = list(nsmall = digits), 
+                        booktabs = TRUE, linesep = "", row.names = FALSE, 
                         align = c('l', rep('r', ncol(df) - 1)), 
-                        caption = caption)
+                        caption = caption, ...)
          },         
          "grid.table" = {
            if (!requireNamespace("gridExtra", quietly = TRUE)) 
@@ -266,7 +268,7 @@ summaryBarPlot <- function(bt_summary, measures = NULL, type = c("ggplot2", "sim
 #' @importFrom grDevices topo.colors
 #' @importFrom graphics boxplot par
 #' @importFrom stats quantile
-#' @importFrom ggplot2 ggplot aes aes_string geom_boxplot geom_point scale_x_discrete coord_flip labs
+#' @importFrom ggplot2 ggplot aes aes_string geom_boxplot geom_point scale_x_discrete coord_flip labs theme element_text
 #' @importFrom rlang .data
 #' @export
 backtestBoxPlot <- function(bt, measure = "Sharpe ratio", ref_portfolio = NULL, type = c("ggplot2", "simple"), ...) {
@@ -303,6 +305,7 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", ref_portfolio = NULL, 
          },
          "ggplot2" = {
            if (is.null(params$alpha)) params$alpha <- 0.4  # this is for the points (set to 0 if not want them)
+           if (is.null(params$outlier.shape)) params$outlier.shape <- NA  #19
            limits <- apply(res_table, 2, function(x) {
              lquartile <- quantile(x, 0.25, na.rm = TRUE)
              uquartile <- quantile(x, 0.75, na.rm = TRUE)
@@ -312,9 +315,10 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", ref_portfolio = NULL, 
            plot_limits <- c(min(limits["limit_min", ]), max(limits["limit_max", ]))
            df <- as.data.frame.table(res_table)
            ggplot(df, aes(x = .data$Var2, y = .data$Freq, fill = .data$Var2)) +
-             geom_boxplot(show.legend = FALSE) +  # (outlier.shape = NA)
+             geom_boxplot(show.legend = FALSE, outlier.shape = params$outlier.shape) +
              geom_point(size = 0.5, alpha = params$alpha, show.legend = FALSE) +  # geom_jitter(width = 0) +
              scale_x_discrete(limits = rev(levels(df$Var2))) +
+             theme(axis.text.y = element_text(colour = "black", size = 10)) +
              coord_flip(ylim = plot_limits) + 
              labs(title = measure, x = NULL, y = NULL)
          },
@@ -335,6 +339,8 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", ref_portfolio = NULL, 
 #' @param portfolios String with portfolio names to be charted. 
 #'                   Default charts all portfolios in the backtest.
 #' @param dataset_num Dataset index to be charted. Default is \code{dataset_num = 1}.
+#' @param plot_wealth If \code{TRUE}, it will plot the "value of $1", 
+#'                    starting the cumulation of returns at 1 rather than zero (default is \code{FALSE}).
 #' 
 #' @param ... Additional parameters.
 #' 
@@ -369,29 +375,38 @@ backtestBoxPlot <- function(bt, measure = "Sharpe ratio", ref_portfolio = NULL, 
 #' @importFrom grDevices topo.colors
 #' @importFrom graphics par
 #' @importFrom PerformanceAnalytics chart.CumReturns
-#' @importFrom ggplot2 ggplot fortify aes geom_line theme element_blank ggtitle xlab ylab
+#' @importFrom ggplot2 ggplot fortify aes geom_line theme element_blank ggtitle xlab ylab scale_linetype_manual
 #' @importFrom rlang .data
 #' @export
-backtestChartCumReturn <- function(bt, portfolios = names(bt), dataset_num = 1, type = c("ggplot2", "simple"), ...) {
+backtestChartCumReturn <- function(bt, portfolios = names(bt), dataset_num = 1, plot_wealth = FALSE, type = c("ggplot2", "simple"), ...) {
   # extract data
   bt <- bt[portfolios]
-  wealth <- do.call(cbind, lapply(bt, function(x) x[[dataset_num]]$wealth))
   return <- do.call(cbind, lapply(bt, function(x) x[[dataset_num]]$return))
+  wealth <- do.call(cbind, lapply(bt, function(x) x[[dataset_num]]$wealth))
   colnames(return) <- colnames(wealth) <- names(bt)
+  if (plot_wealth) {
+    caption <- "Wealth"
+    time_series <- wealth
+  } else {
+    caption <- "Cumulative Return"
+    time_series <- wealth - 1
+  }
+  
 
   # plot
   params <- list(...)
   switch(match.arg(type),
          "simple" = {
            if (is.null(params$col)) params$col <- topo.colors(length(bt))
-           chart.CumReturns(return, main = "Cumulative Return", wealth.index = TRUE, legend.loc = "topleft", colorset = params$col)
+           chart.CumReturns(return, main = caption, wealth.index = wealth, legend.loc = "topleft", colorset = params$col)
          },
          "ggplot2" = {
-           ggplot(fortify(wealth, melt = TRUE), aes(x = .data$Index, y = .data$Value, col = .data$Series)) +
-             geom_line() +
+           ggplot(fortify(time_series, melt = TRUE), aes(x = .data$Index, y = .data$Value, color = .data$Series, linetype = .data$Series)) +
+             geom_line(linewidth = 1) +
+             scale_linetype_manual(values = rep(1, length(portfolios))) +
              theme(legend.title = element_blank()) +
              #scale_x_date(date_breaks = "1 month", date_labels = "%b %Y", date_minor_breaks = "1 week")
-             ggtitle("Cumulative Return") + xlab(element_blank()) + ylab(element_blank())
+             ggtitle(caption) + xlab(element_blank()) + ylab(element_blank())
          },
          stop("Unknown plot type."))
 }
@@ -439,7 +454,7 @@ backtestChartCumReturn <- function(bt, portfolios = names(bt), dataset_num = 1, 
 #' @importFrom grDevices topo.colors
 #' @importFrom graphics par
 #' @importFrom PerformanceAnalytics Drawdowns chart.Drawdown
-#' @importFrom ggplot2 ggplot fortify aes geom_line theme element_blank ggtitle xlab ylab
+#' @importFrom ggplot2 ggplot fortify aes geom_line theme element_blank ggtitle xlab ylab scale_linetype_manual
 #' @importFrom rlang .data
 #' @export
 backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, type = c("ggplot2", "simple"), ...) {
@@ -457,8 +472,9 @@ backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, t
            chart.Drawdown(return, main = "Drawdown", legend.loc = "bottomleft", colorset = params$col)
          },
          "ggplot2" = {
-           ggplot(fortify(drawdown, melt = TRUE), aes(x = .data$Index, y = .data$Value, col = .data$Series)) +
-             geom_line() +
+           ggplot(fortify(drawdown, melt = TRUE), aes(x = .data$Index, y = .data$Value, color = .data$Series, linetype = .data$Series)) +
+             geom_line(linewidth = 1) +
+             scale_linetype_manual(values = rep(1, length(portfolios))) +
              theme(legend.title = element_blank()) +
              ggtitle("Drawdown") + xlab(element_blank()) + ylab(element_blank())
          },
@@ -512,7 +528,7 @@ backtestChartDrawdown <- function(bt, portfolios = names(bt), dataset_num = 1, t
 #' @importFrom grDevices topo.colors
 #' @importFrom graphics par
 #' @importFrom PerformanceAnalytics SharpeRatio.annualized chart.RollingPerformance
-#' @importFrom ggplot2 ggplot fortify aes geom_line theme element_blank ggtitle xlab ylab
+#' @importFrom ggplot2 ggplot fortify aes geom_line theme element_blank ggtitle xlab ylab scale_linetype_manual
 #' @importFrom rlang .data
 #' @export
 backtestChartSharpeRatio <- function(bt, portfolios = names(bt), dataset_num = 1, lookback = 100, by = 1, gap = lookback, bars_per_year = 252, type = c("ggplot2", "simple"), ...) {
@@ -545,8 +561,9 @@ backtestChartSharpeRatio <- function(bt, portfolios = names(bt), dataset_num = 1
                                        gap = gap,
                                        FUN = function(X) SharpeRatio.annualized(X, scale = 365*24, geometric = FALSE))
 
-           ggplot(fortify(SR_time, melt = TRUE), aes(x = .data$Index, y = .data$Value, col = .data$Series)) +
-             geom_line() +
+           ggplot(fortify(SR_time, melt = TRUE), aes(x = .data$Index, y = .data$Value, color = .data$Series, linetype = .data$Series)) +
+             geom_line(linewidth = 1) +
+             scale_linetype_manual(values = rep(1, length(portfolios))) +
              theme(legend.title = element_blank()) +
              ggtitle("Rolling Sharpe ratio") + xlab(element_blank()) + ylab("Sharpe ratio")
          },
@@ -635,7 +652,6 @@ backtestChartStackedBar <- function(bt, portfolio = names(bt[1]), dataset_num = 
   w_width <- max(as.numeric(index(w)[-1] - index(w)[-nrow(w)]))
 
   # plot
-  #params <- list(...)
   switch(match.arg(type),
          "simple" = {
            #if (is.null(params$col)) params$col <- topo.colors(nrow(w))

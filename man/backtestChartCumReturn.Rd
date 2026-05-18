@@ -8,6 +8,7 @@ backtestChartCumReturn(
   bt,
   portfolios = names(bt),
   dataset_num = 1,
+  plot_wealth = FALSE,
   type = c("ggplot2", "simple"),
   ...
 )
@@ -19,6 +20,9 @@ backtestChartCumReturn(
 Default charts all portfolios in the backtest.}
 
 \item{dataset_num}{Dataset index to be charted. Default is \code{dataset_num = 1}.}
+
+\item{plot_wealth}{If \code{TRUE}, it will plot the "value of $1", 
+starting the cumulation of returns at 1 rather than zero (default is \code{FALSE}).}
 
 \item{type}{Type of plot. Valid options: \code{"ggplot2", "simple"}. Default is 
 \code{"ggplot2"}.}
