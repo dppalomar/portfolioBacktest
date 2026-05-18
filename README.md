@@ -98,7 +98,7 @@ backtestSummary(bt)$performance
 #> failure rate       0.000000e+00
 ```
 
-For a more detailed explanation on how to use the package with all the features, check the [vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
+For a more detailed explanation on how to use the package with all the features, check the [vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/portfolioBacktest/blob/master/vignettes/PortfolioBacktest.html).
 
 
 
@@ -121,7 +121,7 @@ This package backtests a list of portfolios over multiple datasets on a rolling-
 
 ## Documentation
 For more detailed information, please check the
-[vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html).
+[vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/portfolioBacktest/blob/master/vignettes/PortfolioBacktest.html).
 
 
 ## Links
@@ -129,6 +129,6 @@ Package: [CRAN](https://CRAN.R-project.org/package=portfolioBacktest) and [GitHu
 
 README file: [GitHub-readme](https://github.com/dppalomar/portfolioBacktest/blob/master/README.md).
 
-Vignette: [CRAN-vignette](https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html) and [GitHub-vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/portfolioBacktest/blob/master/vignettes/PortfolioBacktest.html).
+Vignette: [GitHub-vignette](https://htmlpreview.github.io/?https://github.com/dppalomar/portfolioBacktest/blob/master/vignettes/PortfolioBacktest.html).
 
 

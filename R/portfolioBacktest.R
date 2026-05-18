@@ -14,7 +14,7 @@
 #' multiple cores. Errors in functions are properly catched and handled so
 #' that the execution of the overal backtesting is not stopped (error messages
 #' are stored for debugging purposes). See 
-#' \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{vignette}
+#' \href{https://github.com/dppalomar/portfolioBacktest}{vignette}
 #' for a detailed explanation.
 #'
 #' @param portfolio_funs List of functions (can also be a single function), each of them taking as input 
@@ -22,13 +22,13 @@
 #'                       element of the argument \code{dataset_list}) properly windowed (following the
 #'                       rolling-window approach) and returning the portfolio as a vector of normalized
 #'                       weights. See 
-#'                       \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{vignette}
+#'                       \href{https://github.com/dppalomar/portfolioBacktest}{vignette}
 #'                       for details.
 #' @param dataset_list List of datasets, each containing a list of \code{xts} objects, as generated
 #'                     by the function \code{\link{financialDataResample}}.
 #' @param folder_path If \code{portfolio_funs} is not defined, this should contain the path to a folder 
 #'                    containing the portfolio functions saved in files. See 
-#'                    \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html}{vignette}
+#'                    \href{https://github.com/dppalomar/portfolioBacktest}{vignette}
 #'                    for details.
 #' @param source_to_local Logical value indicating whether to source files to local environment (default is \code{TRUE}).
 #'                        It might be dangerous to set it to \code{FALSE} as in such case the global environment may be changed.
@@ -38,9 +38,9 @@
 #' @param price_name Name of the \code{xts} object in each dataset that contains the prices to be used in the portfolio return 
 #'                   computation (default is the name of the first \code{xts} object).
 #' @param paral_portfolios Interger indicating number of portfolios to be evaluated in parallel (default is \code{1}),
-#'                         see \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#parallel-backtesting}{vignette-paralle-mode} for details.
+#'                         see \href{https://github.com/dppalomar/portfolioBacktest}{vignette-paralle-mode} for details.
 #' @param paral_datasets Interger indicating number of datasets to be evaluated in parallel (default is \code{1}),
-#'                        see \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#parallel-backtesting}{vignette-paralle-mode} for details.
+#'                        see \href{https://github.com/dppalomar/portfolioBacktest}{vignette-paralle-mode} for details.
 #' @param show_progress_bar Logical value indicating whether to show progress bar (default is \code{FALSE}). 
 #' @param benchmarks String vector indicating the benchmark portfolios to be incorporated, currently supports:
 #' \itemize{\item{\code{1/N} - the 1/N portfolio, \eqn{w = [1/N, ..., 1/N]} with \eqn{N} be number of stocks;}
@@ -83,7 +83,7 @@
 #'                       can also be obtained as \code{rowSums(X_lin * w_bop)} in the absence of transaction costs).
 #' 
 #' @return List with the portfolio backtest results, see 
-#'         \href{https://CRAN.R-project.org/package=portfolioBacktest/vignettes/PortfolioBacktest.html#result-format}{vignette-result-format}
+#'         \href{https://github.com/dppalomar/portfolioBacktest}{vignette-result-format}
 #'         for details. It can be accessed directly, but we highly recommend the use of the package specific functions to extract 
 #'         any required information, namely, \code{\link{backtestSelector}}, \code{\link{backtestTable}}, 
 #'         \code{\link{backtestBoxPlot}}, \code{\link{backtestLeaderboard}},

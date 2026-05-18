@@ -25,6 +25,10 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
+<style>
+.csl-entry { margin-bottom: 0.8em; }
+</style>
+
 ```{r, echo=FALSE}
 library(knitr)
 opts_chunk$set(
@@ -42,15 +46,16 @@ options(width = 90)
 ```
 
 -----------
-> This vignette illustrates the usage of the package 
+> This vignette illustrates the usage of the package
 [`portfolioBacktest`](https://CRAN.R-project.org/package=portfolioBacktest) for automated portfolio backtesting
-over multiple datasets on a rolling-window basis. It can be used by a researcher/practitioner to backtest a set 
-of different portfolios, as well as a course instructor to assess the students in their portfolio design 
+over randomized multiple datasets on a rolling-window basis, as described in Chapter 8 (Portfolio Backtesting) of [@Palomar2025].
+It can be used by researchers and practitioners to backtest a set
+of different portfolios, as well as course instructors to assess the students in their portfolio design
 in a fully automated and convenient manner. The results can be nicely formatted in tables and plots.
 
 
 # Package Snapshot
-Backtesting is a dangerous task fraught with many potential pitfalls [@Luo_etal2014_sevensins]. By performing a large number of randomized backtests, instead of visually inspecting a single backtest, one can obtain more realistic results.
+Backtesting is a dangerous task fraught with many potential pitfalls [@Palomar2025; @Luo_etal2014_sevensins]. By performing a large number of randomized backtests, instead of visually inspecting a single backtest, one can obtain more realistic results.
 
 This package backtests a list of portfolios over multiple datasets on a rolling-window basis (aka walk forward), producing final results as in the following.
 
@@ -556,7 +561,7 @@ cat(attr(error1, "error_stack")$stack)
 
 
 ## Backtesting over files: usage for grading students
-In some situations, one may have to backtest portfolios from different sources stored in different files, e.g., students in a porftolio design course (in fact, this package was originally developed to assess students in the course "Portfolio Optimization with R" from the [MSc in Financial Mathematics (MAFM)](https://mafm.ust.hk)). In such cases, the different portfolios may have conflicting dependencies and loading all of them into the environment may not be a reasonable approach. The package adds support for backtesting portfolios given in individual files in a folder in a way that each is executed in a clean environment without affecting each other. It suffices to write each portfolio function into an R script (with unique filename) containing the portfolio function named exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). All theses files should be put into a file folder, whose path will be passed to the function `portfolioBacktest()` with the argument `folder_path`.
+In some situations, one may have to backtest portfolios from different sources stored in different files, e.g., students in a porftolio design course (in fact, this package was originally developed to assess students in the course "Portfolio Optimization with R" from the [MSc in Financial Mathematics (MAFM)](https://mafm.hkust.edu.hk/)). In such cases, the different portfolios may have conflicting dependencies and loading all of them into the environment may not be a reasonable approach. The package adds support for backtesting portfolios given in individual files in a folder in a way that each is executed in a clean environment without affecting each other. It suffices to write each portfolio function into an R script (with unique filename) containing the portfolio function named exactly `portfolio_fun()` as well as any other auxiliary functions that it may require (needless to say that the required packages should be loaded in that script with `library()`). All theses files should be put into a file folder, whose path will be passed to the function `portfolioBacktest()` with the argument `folder_path`.
 
 If an instructor wants to evaluate students of a course in their portfolio design, this can be easily done by asking each student to submit an R script with a unique filename like `STUDENTNUMBER.R`. For example, suppose we have three files in the folder `portfolio_files` named `0001.R`, `0002.R`, and `0003.R`. Then:
 ```{r grading-students, cache=TRUE}
@@ -615,13 +620,13 @@ The performance criteria currently considered by default in the package are:
 - **annual volatility**: the [annualized standard deviation](https://en.wikipedia.org/wiki/Volatility_(finance)) of returns; 
 - **max drawdown**: the [maximum drawdown](https://en.wikipedia.org/wiki/Drawdown_(economics)) is defined as the maximum loss from a peak to a trough of a portfolio;
 - **Sharpe ratio**: the [annualized Sharpe ratio](https://en.wikipedia.org/wiki/Sharpe_ratio), the ratio between the (geometric) annualized return and the annualized standard deviation;
-- **Sterling ratio**: the return over average drawdown, see [here](https://en.m.wikipedia.org/wiki/Sterling_ratio) for complete definition. In the package, we use $$
+- **Sterling ratio**: the return over average drawdown, see [here](https://en.wikipedia.org/wiki/Sterling_ratio) for complete definition. In the package, we use $$
  \text{Sterling ratio} = \frac{\text{annualized return}}{\text{max drawdown}};$$
-- **Omega ratio**: the probability weighted ratio of gains over losses for some threshold return target, see [here](https://en.m.wikipedia.org/wiki/Omega_ratio) for complete definition. The ratio is calculated as: $$ \Omega(r) = \frac{\int_{r}^{\infty} (1-F(x))dx}{\int_{-\infty}^{r} F(x)dx};$$
+- **Omega ratio**: the probability weighted ratio of gains over losses for some threshold return target, see [here](https://en.wikipedia.org/wiki/Omega_ratio) for complete definition. The ratio is calculated as: $$ \Omega(r) = \frac{\int_{r}^{\infty} (1-F(x))dx}{\int_{-\infty}^{r} F(x)dx};$$
  In the package, we use $\Omega(0)$, which is also known as Gain-Loss-Ratio.
 - **ROT bps**: Return over Turnover (ROT) defined as the sum of cummulative return over the sum of turnover.
 
-One can easily add new performance measures with the function `add_performance()`.
+A detailed treatment of portfolio performance measures is given in [@Palomar2025, Ch. 6]. One can easily add new performance measures with the function `add_performance()`.
 
 
 <!---

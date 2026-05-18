@@ -30,6 +30,7 @@ URL: https://CRAN.R-project.org/package=portfolioBacktest,
      https://portfoliooptimizationbook.com,
      https://portfoliooptimizationbook.com/book/8-backtesting.html
 BugReports: https://github.com/dppalomar/portfolioBacktest/issues
+Language: en-US
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
