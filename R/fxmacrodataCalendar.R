@@ -18,7 +18,7 @@ fxmacrodataCalendar <- function(currency = "usd",
                                 limit = 100,
                                 min_tier = 2,
                                 api_key = Sys.getenv("FXMACRODATA_API_KEY"),
-                                base_url = "https://fxmacrodata.com/api/v1") {
+                                base_url = "https://api.fxmacrodata.com/v1") {
   limit <- max(1L, min(as.integer(limit), 100L))
   params <- paste0("?limit=", limit)
   if (nzchar(api_key))
